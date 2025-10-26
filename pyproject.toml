@@ -30,3 +30,4 @@ dev = [
 
 [tool.black]
 line-length = 100
+

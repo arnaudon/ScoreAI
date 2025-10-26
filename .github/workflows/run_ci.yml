@@ -31,9 +31,9 @@ jobs:
     - name: Run tests
       run: uv run --frozen pytest tests
     - name: Run format
-      run: uv run --frozen black --check .
+      run: uv run --frozen black --check src tests
     - name: Run lint
-      run: uv run --frozen pylint .
+      run: uv run --frozen pylint src tests
     - name: Run mypy
-      run: uv run --frozen mypy .
+      run: uv run --frozen mypy src
 

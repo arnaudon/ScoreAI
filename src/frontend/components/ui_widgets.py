@@ -1,11 +1,12 @@
+"""UI widgets."""
+
 from pathlib import Path
 
-import requests
 import streamlit as st
 from st_aggrid import AgGrid, GridOptionsBuilder
 
 from frontend.components import api
-from shared_models.score_models import Score
+from shared_models.scores import Score
 
 
 def write_summary_db():
@@ -40,7 +41,8 @@ def show_db(select=True):
 
 
 def add_score():
-    st.write(f"Add new score:")
+    """Add a score"""
+    st.write("Add new score:")
     title = st.text_input("Title")
     composer = st.text_input("Composer")
     uploaded_file = st.file_uploader("Upload a file", type=["pdf"])
@@ -67,6 +69,7 @@ def add_score():
 
 
 def run_agent():
+    """Run the agent"""
     question = st.text_input("Question")
     if "message_history" not in st.session_state:
         st.session_state.message_history = []

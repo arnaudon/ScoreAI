@@ -1,3 +1,5 @@
+"""Welcome module."""
+
 import streamlit as st
 
 import frontend.components.ui_widgets as ui

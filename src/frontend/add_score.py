@@ -1,3 +1,5 @@
+"""Add score module"""
+
 import streamlit as st
 
 from frontend.components.ui_widgets import add_score

@@ -1,3 +1,5 @@
+"""Main frontent entry point."""
+
 import streamlit as st
 
 from frontend.components.ui_widgets import write_summary_db

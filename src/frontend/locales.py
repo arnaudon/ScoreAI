@@ -1,9 +1,15 @@
+"""Translation support."""
+
 import gettext
 
 import streamlit as st
 
+DEFAULT_LANG = "fr"
+LANGUAGES = {"en": "English", "fr": "Français"}
+
 
 def initialize_translator(language):
+    """Initializes the translator."""
     try:
         translator = gettext.translation("messages", localedir="locales", languages=[language])
     except FileNotFoundError:
@@ -11,10 +17,6 @@ def initialize_translator(language):
 
     st.session_state.gettext = translator.gettext
     st.session_state.language = language
-
-
-DEFAULT_LANG = "fr"
-LANGUAGES = {"en": "English", "fr": "Français"}
 
 
 def init_i18n_gettext():
