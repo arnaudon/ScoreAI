@@ -1,7 +1,30 @@
 [project]
 name = "scoreai"
 version = "0.1.0"
-description = "Add your description here"
+description = "Read and play music with AI"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "aiosqlite>=0.21.0",
+    "fastapi[standard]>=0.119.0",
+    "pandas>=2.3.3",
+    "pathlib>=1.0.1",
+    "pydantic>=2.12.3",
+    "pydantic-ai>=1.2.1",
+    "pydantic-ai-slim[google]>=1.2.1",
+    "sqlalchemy>=2.0.44",
+    "sqlmodel>=0.0.27",
+    "streamlit>=1.50.0",
+    "streamlit-aggrid>=1.1.9",
+    "streamlit-pdf-viewer>=0.0.26",
+    "uvicorn>=0.37.0",
+]
+[dependency-groups]
+dev = [
+    "pytest>=7.4.4",
+    "pyyaml>=6.0.2", 
+    "black>=25.9.0",
+]
+
+[tool.black]
+line-length = 100
