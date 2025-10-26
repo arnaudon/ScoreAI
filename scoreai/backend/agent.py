@@ -1,14 +1,15 @@
 """LLM agent module."""
 
-import numpy as np
+import random
+
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from pydantic_ai import Agent, RunContext
 from pydantic_ai.models.google import GoogleModel
 from pydantic_ai.providers.google import GoogleProvider
 
-from shared_models.responses import FullResponse, Response
-from shared_models.scores import Scores
+from scoreai.shared_models.responses import FullResponse, Response
+from scoreai.shared_models.scores import Scores
 
 load_dotenv()
 
@@ -54,7 +55,7 @@ async def get_random_score_by_composer(ctx: RunContext[Scores], filter_params: T
         if score.composer.lower() == filter_params.composer.lower():
             scores.append(score)
     if scores:
-        return np.random.choice(scores).model_dump_json()
+        return random.choice(scores).model_dump_json()
     return "Not found"
 
 

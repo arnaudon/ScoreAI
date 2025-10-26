@@ -5,8 +5,8 @@ from pathlib import Path
 import streamlit as st
 from st_aggrid import AgGrid, GridOptionsBuilder
 
-from frontend.components import api
-from shared_models.scores import Score
+from scoreai.frontend.components import api
+from scoreai.shared_models.scores import Score
 
 
 def write_summary_db():

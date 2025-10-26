@@ -2,7 +2,7 @@
 
 import streamlit as st
 
-from frontend.components.ui_widgets import show_db
+from scoreai.frontend.components.ui_widgets import show_db
 
 st.title("Score Database")
 

@@ -4,9 +4,9 @@ import pandas as pd
 import requests
 import streamlit as st
 
-from frontend.config import API_URL
-from shared_models.responses import FullResponse
-from shared_models.scores import Scores
+from scoreai.frontend.config import API_URL
+from scoreai.shared_models.responses import FullResponse
+from scoreai.shared_models.scores import Scores
 
 TIMEOUT = 60
 

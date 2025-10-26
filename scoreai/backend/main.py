@@ -5,9 +5,9 @@ import json
 from fastapi import Depends, FastAPI
 from sqlmodel import Session, select
 
-from backend.agent import run_agent
-from backend.db import get_session, init_db
-from shared_models.scores import Score, Scores
+from scoreai.backend.agent import run_agent
+from scoreai.backend.db import get_session, init_db
+from scoreai.shared_models.scores import Score, Scores
 
 app = FastAPI()
 
