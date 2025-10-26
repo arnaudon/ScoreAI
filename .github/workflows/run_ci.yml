@@ -31,9 +31,9 @@ jobs:
     - name: Run tests
       run: uv run --frozen pytest tests
     - name: Run format
-      run: uv run --frozen black --check scoreai tests
+      run: uv run --frozen black --check src/scoreai tests
     - name: Run lint
-      run: uv run --frozen pylint scoreai tests
+      run: uv run --frozen pylint src/scoreai tests
     - name: Run mypy
-      run: uv run --frozen mypy scoreai
+      run: uv run --frozen mypy src/scoreai
 
