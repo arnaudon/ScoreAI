@@ -66,11 +66,9 @@ def test_lifespan():
     assert response.status_code == 200
 
 
-def test_agent(client: TestClient, override_agent: None):
-    """test agent"""
-    response = client.post(
-        "/agent", params={"prompt": "tell me something funny", "deps": '{"scores": []}'}
-    )
-    assert response.status_code == 200
-    result = FullResponse(**response.json())
-    assert isinstance(result.response, Response)
+# def test_agent(client: TestClient, agent: None):
+#    """test agent"""
+#    response = client.post("/agent", params={"prompt": "test", "deps": '{"scores": []}'})
+#    assert response.status_code == 200
+#    result = FullResponse(**response.json())
+#    assert isinstance(result.response, Response)

@@ -8,7 +8,7 @@ from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 
 from scoreai.backend import db
-from scoreai.backend.agent import agent
+from scoreai.backend.agent import get_agent
 from scoreai.backend.main import app
 from scoreai.shared_models.scores import Score, Scores
 
@@ -54,7 +54,6 @@ def client_fixture(session: Session, test_scores: Scores):
     app.dependency_overrides.clear()
 
 
-@pytest.fixture
-def override_agent():
-    with agent.override(model=TestModel()):
-        yield
+@pytest.fixture(name="agent")
+def agent():
+    return get_agent(model=TestModel())
