@@ -11,7 +11,7 @@ from scoreai.shared_models.scores import Score
 
 def write_summary_db():
     """Write a summary of the db"""
-    df = api.get_score_df()
+    df = api.get_scores_df()
     if df.empty:
         st.write("You have no scores")
     else:
@@ -22,7 +22,7 @@ def write_summary_db():
 
 def show_db(select=True):
     """Show the db"""
-    df = api.get_score_df()
+    df = api.get_scores_df()
     st.write("Score List:")
     gb = GridOptionsBuilder.from_dataframe(df)
 
@@ -77,7 +77,7 @@ def run_agent():
         response = api.run_agent(question)
         st.write(response.response)
         if response and response.score_id:
-            df = api.get_score_df()
+            df = api.get_scores_df()
             st.session_state.selected_row = df.loc[response.score_id - 1]
             if st.button("Open PDF"):
                 st.switch_page("reader.py")

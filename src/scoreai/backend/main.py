@@ -1,6 +1,8 @@
 """Backend main entry point."""
 
 import json
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
 
 from fastapi import Depends, FastAPI
 from sqlmodel import Session, select
@@ -9,13 +11,15 @@ from scoreai.backend.agent import run_agent
 from scoreai.backend.db import get_session, init_db
 from scoreai.shared_models.scores import Score, Scores
 
-app = FastAPI()
 
-
-@app.on_event("startup")
-def on_startup():
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
     """Initialize database on startup."""
     init_db()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.post("/scores")

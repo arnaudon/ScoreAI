@@ -10,7 +10,6 @@ class Response(BaseModel):
     """Response model."""
 
     response: str
-    follow_up_required: bool
     score_id: Optional[int]
 
 

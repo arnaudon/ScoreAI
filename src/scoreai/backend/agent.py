@@ -23,12 +23,12 @@ def get_agent():
         output_type=Response,
         deps_type=Scores,
         system_prompt="""Your task it to find a good score to play.
-            Write score id entry into score_id.
-            If multiple scores are possible, return None for the score_id.
-            If one score is available, write score_id.
-            Do not mention score_id in your response.
-            If multiple choices are possible, list them without id.
-            """,
+           Write score id entry into score_id.
+           If multiple scores are possible, return None for the score_id.
+           If one score is available, write score_id.
+           Do not mention score_id in your response.
+           If multiple choices are possible, list them without id.
+           """,
     )
 
 
@@ -41,14 +41,14 @@ async def get_score_info(ctx: RunContext[Scores]) -> str:
     return f"The scores infos are {ctx.deps.model_dump_json()}."
 
 
-class TitleFilter(BaseModel):
-    """Title filter for random score tool."""
+class Filter(BaseModel):
+    """Filter for random score tool."""
 
     composer: str
 
 
 @agent.tool
-async def get_random_score_by_composer(ctx: RunContext[Scores], filter_params: TitleFilter) -> str:
+async def get_random_score_by_composer(ctx: RunContext[Scores], filter_params: Filter) -> str:
     """Get a random score by composer."""
     scores = []
     for score in ctx.deps.scores:

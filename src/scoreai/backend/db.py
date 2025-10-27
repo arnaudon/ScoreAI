@@ -14,8 +14,5 @@ def init_db():
 
 def get_session():
     """Get database session."""
-    session = Session(engine)
-    try:
+    with Session(engine) as session:
         yield session
-    finally:
-        session.close()
