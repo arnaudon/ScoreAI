@@ -21,6 +21,7 @@ models.ALLOW_MODEL_REQUESTS = False
 
 @pytest.fixture(name="session")
 def session_fixture():
+    """Test session for default db."""
     engine = create_engine(
         "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
     )
@@ -41,8 +42,10 @@ def test_scores():
 
 @pytest.fixture(name="client")
 def client_fixture(session: Session, test_scores: Scores):
+    """client"""
 
     def get_session_override():
+        """"""
         return session
 
     app.dependency_overrides[db.get_session] = get_session_override
@@ -59,4 +62,5 @@ def client_fixture(session: Session, test_scores: Scores):
 
 @pytest.fixture(name="agent")
 def agent():
+    """agent"""
     return get_agent(model=TestModel())
