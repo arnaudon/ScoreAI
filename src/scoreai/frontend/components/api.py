@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 import streamlit as st
 
-from scoreai.frontend.config import API_URL
+from scoreai.config import API_URL
 from scoreai.shared_models.responses import FullResponse, Response
 from scoreai.shared_models.scores import Scores
 

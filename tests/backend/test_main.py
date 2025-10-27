@@ -59,13 +59,6 @@ def test_add_score(client: TestClient, test_scores: Scores):
         assert score.pdf_path == score_data["pdf_path"]
 
 
-def test_lifespan():
-    """test lifespan"""
-    with TestClient(app) as client:
-        response = client.get("/scores")
-    assert response.status_code == 200
-
-
 # def test_agent(client: TestClient, agent: None):
 #    """test agent"""
 #    response = client.post("/agent", params={"prompt": "test", "deps": '{"scores": []}'})

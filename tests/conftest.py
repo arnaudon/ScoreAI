@@ -1,5 +1,7 @@
 """conftest"""
 
+import os
+
 import pytest
 from fastapi.testclient import TestClient
 from pydantic_ai import models
@@ -12,6 +14,7 @@ from scoreai.backend.agent import get_agent
 from scoreai.backend.main import app
 from scoreai.shared_models.scores import Score, Scores
 
+os.environ["DATABASE_PATH"] = "test.db"
 pytestmark = pytest.mark.anyio
 models.ALLOW_MODEL_REQUESTS = False
 
