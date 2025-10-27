@@ -1,0 +1,59 @@
+# French translations for PROJECT.
+# Copyright (C) 2025 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-10-26 18:37+0100\n"
+"PO-Revision-Date: 2025-10-26 17:46+0100\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: src/frontend/app.py:13
+msgid "Welcome"
+msgstr "Bonjour"
+
+#: src/frontend/app.py:14
+msgid "Choose a score"
+msgstr "Choisis une partition"
+
+#: src/frontend/app.py:15
+msgid "Manage your account"
+msgstr "Managez votre compte"
+
+#: src/frontend/app.py:17
+msgid "Score Database"
+msgstr "Base de donnee de partitions"
+
+#: src/frontend/app.py:18
+msgid "View database"
+msgstr "Visualiser la base de donnee"
+
+#: src/frontend/app.py:19
+#, fuzzy
+msgid "Add score"
+msgstr "Ajouter une partition"
+
+#: src/frontend/app.py:21
+msgid "Score Reader"
+msgstr "Lire une partition"
+
+#: src/frontend/app.py:21
+msgid "View score"
+msgstr "Regarder une partition"
+
+#: src/frontend/welcome.py:7
+msgid "Welcome to ScoreAI, ask me about which score you want to play today"
+msgstr ""
+"Bonjour sur ScoreAI, demandez-moi quelle partition vous voulez jouer "
+"aujourd'hui"
+
