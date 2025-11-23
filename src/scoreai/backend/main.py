@@ -1,7 +1,9 @@
 """Backend main entry point."""
 
 import json
+import os
 from contextlib import asynccontextmanager
+from logging import getLogger
 from typing import AsyncGenerator
 
 from fastapi import Depends, FastAPI
@@ -10,6 +12,8 @@ from sqlmodel import Session, select
 from scoreai.backend.agent import run_agent
 from scoreai.backend.db import get_session, init_db
 from scoreai.shared_models.scores import Score, Scores
+
+logger = getLogger(__name__)
 
 
 @asynccontextmanager
@@ -26,6 +30,27 @@ app = FastAPI(lifespan=lifespan)
 def add_score(score: Score, session: Session = Depends(get_session)):
     """Add a score to the db."""
     session.add(score)
+    session.commit()
+    session.refresh(score)
+    return score
+
+
+@app.delete("/scores/{id}")
+def delete_score(id: int, session: Session = Depends(get_session)):
+    """Delete a score from the db."""
+    score = session.get(Score, id)
+    if score is not None:
+        os.remove(score.pdf_path)
+        session.delete(score)
+    session.commit()
+
+
+@app.post("/scores/{id}/play")
+def add_play(id: int, session: Session = Depends(get_session)):
+    """Add a play to the db."""
+    score = session.get(Score, id)
+    if score is not None:
+        score.number_of_plays += 1
     session.commit()
     session.refresh(score)
     return score

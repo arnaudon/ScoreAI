@@ -18,7 +18,6 @@ pages = {
     ],
     _("Score Database"): [
         st.Page("database.py", title=_("View database")),
-        st.Page("add_score.py", title=_("Add score")),
     ],
     _("Score Reader"): [st.Page("reader.py", title=_("View score"))],
 }

@@ -20,26 +20,6 @@ def write_summary_db():
         )
 
 
-def show_db(select=True):
-    """Show the db"""
-    df = api.get_scores_df()
-    st.write("Score List:")
-    gb = GridOptionsBuilder.from_dataframe(df)
-
-    if select:
-        gb.configure_selection("single")  # allow one row selection
-        grid_options = gb.build()
-        grid_response = AgGrid(df, gridOptions=grid_options, height=200, allow_unsafe_jscode=True)
-        selected = grid_response["selected_rows"]
-
-        if selected is not None:
-            row = selected.iloc[0]
-            st.session_state.selected_row = row
-            st.write(f"Selected: {Score(**row.to_dict()).model_dump()}")
-            if st.button("Open PDF"):
-                st.switch_page("pages/1_Reader.py")
-
-
 def add_score():
     """Add a score"""
     st.write("Add new score:")
@@ -62,10 +42,47 @@ def add_score():
             "title": title,
             "composer": composer,
             "pdf_path": save_path,
+            "number_of_plays": 0,
         }
         res = api.add_score(score_data)
         st.success(res)
         st.rerun()
+
+
+def show_db(select=True):
+    """Show the db"""
+    df = api.get_scores_df()
+    st.write("Score List:")
+    gb = GridOptionsBuilder.from_dataframe(df)
+
+    if select:
+        gb.configure_selection("single")  # allow one row selection
+        grid_options = gb.build()
+        grid_response = AgGrid(df, gridOptions=grid_options, height=200, allow_unsafe_jscode=True)
+        selected = grid_response["selected_rows"]
+
+        if selected is not None:
+            row = selected.iloc[0]
+            st.session_state.selected_row = row
+            st.write(f"Selected: {Score(**row.to_dict()).model_dump()}")
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("Open PDF"):
+                    st.switch_page("reader.py")
+            with col2:
+                with st.popover("Delete", use_container_width=True):
+                    st.warning("Are you sure?")
+                    col_cancel, col_confirm = st.columns(2)
+
+                    with col_confirm:
+                        if st.button("Delete"):
+                            api.delete_score(row["id"])
+                            st.rerun()
+                    with col_cancel:
+                        if st.button("Cancel", type="secondary", use_container_width=True):
+                            st.toast("Deletion cancelled.", icon="🚫")
+
+    add_score()
 
 
 def run_agent():

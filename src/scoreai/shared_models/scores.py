@@ -13,6 +13,7 @@ class Score(SQLModel, table=True):
     pdf_path: str = Field()
     title: str = Field()
     composer: str = Field()
+    number_of_plays: int = 0
     year: Optional[int] = None
     period: Optional[str] = None
     genre: Optional[str] = None
