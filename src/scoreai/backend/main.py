@@ -35,20 +35,20 @@ def add_score(score: Score, session: Session = Depends(get_session)):
     return score
 
 
-@app.delete("/scores/{id}")
-def delete_score(id: int, session: Session = Depends(get_session)):
+@app.delete("/scores/{score_id}")
+def delete_score(score_id: int, session: Session = Depends(get_session)):
     """Delete a score from the db."""
-    score = session.get(Score, id)
+    score = session.get(Score, score_id)
     if score is not None:
         os.remove(score.pdf_path)
         session.delete(score)
     session.commit()
 
 
-@app.post("/scores/{id}/play")
-def add_play(id: int, session: Session = Depends(get_session)):
+@app.post("/scores/{score_id}/play")
+def add_play(score_id: int, session: Session = Depends(get_session)):
     """Add a play to the db."""
-    score = session.get(Score, id)
+    score = session.get(Score, score_id)
     if score is not None:
         score.number_of_plays += 1
     session.commit()

@@ -14,6 +14,10 @@ TIMEOUT = 60
 _scores = None
 
 
+class AgentError(Exception):
+    """Agent error"""
+
+
 def reset_score_cache():
     """Reset the score cache"""
     global _scores
@@ -27,16 +31,16 @@ def add_score(score_data, client: Any = requests) -> dict:
     return res
 
 
-def delete_score(id: int, client: Any = requests) -> dict:
+def delete_score(score_id: int, client: Any = requests) -> dict:
     """Delete a score from the db via API"""
-    res = client.delete(f"{API_URL}/scores/{id}", timeout=TIMEOUT).json()
+    res = client.delete(f"{API_URL}/scores/{score_id}", timeout=TIMEOUT).json()
     reset_score_cache()
     return res
 
 
-def add_play(id: int, client: Any = requests) -> dict:
+def add_play(score_id: int, client: Any = requests) -> dict:
     """Add a play to the db via API"""
-    res = client.post(f"{API_URL}/scores/{id}/play", timeout=TIMEOUT).json()
+    res = client.post(f"{API_URL}/scores/{score_id}/play", timeout=TIMEOUT).json()
     reset_score_cache()
     return res
 
@@ -69,9 +73,9 @@ def run_agent(question: str, client: Any = requests) -> Response:
     )
     try:
         result = result.json()
-    except Exception:
+    except Exception as exc:
         print("Non-JSON response:", result.text)
-        raise Exception("Something went wrong, try again later")
+        raise AgentError("Something went wrong, try again later") from exc
 
     result = FullResponse(**result)
     st.session_state.message_history.extend(result.message_history)
