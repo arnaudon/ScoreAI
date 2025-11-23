@@ -10,7 +10,6 @@ from scoreai.config import API_URL
 from scoreai.shared_models.responses import FullResponse, Response
 from scoreai.shared_models.scores import Scores
 
-TIMEOUT = 60
 _scores = None
 
 
@@ -26,21 +25,21 @@ def reset_score_cache():
 
 def add_score(score_data, client: Any = requests) -> dict:
     """Add a score to the db via API"""
-    res = client.post(f"{API_URL}/scores", json=score_data, timeout=TIMEOUT).json()
+    res = client.post(f"{API_URL}/scores", json=score_data).json()
     reset_score_cache()
     return res
 
 
 def delete_score(score_id: int, client: Any = requests) -> dict:
     """Delete a score from the db via API"""
-    res = client.delete(f"{API_URL}/scores/{score_id}", timeout=TIMEOUT).json()
+    res = client.delete(f"{API_URL}/scores/{score_id}").json()
     reset_score_cache()
     return res
 
 
 def add_play(score_id: int, client: Any = requests) -> dict:
     """Add a play to the db via API"""
-    res = client.post(f"{API_URL}/scores/{score_id}/play", timeout=TIMEOUT).json()
+    res = client.post(f"{API_URL}/scores/{score_id}/play").json()
     reset_score_cache()
     return res
 
@@ -49,7 +48,7 @@ def get_scores(client: Any = requests) -> Scores:
     """Get all scores from the db via API"""
     global _scores
     if _scores is None:
-        _scores = Scores(scores=client.get(f"{API_URL}/scores", timeout=TIMEOUT).json())
+        _scores = Scores(scores=client.get(f"{API_URL}/scores").json())
     return _scores
 
 
@@ -69,7 +68,6 @@ def run_agent(question: str, client: Any = requests) -> Response:
             "deps": scores.model_dump_json(),
             "message_history": st.session_state.message_history,
         },
-        timeout=TIMEOUT,
     )
     try:
         result = result.json()
