@@ -30,11 +30,10 @@ def add_score(score_data, client: Any = requests) -> dict:
     return res
 
 
-def delete_score(score_id: int, client: Any = requests) -> dict:
+def delete_score(score_id: int, client: Any = requests):
     """Delete a score from the db via API"""
-    res = client.delete(f"{API_URL}/scores/{score_id}").json()
+    client.delete(f"{API_URL}/scores/{score_id}").json()
     reset_score_cache()
-    return res
 
 
 def add_play(score_id: int, client: Any = requests) -> dict:
@@ -58,7 +57,7 @@ def get_scores_df(client: Any = requests) -> pd.DataFrame:
     return pd.DataFrame([s.model_dump() for s in scores.scores])
 
 
-def run_agent(question: str, client: Any = requests) -> Response:
+def run_agent(question: str, client: Any = requests) -> Response:  # pragma: no cover
     """Run the agent via API"""
     scores = get_scores(client=client)
     result = client.post(

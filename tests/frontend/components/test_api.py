@@ -1,8 +1,6 @@
-import streamlit as st
 from fastapi.testclient import TestClient
 
 from scoreai.frontend.components import api
-from scoreai.shared_models.responses import Response
 
 
 def test_get_scores(client: TestClient):
@@ -35,6 +33,29 @@ def test_reset_score_cache(client: TestClient):
     api.get_scores(client=client)
     api.reset_score_cache()
     assert api._scores == None
+
+
+def test_delete_score(client: TestClient):
+    """Test the delete_score function."""
+    score = {
+        "composer": "another_composer",
+        "title": "another_title",
+        "pdf_path": "another_score.pdf",
+    }
+    api.add_score(score_data=score, client=client)
+
+    scores = api.get_scores(client=client)
+    score_id = len(scores)
+    api.delete_score(score_id=score_id, client=client)
+    scores = api.get_scores(client=client)
+    assert len(scores) == score_id - 1
+
+
+def test_add_play(client: TestClient):
+    """Test the add_play function."""
+    score_id = 1
+    response = api.add_play(score_id=score_id, client=client)
+    assert response["number_of_plays"] == 1
 
 
 # def test_run_agent(client: TestClient, agent: None):

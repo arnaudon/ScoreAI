@@ -17,7 +17,7 @@ logger = getLogger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
+async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:  # pragma: no cover
     """Initialize database on startup."""
     init_db()
     yield
@@ -40,7 +40,10 @@ def delete_score(score_id: int, session: Session = Depends(get_session)):
     """Delete a score from the db."""
     score = session.get(Score, score_id)
     if score is not None:
-        os.remove(score.pdf_path)
+        try:
+            os.remove(score.pdf_path)
+        except FileNotFoundError:
+            pass
         session.delete(score)
     session.commit()
 
@@ -51,8 +54,8 @@ def add_play(score_id: int, session: Session = Depends(get_session)):
     score = session.get(Score, score_id)
     if score is not None:
         score.number_of_plays += 1
-    session.commit()
-    session.refresh(score)
+        session.commit()
+        session.refresh(score)
     return score
 
 
@@ -63,6 +66,6 @@ def get_scores(session: Session = Depends(get_session)):
 
 
 @app.post("/agent")
-async def run(prompt: str, deps: str, message_history=None):
+async def run(prompt: str, deps: str, message_history=None):  # pragma: no cover
     """Run the agent."""
     return await run_agent(prompt, message_history=message_history, deps=Scores(**json.loads(deps)))

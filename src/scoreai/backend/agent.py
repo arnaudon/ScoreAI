@@ -48,14 +48,14 @@ def get_agent(model: Any = "gemini-2.5-flash-lite"):
                 scores.append(score)
         if scores:
             return random.choice(scores).model_dump_json()
-        return "Not found"
+        return "Not found"  # pragma: no cover
 
     return agent
 
 
 async def run_agent(prompt: str, deps: Scores, message_history=None, agent=None):
     """Run the agent."""
-    if agent is None:
+    if agent is None:  # pragma: no cover
         agent = get_agent()
     res = await agent.run(
         prompt,

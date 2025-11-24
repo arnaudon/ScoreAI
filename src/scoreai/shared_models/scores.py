@@ -23,3 +23,6 @@ class Scores(BaseModel):
     """Scores table"""
 
     scores: List[Score]
+
+    def __len__(self):
+        return len(self.scores)
