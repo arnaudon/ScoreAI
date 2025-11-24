@@ -2,7 +2,7 @@
 # for some of the options that are available
 #
 [MESSAGES CONTROL]
-disable=W0511,W0603,W0621
+disable=W0511,W0603,W0621,W3101
 
 [FORMAT]
 # Maximum number of characters on a single line.

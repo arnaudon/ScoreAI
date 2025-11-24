@@ -5,12 +5,10 @@ import os
 import pytest
 from fastapi.testclient import TestClient
 from pydantic_ai import models
-from pydantic_ai.models.test import TestModel
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 
 from scoreai.backend import db
-from scoreai.backend.agent import get_agent
 from scoreai.backend.main import app
 from scoreai.shared_models.scores import Score, Scores
 
@@ -33,7 +31,7 @@ def session_fixture():
 @pytest.fixture()
 def test_scores():
     """Test scores for default db."""
-    score_1 = Score(composer="composer", title="title_1", pdf_path="score_1.pdf")
+    score_1 = Score(composer="composer", title="title_1", pdf_path="tests/data/real_score.pdf")
     score_2 = Score(composer="composer", title="title_2", pdf_path="score_2.pdf")
     score_3 = Score(composer="a", title="title_3", pdf_path="score_3.pdf")
     score_4 = Score(composer="a", title="title_4", pdf_path="score_4.pdf")
@@ -60,7 +58,7 @@ def client_fixture(session: Session, test_scores: Scores):
     app.dependency_overrides.clear()
 
 
-@pytest.fixture(name="agent")
-def agent():
-    """agent"""
-    return get_agent(model=TestModel())
+@pytest.fixture(autouse=True)
+def request_mock(mocker, client):
+    """Mock client"""
+    mocker.patch("scoreai.frontend.components.api.requests", new=client)

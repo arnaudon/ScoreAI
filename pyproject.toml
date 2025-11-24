@@ -15,10 +15,11 @@ dependencies = [
     "pydantic-ai-slim[google]>=1.2.1",
     "sqlalchemy>=2.0.44",
     "sqlmodel>=0.0.27",
-    "streamlit>=1.50.0",
+    "streamlit[pdf]>=1.50.0",
     "streamlit-aggrid>=1.1.9",
-    "streamlit-pdf-viewer>=0.0.26",
     "uvicorn>=0.37.0",
+    "pdf2image>=1.17.0",
+    "streamlit-image-coordinates>=0.4.0",
 ]
 [dependency-groups]
 dev = [
@@ -44,3 +45,6 @@ line-length = 100
 [tool.mypy]
 ignore_missing_imports = true
 
+[tool.basedpyright]
+typeCheckingMode = "standard"
+reportUnusedFunction = false

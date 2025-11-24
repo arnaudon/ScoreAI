@@ -1,7 +1,7 @@
 """LLM agent module."""
 
+import os
 import random
-from typing import Any
 
 from dotenv import load_dotenv
 from pydantic import BaseModel
@@ -12,6 +12,8 @@ from scoreai.shared_models.scores import Scores
 
 load_dotenv()
 
+MODEL = os.getenv("MODEL", "google-gla:gemini-2.5-flash-lite")
+
 
 class Filter(BaseModel):
     """Filter for random score tool."""
@@ -19,19 +21,19 @@ class Filter(BaseModel):
     composer: str
 
 
-def get_agent(model: Any = "gemini-2.5-flash-lite"):
-    """Get agent."""
+def get_agent():
+    """Get the agent."""
     agent = Agent(
-        model,
+        MODEL,
         output_type=Response,
         deps_type=Scores,
         system_prompt="""Your task it to find a good score to play.
-           Write score id entry into score_id.
-           If multiple scores are possible, return None for the score_id.
-           If one score is available, write score_id.
-           Do not mention score_id in your response.
-           If multiple choices are possible, list them without id.
-           """,
+        Write score id entry into score_id.
+        If multiple scores are possible, return None for the score_id.
+        If one score is available, write score_id.
+        Do not mention score_id in your response.
+        If multiple choices are possible, list them without id.
+        """,
     )
 
     @agent.tool
@@ -48,15 +50,14 @@ def get_agent(model: Any = "gemini-2.5-flash-lite"):
                 scores.append(score)
         if scores:
             return random.choice(scores).model_dump_json()
-        return "Not found"
+        return "Not found"  # pragma: no cover
 
     return agent
 
 
-async def run_agent(prompt: str, deps: Scores, message_history=None, agent=None):
+async def run_agent(prompt: str, deps: Scores, message_history=None):
     """Run the agent."""
-    if agent is None:
-        agent = get_agent()
+    agent = get_agent()
     res = await agent.run(
         prompt,
         message_history=message_history,

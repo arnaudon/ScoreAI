@@ -2,7 +2,7 @@
 
 import streamlit as st
 
-from scoreai.frontend.components.ui_widgets import write_summary_db
+from scoreai.frontend.components.db_viewer import write_summary_db
 from scoreai.frontend.locales import _, init_i18n_gettext, language_selector
 
 init_i18n_gettext()
@@ -18,7 +18,6 @@ pages = {
     ],
     _("Score Database"): [
         st.Page("database.py", title=_("View database")),
-        st.Page("add_score.py", title=_("Add score")),
     ],
     _("Score Reader"): [st.Page("reader.py", title=_("View score"))],
 }
