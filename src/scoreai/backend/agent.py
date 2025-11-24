@@ -22,6 +22,7 @@ class Filter(BaseModel):
 
 
 def get_agent():
+    """Get the agent."""
     agent = Agent(
         MODEL,
         output_type=Response,
