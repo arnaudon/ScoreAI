@@ -1,9 +1,9 @@
 import pandas as pd
-from pytest import fixture
+import pytest
 from streamlit.testing.v1 import AppTest
 
 
-@fixture
+@pytest.fixture
 def at(test_scores):
     at = AppTest.from_file("src/scoreai/frontend/reader.py")
     at.session_state["selected_row"] = pd.Series(test_scores.scores[0].model_dump())

@@ -61,6 +61,12 @@ def client_fixture(session: Session, test_scores: Scores):
     app.dependency_overrides.clear()
 
 
+@pytest.fixture(autouse=True)
+def request_mock(mocker, client):
+    """Mock client"""
+    mocker.patch("scoreai.frontend.components.api.requests", new=client)
+
+
 @pytest.fixture(name="agent")
 def agent():
     """agent"""

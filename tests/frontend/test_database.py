@@ -1,18 +1,23 @@
 import os
 
 import pandas as pd
+import pytest
 from streamlit.testing.v1 import AppTest
 
 from scoreai.frontend.components import db_viewer
 
 
-def test_database():
-    at = AppTest.from_file("src/scoreai/frontend/database.py")
+@pytest.fixture
+def at():
+    """Create a Streamlit app test object."""
+    return AppTest.from_file("src/scoreai/frontend/database.py")
+
+
+def test_database(at):
     at.run()
 
 
-def test_database_selected_score(test_scores, mocker):
-    at = AppTest.from_file("src/scoreai/frontend/database.py")
+def test_database_selected_score(test_scores, mocker, at):
     mock_response = mocker.patch("scoreai.frontend.components.db_viewer.AgGrid")
     mock_response.return_value = {
         "selected_rows": pd.DataFrame([test_scores.scores[0].model_dump()])
@@ -21,8 +26,7 @@ def test_database_selected_score(test_scores, mocker):
     mock_response.assert_called_once()
 
 
-def test_database_selected_score_delete(test_scores, mocker):
-    at = AppTest.from_file("src/scoreai/frontend/database.py")
+def test_database_selected_score_delete(test_scores, mocker, at):
     mock_response = mocker.patch("scoreai.frontend.components.db_viewer.AgGrid")
     mock_response.return_value = {
         "selected_rows": pd.DataFrame([test_scores.scores[0].model_dump()])
@@ -31,8 +35,7 @@ def test_database_selected_score_delete(test_scores, mocker):
     at.button("delete").click().run()
 
 
-def test_database_selected_score_cancel(test_scores, mocker):
-    at = AppTest.from_file("src/scoreai/frontend/database.py")
+def test_database_selected_score_cancel(test_scores, mocker, at):
     mock_response = mocker.patch("scoreai.frontend.components.db_viewer.AgGrid")
     mock_response.return_value = {
         "selected_rows": pd.DataFrame([test_scores.scores[0].model_dump()])
@@ -41,9 +44,8 @@ def test_database_selected_score_cancel(test_scores, mocker):
     at.button("cancel").click().run()
 
 
-def test_database_add_score(mocker):
+def test_database_add_score(mocker, at):
     db_viewer.DATA_PATH = "tests/data"
-    at = AppTest.from_file("src/scoreai/frontend/database.py")
     at.run()
 
     class mock_upload:
