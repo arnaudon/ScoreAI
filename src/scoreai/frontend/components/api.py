@@ -1,7 +1,5 @@
 """API module."""
 
-from typing import Any
-
 import pandas as pd
 import requests
 import streamlit as st
@@ -74,6 +72,6 @@ def run_agent(question: str) -> Response:  # pragma: no cover
         print("Non-JSON response:", result.text)
         raise AgentError("Something went wrong, try again later") from exc
 
-    result = FullResponse(**result)
-    st.session_state.message_history.extend(result.message_history)
-    return result.response
+    full_result = FullResponse(**result)
+    st.session_state.message_history.extend(full_result.message_history)
+    return full_result.response

@@ -29,9 +29,7 @@ class PDFViewer:
     @page_number.setter
     def page_number(self, value):
         """Set current page number and rerun"""
-        if value > self.total:
-            value = self.total
-        self._current_page = value
+        self._current_page = min(value, self.total)
         st.rerun()
 
     def render(self):
