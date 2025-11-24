@@ -1,17 +1,14 @@
 """conftest"""
 
 import os
-from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
 from pydantic_ai import models
-from pydantic_ai.models.test import TestModel
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 
 from scoreai.backend import db
-from scoreai.backend.agent import get_agent
 from scoreai.backend.main import app
 from scoreai.shared_models.scores import Score, Scores
 
@@ -65,9 +62,3 @@ def client_fixture(session: Session, test_scores: Scores):
 def request_mock(mocker, client):
     """Mock client"""
     mocker.patch("scoreai.frontend.components.api.requests", new=client)
-
-
-@pytest.fixture(name="agent")
-def agent():
-    """agent"""
-    return get_agent(model=TestModel())

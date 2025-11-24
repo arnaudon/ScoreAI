@@ -7,7 +7,7 @@ from scoreai.frontend.components import api
 
 def run_agent():
     """Run the agent"""
-    question = st.text_input("Question")
+    question = st.text_input("Question", key="question")
     if "message_history" not in st.session_state:
         st.session_state.message_history = []
     if question:
@@ -16,7 +16,7 @@ def run_agent():
         if response and response.score_id:
             df = api.get_scores_df()
             st.session_state.selected_row = df.loc[response.score_id - 1]
-            if st.button("Open PDF"):
+            if st.button("Open PDF"):  # pragma: no cover
                 st.switch_page("reader.py")
 
     st.caption(

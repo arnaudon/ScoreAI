@@ -27,6 +27,8 @@ def init_i18n_gettext():
 
 def _(key: str) -> str:
     """Convenience function to get the translated string."""
+    if "gettext" not in st.session_state:
+        initialize_translator(DEFAULT_LANG)
     return st.session_state.gettext(key)
 
 
