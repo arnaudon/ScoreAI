@@ -1,6 +1,7 @@
 """conftest"""
 
 import os
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -33,7 +34,7 @@ def session_fixture():
 @pytest.fixture()
 def test_scores():
     """Test scores for default db."""
-    score_1 = Score(composer="composer", title="title_1", pdf_path="score_1.pdf")
+    score_1 = Score(composer="composer", title="title_1", pdf_path="tests/data/real_score.pdf")
     score_2 = Score(composer="composer", title="title_2", pdf_path="score_2.pdf")
     score_3 = Score(composer="a", title="title_3", pdf_path="score_3.pdf")
     score_4 = Score(composer="a", title="title_4", pdf_path="score_4.pdf")

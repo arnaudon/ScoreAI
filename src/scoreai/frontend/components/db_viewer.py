@@ -8,6 +8,8 @@ from st_aggrid import AgGrid, GridOptionsBuilder
 from scoreai.frontend.components import api
 from scoreai.shared_models.scores import Score
 
+DATA_PATH = "data"
+
 
 def write_summary_db():
     """Write a summary of the db"""
@@ -23,11 +25,11 @@ def write_summary_db():
 def add_score():
     """Add a score"""
     st.write("Add new score:")
-    title = st.text_input("Title")
-    composer = st.text_input("Composer")
+    title = st.text_input("Title", key="title")
+    composer = st.text_input("Composer", key="composer")
     uploaded_file = st.file_uploader("Upload a file", type=["pdf"])
-    if st.button("Add score"):
-        save_path = f"data/{title}_{composer}.pdf"
+    if st.button("Add score", key="add"):
+        save_path = f"{DATA_PATH}/{title}_{composer}.pdf"
         if uploaded_file is None:
             st.write("Please upload a file")
             st.stop()
@@ -60,14 +62,13 @@ def show_db(select=True):
         grid_options = gb.build()
         grid_response = AgGrid(df, gridOptions=grid_options, height=200, allow_unsafe_jscode=True)
         selected = grid_response["selected_rows"]
-
         if selected is not None:
             row = selected.iloc[0]
             st.session_state.selected_row = row
             st.write(f"Selected: {Score(**row.to_dict()).model_dump()}")
             col1, col2 = st.columns(2)
             with col1:
-                if st.button("Open PDF"):
+                if st.button("Open PDF", key="open"):  # pragma: no cover
                     st.switch_page("reader.py")
             with col2:
                 with st.popover("Delete", use_container_width=True):
@@ -75,11 +76,13 @@ def show_db(select=True):
                     col_cancel, col_confirm = st.columns(2)
 
                     with col_confirm:
-                        if st.button("Delete"):
+                        if st.button("Delete", key="delete"):
                             api.delete_score(row["id"])
                             st.rerun()
                     with col_cancel:
-                        if st.button("Cancel", type="secondary", use_container_width=True):
+                        if st.button(
+                            "Cancel", key="cancel", type="secondary", use_container_width=True
+                        ):
                             st.toast("Deletion cancelled.", icon="🚫")
 
     add_score()

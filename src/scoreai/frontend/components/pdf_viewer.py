@@ -14,36 +14,30 @@ class PDFViewer:
         self.dpi = dpi
         self.pages = convert_from_path(self.pdf_path, dpi=dpi)
         self.total = len(self.pages)
-        self._init_state()
-
-    def _init_state(self):
-        """Record the page number per pdf for this session."""
-        if "pdfviewer_page" not in st.session_state:
-            st.session_state.pdfviewer_page = {}
-        if self.pdf_path not in st.session_state.pdfviewer_page:
-            st.session_state.pdfviewer_page[self.pdf_path] = 1
+        self._current_page = 1
 
     @property
     def page(self):
         """Return current page"""
-        return self.pages[st.session_state.pdfviewer_page[self.pdf_path] - 1]
+        return self.pages[self._current_page - 1]
 
     @property
     def page_number(self):
         """Return current page number"""
-        return st.session_state.pdfviewer_page[self.pdf_path]
+        return self._current_page
 
     @page_number.setter
     def page_number(self, value):
         """Set current page number and rerun"""
-        if value <= self.total:
-            st.session_state.pdfviewer_page[self.pdf_path] = value
-            st.rerun()
+        if value > self.total:
+            value = self.total
+        self._current_page = value
+        st.rerun()
 
     def render(self):
         """Render the pdf."""
         value = streamlit_image_coordinates(self.page, use_column_width=True)
-        if value is not None:
+        if value is not None:  # pragma: no cover
             if value["x"] / value["width"] > 0.5:
                 self.page_number += 1
             if value["x"] / value["width"] <= 0.5:
@@ -61,4 +55,4 @@ class PDFViewer:
         )
         if new_page_number != self.page_number:
             self.page_number = new_page_number
-            st.rerun()
+            st.rerun()  # pragma: no cover

@@ -12,7 +12,7 @@ def initialize_translator(language):
     """Initializes the translator."""
     try:
         translator = gettext.translation("messages", localedir="locales", languages=[language])
-    except FileNotFoundError:
+    except FileNotFoundError:  # pragma: no cover
         translator = gettext.NullTranslations()
 
     st.session_state.gettext = translator.gettext
@@ -41,6 +41,7 @@ def language_selector():
         options=list(LANGUAGES.keys()),
         format_func=lambda code: LANGUAGES[code],
         index=current_index,
+        key="lang",
     )
 
     if new_lang_code != current_lang_code:
