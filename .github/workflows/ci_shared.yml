@@ -32,7 +32,6 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get install poppler-utils
-        cd ${{ matrix.module_name }}
         uv sync --frozen
       working-directory: shared
     - name: Run tests
