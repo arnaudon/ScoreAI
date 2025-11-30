@@ -13,7 +13,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.11", "3.12"]
+        module_name: [shared, backend, frontend]
 
     steps:
     - uses: actions/checkout@v4
@@ -25,7 +26,8 @@ jobs:
       uses: astral-sh/setup-uv@v2
       with:
         version: "latest"
-    
+    - name: change dir
+      run: cd ${{ matrix.module_name }}
     - name: Install dependencies
       run: |
         sudo apt-get install poppler-utils
@@ -38,4 +40,3 @@ jobs:
       run: uv run --frozen pylint src/scoreai tests
     - name: Run mypy
       run: uv run --frozen mypy src/scoreai
-
