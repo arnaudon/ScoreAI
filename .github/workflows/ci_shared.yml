@@ -8,17 +8,10 @@ on:
     paths:
       - 'shared/**'
 
-defaults:
-  run:
-    working-directory: ./shared
-
 jobs:
   test:
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: ./shared
 
     strategy:
       fail-fast: false
@@ -41,11 +34,16 @@ jobs:
         sudo apt-get install poppler-utils
         cd ${{ matrix.module_name }}
         uv sync --frozen
+      working-directory: shared
     - name: Run tests
       run: uv run --frozen pytest tests
+      working-directory: shared
     - name: Run format
       run: uv run --frozen black --check src/scoreai tests
+      working-directory: shared
     - name: Run lint
       run: uv run --frozen pylint src/scoreai tests
+      working-directory: shared
     - name: Run mypy
       run: uv run --frozen mypy src/scoreai
+      working-directory: shared
