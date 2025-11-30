@@ -7,11 +7,11 @@ from logging import getLogger
 from typing import AsyncGenerator
 
 from fastapi import Depends, FastAPI
+from shared.scores import Score, Scores
 from sqlmodel import Session, select
 
-from scoreai.backend.agent import run_agent
-from scoreai.backend.db import get_session, init_db
-from scoreai.shared_models.scores import Score, Scores
+from app.agent import run_agent
+from app.db import get_session, init_db
 
 logger = getLogger(__name__)
 

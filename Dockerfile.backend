@@ -1,0 +1,42 @@
+# syntax=docker/dockerfile:1
+
+# Comments are provided throughout this file to help you get started.
+# If you need more help, visit the Dockerfile reference guide at
+# https://docs.docker.com/go/dockerfile-reference/
+
+# Want to help us make this template better? Share your feedback here: https://forms.gle/ybq9Krt8jtBL3iCk7
+
+FROM astral/uv:python3.12-bookworm-slim AS base
+
+# Prevents Python from writing pyc files.
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Keeps Python from buffering stdout and stderr to avoid situations where
+# the application crashes without emitting any logs due to buffering.
+ENV PYTHONUNBUFFERED=1
+
+# Enable bytecode compilation
+ENV UV_COMPILE_BYTECODE=1
+
+# Copy from the cache instead of linking since it's a mounted volume
+ENV UV_LINK_MODE=copy
+
+# Ensure installed tools can be executed out of the box
+ENV UV_TOOL_BIN_DIR=/usr/local/bin
+
+
+WORKDIR /app
+
+COPY shared /shared
+
+FROM base AS backend
+
+COPY backend/uv.lock backend/pyproject.toml .
+RUN uv sync --locked --no-install-project --no-dev
+
+COPY backend .
+RUN uv sync --locked --no-dev
+
+EXPOSE 8000
+
+CMD uv run --no-dev --locked uvicorn app.main:app --host 0.0.0.0 --port 8000

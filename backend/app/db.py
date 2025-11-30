@@ -1,8 +1,10 @@
 """Database module."""
 
+import os
+
 from sqlmodel import Session, SQLModel, create_engine
 
-from scoreai.config import DATABASE_URL
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///database/app.db")
 
 
 def init_db():

@@ -2,7 +2,7 @@
 
 import streamlit as st
 
-from scoreai.frontend.components import api
+from ui.components import api
 
 
 def run_agent():

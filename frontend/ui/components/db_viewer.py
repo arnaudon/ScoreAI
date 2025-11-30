@@ -3,10 +3,10 @@
 from pathlib import Path
 
 import streamlit as st
+from shared.scores import Score
 from st_aggrid import AgGrid, GridOptionsBuilder
 
-from scoreai.frontend.components import api
-from scoreai.shared_models.scores import Score
+from ui.components import api
 
 DATA_PATH = "data"
 

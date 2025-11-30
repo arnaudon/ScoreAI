@@ -6,9 +6,8 @@ import random
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from pydantic_ai import Agent, RunContext
-
-from scoreai.shared_models.responses import FullResponse, Response
-from scoreai.shared_models.scores import Scores
+from shared.responses import FullResponse, Response
+from shared.scores import Scores
 
 load_dotenv()
 

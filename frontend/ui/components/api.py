@@ -1,13 +1,14 @@
 """API module."""
 
+import os
+
 import pandas as pd
 import requests
 import streamlit as st
+from shared.responses import FullResponse, Response
+from shared.scores import Scores
 
-from scoreai.config import API_URL
-from scoreai.shared_models.responses import FullResponse, Response
-from scoreai.shared_models.scores import Scores
-
+API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
 _scores = None
 
 

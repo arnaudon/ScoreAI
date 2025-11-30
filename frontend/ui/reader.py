@@ -2,8 +2,8 @@
 
 import streamlit as st
 
-from scoreai.frontend.components import api
-from scoreai.frontend.components.pdf_viewer import PDFViewer
+from ui.components import api
+from ui.components.pdf_viewer import PDFViewer
 
 if hasattr(st.session_state, "selected_row"):
     st.write(f"Selected: {st.session_state.selected_row.to_dict()}")
