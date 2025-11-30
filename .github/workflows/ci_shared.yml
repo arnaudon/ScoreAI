@@ -1,20 +1,25 @@
-name: Python CI
+name: Test shared
 
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'shared/**'
+
+defaults:
+  run:
+    working-directory: ./shared
 
 jobs:
   test:
-
     runs-on: ubuntu-latest
+
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.11", "3.12"]
-        module_name: [shared, backend, frontend]
 
     steps:
     - uses: actions/checkout@v4
@@ -26,11 +31,11 @@ jobs:
       uses: astral-sh/setup-uv@v2
       with:
         version: "latest"
-    - name: change dir
-      run: cd ${{ matrix.module_name }}
+    
     - name: Install dependencies
       run: |
         sudo apt-get install poppler-utils
+        cd ${{ matrix.module_name }}
         uv sync --frozen
     - name: Run tests
       run: uv run --frozen pytest tests
