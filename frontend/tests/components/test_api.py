@@ -1,4 +1,4 @@
-from scoreai.frontend.components import api
+from ui.components import api
 
 
 def test_get_scores():

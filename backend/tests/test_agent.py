@@ -1,10 +1,10 @@
 """test backend agnent.py"""
 
 from pydantic_ai.models.test import TestModel
+from shared.responses import FullResponse
+from shared.scores import Scores
 
-from scoreai.backend import agent
-from scoreai.shared_models.responses import FullResponse
-from scoreai.shared_models.scores import Scores
+from app import agent
 
 
 async def test_agent(test_scores: Scores):

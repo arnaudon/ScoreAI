@@ -5,9 +5,8 @@ from pathlib import Path
 import pytest
 import sqlalchemy.exc
 from fastapi.testclient import TestClient
+from shared.scores import Score, Scores
 from sqlmodel import Session
-
-from scoreai.shared_models.scores import Score, Scores
 
 
 def test_get_score(client: TestClient, test_scores: Scores):

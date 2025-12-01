@@ -2,7 +2,7 @@
 
 from sqlmodel import Session
 
-from scoreai.backend import db
+from app import db
 
 db.DATABASE_URL = "sqlite:///.test.db"
 

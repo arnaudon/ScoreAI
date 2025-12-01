@@ -3,13 +3,13 @@
 import os
 
 import pytest
+from app import db
+from app.main import app
+from fastapi.testclient import TestClient
 from pydantic_ai import models
+from shared.scores import Score, Scores
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
-
-from scoreai.backend import db
-from scoreai.backend.main import app
-from scoreai.shared_models.scores import Score, Scores
 
 os.environ["DATABASE_PATH"] = "test.db"
 pytestmark = pytest.mark.anyio
@@ -37,7 +37,27 @@ def test_scores():
     return Scores(scores=[score_1, score_2, score_3, score_4])
 
 
+@pytest.fixture(name="client")
+def client_fixture(session: Session, test_scores: Scores):
+    """client"""
+
+    def get_session_override():
+        """"""
+        return session
+
+    app.dependency_overrides[db.get_session] = get_session_override
+    client = TestClient(app)
+
+    # add scores to empty db
+    for test_score in test_scores.scores:
+        client.post("/scores", json=test_score.model_dump())
+
+    yield client
+
+    app.dependency_overrides.clear()
+
+
 @pytest.fixture(autouse=True)
 def request_mock(mocker, client):
     """Mock client"""
-    mocker.patch("scoreai.frontend.components.api.requests", new=client)
+    mocker.patch("ui.components.api.requests", new=client)

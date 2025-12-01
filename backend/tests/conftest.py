@@ -5,12 +5,12 @@ import os
 import pytest
 from fastapi.testclient import TestClient
 from pydantic_ai import models
+from shared.scores import Score, Scores
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 
-from scoreai.backend import db
-from scoreai.backend.main import app
-from scoreai.shared_models.scores import Score, Scores
+from app import db
+from app.main import app
 
 os.environ["DATABASE_PATH"] = "test.db"
 pytestmark = pytest.mark.anyio
@@ -37,6 +37,7 @@ def test_scores():
     score_4 = Score(composer="a", title="title_4", pdf_path="score_4.pdf")
     return Scores(scores=[score_1, score_2, score_3, score_4])
 
+
 @pytest.fixture(name="client")
 def client_fixture(session: Session, test_scores: Scores):
     """client"""
@@ -55,5 +56,3 @@ def client_fixture(session: Session, test_scores: Scores):
     yield client
 
     app.dependency_overrides.clear()
-
-

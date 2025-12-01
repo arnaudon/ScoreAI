@@ -25,6 +25,7 @@ dev = [
     "pytest-mock>=3.15.1",
     "pytest-asyncio>=1.2.0",
     "anyio>=4.11.0",
+    "app",
 ]
 
 [build-system]
@@ -43,3 +44,4 @@ reportUnusedFunction = false
 
 [tool.uv.sources]
 shared = { path = "../shared", editable = true }
+app = { path = "../backend", editable = true }

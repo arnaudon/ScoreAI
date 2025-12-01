@@ -4,13 +4,13 @@ import pandas as pd
 import pytest
 from streamlit.testing.v1 import AppTest
 
-from scoreai.frontend.components import db_viewer
+from ui.components import db_viewer
 
 
 @pytest.fixture
 def at():
     """Create a Streamlit app test object."""
-    return AppTest.from_file("src/scoreai/frontend/database.py")
+    return AppTest.from_file("ui/database.py")
 
 
 def test_database(at):
@@ -18,7 +18,7 @@ def test_database(at):
 
 
 def test_database_selected_score(test_scores, mocker, at):
-    mock_response = mocker.patch("scoreai.frontend.components.db_viewer.AgGrid")
+    mock_response = mocker.patch("ui.components.db_viewer.AgGrid")
     mock_response.return_value = {
         "selected_rows": pd.DataFrame([test_scores.scores[0].model_dump()])
     }
@@ -27,7 +27,7 @@ def test_database_selected_score(test_scores, mocker, at):
 
 
 def test_database_selected_score_delete(test_scores, mocker, at):
-    mock_response = mocker.patch("scoreai.frontend.components.db_viewer.AgGrid")
+    mock_response = mocker.patch("ui.components.db_viewer.AgGrid")
     mock_response.return_value = {
         "selected_rows": pd.DataFrame([test_scores.scores[0].model_dump()])
     }
@@ -36,7 +36,7 @@ def test_database_selected_score_delete(test_scores, mocker, at):
 
 
 def test_database_selected_score_cancel(test_scores, mocker, at):
-    mock_response = mocker.patch("scoreai.frontend.components.db_viewer.AgGrid")
+    mock_response = mocker.patch("ui.components.db_viewer.AgGrid")
     mock_response.return_value = {
         "selected_rows": pd.DataFrame([test_scores.scores[0].model_dump()])
     }
@@ -52,7 +52,7 @@ def test_database_add_score(mocker, at):
         def getbuffer(self):
             return bytes()
 
-    mock_uploader = mocker.patch("scoreai.frontend.components.db_viewer.st.file_uploader")
+    mock_uploader = mocker.patch("ui.components.db_viewer.st.file_uploader")
 
     # try without file
     mock_uploader.return_value = None
