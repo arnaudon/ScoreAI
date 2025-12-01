@@ -1,4 +1,5 @@
 """Test welcome"""
+
 from streamlit.testing.v1 import AppTest
 
 

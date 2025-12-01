@@ -1,4 +1,5 @@
 """Test app"""
+
 import pandas as pd
 from streamlit.testing.v1 import AppTest
 
