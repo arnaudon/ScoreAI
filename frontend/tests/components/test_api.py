@@ -30,7 +30,7 @@ def test_reset_score_cache():
     """Test the reset_score_cache function."""
     api.get_scores()
     api.reset_score_cache()
-    assert api._scores == None
+    assert api._SCORES == None
 
 
 def test_delete_score():
