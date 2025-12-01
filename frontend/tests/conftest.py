@@ -3,7 +3,6 @@
 import os
 
 import pytest
-from fastapi.testclient import TestClient
 from pydantic_ai import models
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
@@ -36,26 +35,6 @@ def test_scores():
     score_3 = Score(composer="a", title="title_3", pdf_path="score_3.pdf")
     score_4 = Score(composer="a", title="title_4", pdf_path="score_4.pdf")
     return Scores(scores=[score_1, score_2, score_3, score_4])
-
-
-@pytest.fixture(name="client")
-def client_fixture(session: Session, test_scores: Scores):
-    """client"""
-
-    def get_session_override():
-        """"""
-        return session
-
-    app.dependency_overrides[db.get_session] = get_session_override
-    client = TestClient(app)
-
-    # add scores to empty db
-    for test_score in test_scores.scores:
-        client.post("/scores", json=test_score.model_dump())
-
-    yield client
-
-    app.dependency_overrides.clear()
 
 
 @pytest.fixture(autouse=True)
