@@ -2,6 +2,7 @@
 
 import os
 import random
+from typing import Any
 
 from dotenv import load_dotenv
 from pydantic import BaseModel
@@ -11,7 +12,7 @@ from shared.scores import Scores
 
 load_dotenv()
 
-MODEL = os.getenv("MODEL", "google-gla:gemini-2.5-flash-lite")
+MODEL: Any = os.getenv("MODEL", "google-gla:gemini-2.5-flash-lite")
 
 
 class Filter(BaseModel):

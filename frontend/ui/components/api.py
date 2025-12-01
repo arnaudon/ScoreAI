@@ -9,7 +9,7 @@ from shared.responses import FullResponse, Response
 from shared.scores import Scores
 
 API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
-_scores = None
+_SCORES = None
 
 
 class AgentError(Exception):
@@ -18,8 +18,8 @@ class AgentError(Exception):
 
 def reset_score_cache():
     """Reset the score cache"""
-    global _scores
-    _scores = None
+    global _SCORES
+    _SCORES = None
 
 
 def add_score(score_data) -> dict:
@@ -44,10 +44,10 @@ def add_play(score_id: int) -> dict:
 
 def get_scores() -> Scores:
     """Get all scores from the db via API"""
-    global _scores
-    if _scores is None:
-        _scores = Scores(scores=requests.get(f"{API_URL}/scores").json())
-    return _scores
+    global _SCORES
+    if _SCORES is None:
+        _SCORES = Scores(scores=requests.get(f"{API_URL}/scores").json())
+    return _SCORES
 
 
 def get_scores_df() -> pd.DataFrame:

@@ -4,6 +4,7 @@ from shared.responses import FullResponse, Response
 
 
 def test_responses():
+    """test responses"""
     resp = Response(response="test", score_id=1)
     assert resp.response == "test"
     assert resp.score_id == 1
