@@ -8,7 +8,7 @@ on:
     paths:
       - 'shared/**'
 
-default:
+defaults:
   run:
     working-directory: shared
 

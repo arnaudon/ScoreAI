@@ -8,7 +8,7 @@ on:
     paths:
       - 'frontend/**'
 
-default:
+defaults:
   run:
     working-directory: frontend
 
