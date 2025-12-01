@@ -6,11 +6,11 @@ on:
   pull_request:
     branches: [ "main" ]
     paths:
-      - 'shared/**'
+      - 'frontend/**'
 
 default:
   run:
-    working-directory: shared
+    working-directory: frontend
 
 jobs:
   test:
