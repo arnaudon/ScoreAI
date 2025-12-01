@@ -1,3 +1,5 @@
+"""test scores"""
+
 from shared.scores import Score, Scores
 
 
