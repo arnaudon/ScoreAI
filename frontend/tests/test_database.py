@@ -1,4 +1,5 @@
 """Test database."""
+
 import os
 
 import pandas as pd
@@ -64,7 +65,7 @@ def test_database_add_score(mocker, at):
     mock_uploader = mocker.patch("ui.components.db_viewer.st.file_uploader")
 
     # try without file
-    MockUpload.return_value = None
+    mock_uploader.return_value = None
     at.text_input("title").set_value("title")
     at.text_input("composer").set_value("composer")
     at.button("add").click().run()
