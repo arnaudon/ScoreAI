@@ -27,8 +27,8 @@ def session_fixture():
         yield session
 
 
-@pytest.fixture()
-def test_scores():
+@pytest.fixture(name="test_scores")
+def test_scores_fixture():
     """Test scores for default db."""
     score_1 = Score(composer="composer", title="title_1", pdf_path="tests/data/real_score.pdf")
     score_2 = Score(composer="composer", title="title_2", pdf_path="score_2.pdf")
