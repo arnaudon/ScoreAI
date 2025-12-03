@@ -35,6 +35,9 @@ RUN apt-get update &&\
   apt-get install -y --no-install-recommends poppler-utils && \
   rm -rf /var/lib/apt/lists/*
 
+# this is to get the tests happy, but to be cleaned up somehow
+COPY backend /backend
+
 COPY frontend/uv.lock frontend/pyproject.toml .
 RUN uv sync --locked --no-install-project --no-dev
 
