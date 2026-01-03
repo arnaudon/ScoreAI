@@ -17,7 +17,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
+      - name: Create empty .env file
+        run: |
+          touch .env
       - name: Build and Start Containers
         run: |
           # We use the -d flag to run in the background
