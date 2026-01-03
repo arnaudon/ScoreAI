@@ -10,7 +10,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    services:
+    # services:
       # Optional: You can define the DB here or just let Compose handle it
       # Standard GitHub runners already have Docker and Docker Compose installed
 
