@@ -10,6 +10,7 @@ from fastapi import Depends, FastAPI
 from shared.scores import Score, Scores
 from sqlmodel import Session, select
 
+import app.users as users
 from app.agent import run_agent
 from app.db import get_session, init_db
 
@@ -24,6 +25,8 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:  # pragma: no cove
 
 
 app = FastAPI(lifespan=lifespan)
+
+app.include_router(users.router, tags=["users"])
 
 
 @app.post("/scores")
