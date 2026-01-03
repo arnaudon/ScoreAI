@@ -3,6 +3,7 @@
 import os
 
 import pandas as pd
+from pwdlib import PasswordHash
 import requests
 import streamlit as st
 from shared.responses import FullResponse, Response
@@ -11,6 +12,7 @@ from shared.scores import Scores
 API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
 _SCORES = None
 
+password_hash = PasswordHash.recommended()
 
 class AgentError(Exception):
     """Agent error"""
@@ -21,6 +23,11 @@ def reset_score_cache():
     global _SCORES
     _SCORES = None
 
+def add_user(user_data):
+    """Add a user to the db via API"""
+    user_data["password"] = password_hash.hash(user_data.get("password"))
+    res = requests.post(f"{API_URL}/users", json=user_data).json()
+    return res
 
 def add_score(score_data) -> dict:
     """Add a score to the db via API"""
