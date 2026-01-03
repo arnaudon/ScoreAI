@@ -27,7 +27,7 @@ def get_agent():
         MODEL,
         output_type=Response,
         deps_type=Scores,
-        system_prompt="""Your task it to find a good score to play.
+        system_prompt="""Your task it to find a score to play.
         Write score id entry into score_id.
         If multiple scores are possible, return None for the score_id.
         If one score is available, write score_id.
