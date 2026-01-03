@@ -1,0 +1,44 @@
+name: CI Test Suite
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      # Optional: You can define the DB here or just let Compose handle it
+      # Standard GitHub runners already have Docker and Docker Compose installed
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build and Start Containers
+        run: |
+          # We use the -d flag to run in the background
+          docker compose up -d --build
+
+      - name: Wait for services to be ready
+        # Databases often take a few seconds to initialize
+        run: sleep 10 
+
+      - name: Run Backend Tests
+        # Run your pytest suite inside the running container
+        run: docker compose exec -T backend uv run pytest
+
+      - name: Run Frontend Tests
+        # Run your pytest suite inside the running container
+        run: docker compose exec -T frontend uv run pytest
+
+      - name: Check Container Logs (If failed)
+        if: failure()
+        run: docker compose logs
+
+      - name: Stop Containers
+        if: always()
+        run: docker compose down
