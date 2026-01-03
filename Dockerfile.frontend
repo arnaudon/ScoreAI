@@ -39,10 +39,10 @@ RUN apt-get update &&\
 COPY backend /backend
 
 COPY frontend/uv.lock frontend/pyproject.toml .
-RUN uv sync --locked --no-install-project --no-dev
+RUN uv sync --locked --no-install-project
 
 COPY frontend .
 
-CMD uv run --locked --no-dev streamlit run ui/app.py
+CMD uv run --locked streamlit run ui/app.py
 
 

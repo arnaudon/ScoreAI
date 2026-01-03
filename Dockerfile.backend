@@ -32,11 +32,11 @@ COPY shared /shared
 FROM base AS backend
 
 COPY backend/uv.lock backend/pyproject.toml .
-RUN uv sync --locked --no-install-project --no-dev
+RUN uv sync --locked --no-install-project
 
 COPY backend .
-RUN uv sync --locked --no-dev
+RUN uv sync --locked 
 
 EXPOSE 8000
 
-CMD uv run --no-dev --locked uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+CMD uv run --locked uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
