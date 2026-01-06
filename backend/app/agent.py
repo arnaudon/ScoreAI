@@ -2,13 +2,14 @@
 
 import os
 import random
-from typing import Any
+from typing import Any, Union
 
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from pydantic_ai import Agent, RunContext
 from shared.responses import FullResponse, Response
 from shared.scores import Scores
+from shared.user import User
 
 load_dotenv()
 
@@ -26,20 +27,26 @@ def get_agent():
     agent = Agent(
         MODEL,
         output_type=Response,
-        deps_type=Scores,
+        deps_type=Union[User, Scores],
         system_prompt="""Your task it to find a score to play.
         Write score id entry into score_id.
         If multiple scores are possible, return None for the score_id.
         If one score is available, write score_id.
         Do not mention score_id in your response.
         If multiple choices are possible, list them without id.
+        Use my username in the conversations.
         """,
     )
 
     @agent.tool
     async def get_score_info(ctx: RunContext[Scores]) -> str:
         """Get score info."""
-        return f"The scores infos are {ctx.deps.model_dump_json()}."
+        return f"The scores infos are {ctx.deps[1].model_dump_json()}."
+
+    @agent.tool
+    async def get_user_name(ctx: RunContext[User]) -> str:
+        """Get the user name."""
+        return ctx.deps[0].username
 
     @agent.tool
     async def get_random_score_by_composer(ctx: RunContext[Scores], filter_params: Filter) -> str:

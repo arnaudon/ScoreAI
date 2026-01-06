@@ -12,6 +12,7 @@ from shared.user import User
 from sqlmodel import Session, select
 from app.db import get_session
 import logging
+
 logger = logging.getLogger(__name__)
 
 SECRET_KEY = "00205d1c7dfd3d9d6ad7b542cb50f308b00e4efa3165ed7c1deefab70ade383a"
@@ -20,6 +21,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
 router = APIRouter(prefix="", tags=["users"])
+
 
 class UserInDB(User):
     hashed_password: str
@@ -39,6 +41,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 def verify_password(plain_password, hashed_password):
+    print(plain_password, hashed_password)
     return password_hash.verify(plain_password, hashed_password)
 
 
@@ -109,9 +112,10 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     return user
 
 
-
 @router.post("/users")
 async def add_user(user: User, session: Session = Depends(get_session)):
+    hashed_password = get_password_hash(user.password)
+    user.password = hashed_password
     session.add(user)
     session.commit()
     session.refresh(user)

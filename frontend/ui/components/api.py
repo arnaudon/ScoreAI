@@ -14,6 +14,7 @@ _SCORES = None
 
 password_hash = PasswordHash.recommended()
 
+
 class AgentError(Exception):
     """Agent error"""
 
@@ -23,11 +24,18 @@ def reset_score_cache():
     global _SCORES
     _SCORES = None
 
-def add_user(user_data):
-    """Add a user to the db via API"""
-    user_data["password"] = password_hash.hash(user_data.get("password"))
-    res = requests.post(f"{API_URL}/users", json=user_data).json()
-    return res
+
+def register_user(new_user):
+    """Register a new user via API"""
+    response = requests.post(f"{API_URL}/users", json=new_user.model_dump())
+    return response
+
+
+def login_user(username, password):
+    """Login a user via API"""
+    response = requests.post(f"{API_URL}/token", data={"username": username, "password": password})
+    return response
+
 
 def add_score(score_data) -> dict:
     """Add a score to the db via API"""
@@ -73,6 +81,7 @@ def run_agent(question: str) -> Response:  # pragma: no cover
             "deps": scores.model_dump_json(),
             "message_history": st.session_state.message_history,
         },
+        headers={"Authorization": f"Bearer {st.session_state.token}"},
     )
     try:
         result = result.json()

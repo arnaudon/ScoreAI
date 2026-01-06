@@ -1,5 +1,8 @@
 """Backend main entry point."""
 
+from typing import Annotated
+
+from shared.user import User
 import json
 import os
 from contextlib import asynccontextmanager
@@ -10,6 +13,7 @@ from fastapi import Depends, FastAPI
 from shared.scores import Score, Scores
 from sqlmodel import Session, select
 
+from app.users import get_current_user
 import app.users as users
 from app.agent import run_agent
 from app.db import get_session, init_db
@@ -69,6 +73,13 @@ def get_scores(session: Session = Depends(get_session)):
 
 
 @app.post("/agent")
-async def run(prompt: str, deps: str, message_history=None):  # pragma: no cover
+async def run(
+    prompt: str,
+    deps: str,
+    current_user: Annotated[User, Depends(get_current_user)],
+    message_history=None,
+):  # pragma: no cover
     """Run the agent."""
-    return await run_agent(prompt, message_history=message_history, deps=Scores(**json.loads(deps)))
+    return await run_agent(
+        prompt, message_history=message_history, deps=[current_user, Scores(**json.loads(deps))]
+    )
