@@ -5,8 +5,25 @@ import streamlit as st
 
 from ui.components.db_viewer import write_summary_db
 from ui.locales import _, init_i18n_gettext, language_selector
+import datetime
 
+import extra_streamlit_components as stx
+import time
+cookie_manager = stx.CookieManager()
 init_i18n_gettext()
+
+cookie_expiry_date = datetime.datetime.now() + datetime.timedelta(days=1)
+
+# load cookie with a little waiting
+saved_token = cookie_manager.get(cookie="token")
+if saved_token is None:
+    with st.spinner("Authenticating..."):
+        time.sleep(0.5)
+        saved_token = cookie_manager.get(cookie="token")
+
+if saved_token and "token" not in st.session_state:
+    st.session_state.token = saved_token
+    st.session_state.user =cookie_manager.get(cookie="user")
 
 if "token" not in st.session_state:
     st.session_state.token = None
@@ -32,9 +49,13 @@ def login():
                 # reset pdf cache
                 if "pdf_viewers" in st.session_state:
                     del st.session_state.pdf_viewers
-                # Store the token from your FastAPI response
-                st.session_state.token = res.json().get("access_token")
+                token = res.json().get("access_token")
+                st.session_state.token = token
                 st.session_state.user = user
+                cookie_manager.set("token", token, key="save_token")
+                                   # expires=cookie_expiry_date,)
+                cookie_manager.set("user", token, key="save_user")
+                                   # expires=cookie_expiry_date,)
                 st.switch_page(welcome_page)
                 st.rerun()
             else:

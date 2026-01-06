@@ -3,7 +3,7 @@
 import os
 import random
 from typing import Any, Union
-
+from pydantic_ai.exceptions import ModelHTTPError
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from pydantic_ai import Agent, RunContext
@@ -65,9 +65,22 @@ def get_agent():
 async def run_agent(prompt: str, deps: Scores, message_history=None):
     """Run the agent."""
     agent = get_agent()
-    res = await agent.run(
-        prompt,
-        message_history=message_history,
-        deps=deps,
-    )
-    return FullResponse(response=res.output, message_history=res.all_messages())
+    try:
+        res = await agent.run(
+            prompt,
+            message_history=message_history,
+            deps=deps,
+        )
+        response = res.output
+        history = res.all_messages()
+    except ModelHTTPError as e:
+        history = []
+        if e.status_code == 429:
+            response = Response(response="Rate limit exceeded (Quota hit)")
+        else:
+            response = Response(response="An HTTP error occurred")
+    except Exception as e:
+        history = []
+        response = Response(response="An unexpected error occurred")
+
+    return FullResponse(response=response, message_history=history)

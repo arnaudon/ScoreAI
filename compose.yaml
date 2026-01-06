@@ -8,6 +8,7 @@ services:
       - '8000:8000'
     volumes:
       - ./backend:/app
+      - ./shared:/app/shared
       - ./database:/app/database
     environment:
       - DATABASE_URL=sqlite:///database/database.db
