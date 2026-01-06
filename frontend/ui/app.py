@@ -14,6 +14,8 @@ if "token" not in st.session_state:
 welcome_page = st.Page("welcome.py", title=_("Choose a score"))
 database_page = st.Page("database.py", title=_("View database"))
 account_page = st.Page("account.py", title=_("Manage your account"))
+reader_page = st.Page("reader.py", title=_("View a score"))
+st.session_state.reader_page = reader_page
 
 
 def login():
@@ -25,8 +27,14 @@ def login():
         if st.button(_("Login")):
             res = api.login_user(user, pw)
             if res.status_code == 200:
+                # reset db cache
+                api.reset_score_cache()
+                # reset pdf cache
+                if "pdf_viewers" in st.session_state:
+                    del st.session_state.pdf_viewers
                 # Store the token from your FastAPI response
                 st.session_state.token = res.json().get("access_token")
+                st.session_state.user = user
                 st.switch_page(welcome_page)
                 st.rerun()
             else:
@@ -42,9 +50,10 @@ with st.sidebar:
         write_summary_db()
         language_selector()
     login()
+    st.button("reset cache", on_click=api.reset_score_cache)
 
 if st.session_state.token is not None:
-    pages = [welcome_page, database_page, account_page]
+    pages = [welcome_page, database_page, reader_page, account_page]
 else:
     pages = [account_page]
 

@@ -1,5 +1,9 @@
-from typing import Optional
-from sqlmodel import Field, SQLModel
+from typing import TYPE_CHECKING, List
+
+from sqlmodel import Field, Relationship, SQLModel
+
+if TYPE_CHECKING:
+    from shared.scores import Score
 
 
 class User(SQLModel, table=True):
@@ -9,4 +13,4 @@ class User(SQLModel, table=True):
     first_name: str | None = None
     last_name: str | None = None
     password: str | None = None
-
+    scores: List["Score"] = Relationship(back_populates="user")

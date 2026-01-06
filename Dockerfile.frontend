@@ -44,5 +44,3 @@ RUN uv sync --locked --no-install-project
 COPY frontend .
 
 CMD uv run --locked streamlit run ui/app.py
-
-

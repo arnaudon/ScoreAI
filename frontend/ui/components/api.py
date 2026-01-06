@@ -39,20 +39,30 @@ def login_user(username, password):
 
 def add_score(score_data) -> dict:
     """Add a score to the db via API"""
-    res = requests.post(f"{API_URL}/scores", json=score_data).json()
+    res = requests.post(
+        f"{API_URL}/scores",
+        headers={"Authorization": f"Bearer {st.session_state.token}"},
+        json=score_data,
+    ).json()
     reset_score_cache()
     return res
 
 
 def delete_score(score_id: int):
     """Delete a score from the db via API"""
-    requests.delete(f"{API_URL}/scores/{score_id}").json()
+    requests.delete(
+        f"{API_URL}/scores/{score_id}",
+        headers={"Authorization": f"Bearer {st.session_state.token}"},
+    ).json()
     reset_score_cache()
 
 
 def add_play(score_id: int) -> dict:
     """Add a play to the db via API"""
-    res = requests.post(f"{API_URL}/scores/{score_id}/play").json()
+    res = requests.post(
+        f"{API_URL}/scores/{score_id}/play",
+        headers={"Authorization": f"Bearer {st.session_state.token}"},
+    ).json()
     reset_score_cache()
     return res
 
@@ -61,7 +71,12 @@ def get_scores() -> Scores:
     """Get all scores from the db via API"""
     global _SCORES
     if _SCORES is None:
-        _SCORES = Scores(scores=requests.get(f"{API_URL}/scores").json())
+        _SCORES = Scores(
+            scores=requests.get(
+                f"{API_URL}/scores",
+                headers={"Authorization": f"Bearer {st.session_state.token}"},
+            ).json()
+        )
     return _SCORES
 
 

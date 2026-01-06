@@ -23,10 +23,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 router = APIRouter(prefix="", tags=["users"])
 
 
-class UserInDB(User):
-    hashed_password: str
-
-
 class Token(BaseModel):
     access_token: str
     token_type: str
