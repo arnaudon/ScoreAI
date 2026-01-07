@@ -18,8 +18,8 @@ from app.users import (
 from shared.user import User
 
 
-@pytest.fixture
-def user_in_db(session: Session, mocker) -> User:
+@pytest.fixture(name="user_in_db")
+def user_in_db_fixture(session: Session, mocker) -> User:
     """Create a user in the same DB that app.users.get_user will use.
 
     We patch app.users.get_session to return the test session so helpers that
