@@ -73,13 +73,13 @@ async def run_agent(prompt: str, deps: Scores, message_history=None):
         )
         response = res.output
         history = res.all_messages()
-    except ModelHTTPError as e:
+    except ModelHTTPError as e:  # pragma: no cover - external HTTP failure handling
         history = []
         if e.status_code == 429:
             response = Response(response="Rate limit exceeded (Quota hit)")
         else:
             response = Response(response="An HTTP error occurred")
-    except Exception as e:
+    except Exception as e:  # pragma: no cover - unexpected external errors
         history = []
         response = Response(response="An unexpected error occurred")
 
