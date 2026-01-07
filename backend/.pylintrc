@@ -7,9 +7,6 @@ ignore=.venv,.git
 [MESSAGES CONTROL]
 disable=W0511,W0603,W0621,W3101
 
-[IMPORT]
-known-standard-library=shared,app
-
 [FORMAT]
 # Maximum number of characters on a single line.
 max-line-length=100

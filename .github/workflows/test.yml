@@ -37,6 +37,6 @@ jobs:
     - name: Run format
       run: uv run --frozen --project ${{ matrix.code }} --directory ${{ matrix.code }} black --check .
     - name: Run lint
-      run: uv run --frozen --project ${{ matrix.code }} --directory ${{ matrix.code }} pylint .
+      run: PYTHONPATH=. uv run --frozen --project ${{ matrix.code }} --directory ${{ matrix.code }} pylint .
     - name: Run mypy
       run: uv run --frozen --project ${{ matrix.code }} --directory ${{ matrix.code }} mypy .
