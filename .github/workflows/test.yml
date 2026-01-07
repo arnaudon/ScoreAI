@@ -37,6 +37,11 @@ jobs:
     - name: Run format
       run: uv run --frozen --project ${{ matrix.code }} -m black --check ${{ matrix.code }}
     - name: Run lint
-      run: uv run --frozen --project ${{ matrix.code }} -m pylint ${{ matrix.code }} 
+      run: |
+        if [ "${{ matrix.code }}" = "shared" ]; then
+          uv run --frozen --project shared -m pylint shared/shared
+        else
+          uv run --frozen --project ${{ matrix.code }} -m pylint ${{ matrix.code }}
+        fi
     - name: Run mypy
       run: uv run --frozen --project ${{ matrix.code }} -m mypy ${{ matrix.code }}
