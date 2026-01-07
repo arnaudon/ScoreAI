@@ -1,6 +1,7 @@
 """Test database."""
 
 import os
+from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -9,10 +10,12 @@ from streamlit.testing.v1 import AppTest
 from ui.components import db_viewer
 
 
-@pytest.fixture
-def at():
-    """Create a Streamlit app test object."""
-    return AppTest.from_file("ui/database.py")
+@pytest.fixture(name="at")
+def app_test(frontend_dir) -> AppTest:
+    at = AppTest.from_file(frontend_dir / "ui" / "database.py")
+    at.session_state["token"] = "fake-token"
+    at.session_state["user"] = "fake-user"
+    return at
 
 
 def test_database(at):
@@ -50,9 +53,9 @@ def test_database_selected_score_cancel(test_scores, mocker, at):
     at.button("cancel").click().run()
 
 
-def test_database_add_score(mocker, at):
+def test_database_add_score(mocker, at, frontend_dir):
     """Test database add score."""
-    db_viewer.DATA_PATH = "tests/data"
+    db_viewer.DATA_PATH = str(frontend_dir / "tests/data")
     at.run()
 
     class MockUpload:  # pylint: disable=R0903
@@ -80,4 +83,4 @@ def test_database_add_score(mocker, at):
     at.text_input("title").set_value("title")
     at.text_input("composer").set_value("composer")
     at.button("add").click().run()
-    os.remove("tests/data/title_composer.pdf")
+    os.remove(frontend_dir / "tests/data/title_composer_fake-user.pdf")

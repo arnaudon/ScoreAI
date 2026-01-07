@@ -1,6 +1,7 @@
 """conftest"""
 
 import os
+from pathlib import Path
 
 import pytest
 import streamlit as st
@@ -19,6 +20,11 @@ pytestmark = pytest.mark.anyio
 models.ALLOW_MODEL_REQUESTS = False
 
 
+@pytest.fixture(name="frontend_dir")
+def frontend_dir_fixture():
+    return Path(__file__).resolve().parent.parent
+
+
 @pytest.fixture(name="session")
 def session_fixture():
     """Test session for default db."""
@@ -31,12 +37,23 @@ def session_fixture():
 
 
 @pytest.fixture(name="test_scores")
-def test_scores_fixture():
+def test_scores_fixture(frontend_dir):
     """Test scores for default db."""
-    score_1 = Score(composer="composer", title="title_1", pdf_path="tests/data/real_score.pdf")
-    score_2 = Score(composer="composer", title="title_2", pdf_path="score_2.pdf")
-    score_3 = Score(composer="a", title="title_3", pdf_path="score_3.pdf")
-    score_4 = Score(composer="a", title="title_4", pdf_path="score_4.pdf")
+    score_1 = Score(
+        composer="composer",
+        title="title_1",
+        pdf_path=str(frontend_dir / "tests/data/real_score.pdf"),
+        user_id=0,
+    )
+    score_2 = Score(
+        composer="composer", title="title_2", pdf_path=str(frontend_dir / "score_2.pdf"), user_id=0
+    )
+    score_3 = Score(
+        composer="a", title="title_3", pdf_path=str(frontend_dir / "score_3.pdf"), user_id=0
+    )
+    score_4 = Score(
+        composer="a", title="title_4", pdf_path=str(frontend_dir / "score_4.pdf"), user_id=0
+    )
     return Scores(scores=[score_1, score_2, score_3, score_4])
 
 

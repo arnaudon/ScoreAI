@@ -1,7 +1,6 @@
 """test scores"""
 
 from shared.scores import Score, Scores
-from shared.user import User
 
 
 def test_scores():
