@@ -45,4 +45,4 @@ reportUnusedFunction = false
 
 [tool.uv.sources]
 shared = { path = "../shared", editable = true }
-app = { path = "../backend", editable = true }
+app = { workspace = true }

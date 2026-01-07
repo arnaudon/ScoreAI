@@ -6,11 +6,13 @@ import pytest
 from fastapi.testclient import TestClient
 from pydantic_ai import models
 from shared.scores import Score, Scores
+from shared.user import User
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 
 from app import db
 from app.main import app
+from app.users import get_current_user
 
 os.environ["DATABASE_PATH"] = "test.db"
 pytestmark = pytest.mark.anyio
@@ -40,16 +42,28 @@ def test_scores_fixture():
 
 @pytest.fixture(name="client")
 def client_fixture(session: Session, test_scores: Scores):
-    """client"""
+    """client with authenticated user"""
 
     def get_session_override():
-        """"""
+        """Override DB session to use test session."""
         return session
 
+    # create a test user that will own all scores
+    test_user = User(username="testuser", email="test@example.com", password="hashed")
+    session.add(test_user)
+    session.commit()
+    session.refresh(test_user)
+
+    def get_current_user_override():
+        """Always return the test user for authentication."""
+        return test_user
+
     app.dependency_overrides[db.get_session] = get_session_override
+    app.dependency_overrides[get_current_user] = get_current_user_override
+
     client = TestClient(app)
 
-    # add scores to empty db
+    # add scores to empty db for the authenticated user
     for test_score in test_scores.scores:
         client.post("/scores", json=test_score.model_dump())
 
