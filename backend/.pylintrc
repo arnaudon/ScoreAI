@@ -4,9 +4,6 @@
 [MASTER]
 ignore=.venv,.git
 
-[MAIN]
-init-hook='import sys; sys.path.extend(["./shared", "./app"])'
-
 [MESSAGES CONTROL]
 disable=W0511,W0603,W0621,W3101
 
