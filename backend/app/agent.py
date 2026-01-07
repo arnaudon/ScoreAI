@@ -2,12 +2,13 @@
 
 import os
 import random
-from typing import Any, Union
+from typing import Any
 
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from pydantic_ai import Agent, RunContext
 from pydantic_ai.exceptions import ModelHTTPError
+
 from shared.responses import FullResponse, Response
 from shared.scores import Scores
 from shared.user import User
@@ -88,7 +89,7 @@ async def run_agent(prompt: str, deps: Deps, message_history=None):
             response = Response(response="Rate limit exceeded (Quota hit)")
         else:
             response = Response(response="An HTTP error occurred")
-    except Exception as e:  # pragma: no cover
+    except Exception:  # pragma: no cover, pylint: disable=broad-exception-caught
         history = []
         response = Response(response="An unexpected error occurred")
 

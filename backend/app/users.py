@@ -1,3 +1,5 @@
+"""Users module."""
+
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
@@ -8,10 +10,10 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jwt.exceptions import InvalidTokenError
 from pwdlib import PasswordHash
 from pydantic import BaseModel
-from shared.user import User
 from sqlmodel import Session, select
 
 from app.db import get_session
+from shared.user import User
 
 logger = logging.getLogger(__name__)
 
@@ -24,12 +26,10 @@ router = APIRouter(prefix="", tags=["users"])
 
 
 class Token(BaseModel):
+    """Token model."""
+
     access_token: str
     token_type: str
-
-
-class TokenData(BaseModel):
-    username: str | None = None
 
 
 password_hash = PasswordHash.recommended()
@@ -37,20 +37,23 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 def verify_password(plain_password, hashed_password):
-    print(plain_password, hashed_password)
+    """Verify password."""
     return password_hash.verify(plain_password, hashed_password)
 
 
 def get_password_hash(password):
+    """Get password hash."""
     return password_hash.hash(password)
 
 
 def get_user(username: str):
+    """Get user by username."""
     session = next(get_session())
     return session.exec(select(User).where(User.username == username)).first()
 
 
 def authenticate_user(username: str, password: str):
+    """Authenticate user."""
     user = get_user(username)
     if not user:
         return False
@@ -60,6 +63,7 @@ def authenticate_user(username: str, password: str):
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    """Create access token."""
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
@@ -74,6 +78,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
 ) -> Token:
+    """Login for access token."""
     user = authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -89,6 +94,7 @@ async def login_for_access_token(
 
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+    """Get current user."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -99,10 +105,9 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         username = payload.get("sub")
         if username is None:
             raise credentials_exception
-        token_data = TokenData(username=username)
-    except InvalidTokenError:
-        raise credentials_exception
-    user = get_user(username=token_data.username)
+    except InvalidTokenError as exc:
+        raise credentials_exception from exc
+    user = get_user(username=username)
     if user is None:
         raise credentials_exception
     return user
@@ -110,6 +115,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
 
 @router.post("/users")
 async def add_user(user: User, session: Session = Depends(get_session)):
+    """Add a user to the db."""
     hashed_password = get_password_hash(user.password)
     user.password = hashed_password
     session.add(user)

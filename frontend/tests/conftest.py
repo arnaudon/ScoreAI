@@ -3,11 +3,14 @@
 import os
 
 import pytest
+import streamlit as st
 from app import db
 from app.main import app
+from app.users import get_current_user
 from fastapi.testclient import TestClient
 from pydantic_ai import models
 from shared.scores import Score, Scores
+from shared.user import User
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 
@@ -37,18 +40,35 @@ def test_scores_fixture():
     return Scores(scores=[score_1, score_2, score_3, score_4])
 
 
+@pytest.fixture(name="test_user")
+def test_user_fixture():
+    """Test user for authenticated requests."""
+    return User(username="testuser", email="test@example.com", password="hashed")
+
+
 @pytest.fixture(name="client")
-def client_fixture(session: Session, test_scores: Scores):
-    """client"""
+def client_fixture(session: Session, test_scores: Scores, test_user: User):
+    """Client with authenticated user and pre-populated scores."""
 
     def get_session_override():
-        """"""
+        """Override DB session to use test session."""
         return session
 
+    # create a test user that will own all scores
+    session.add(test_user)
+    session.commit()
+    session.refresh(test_user)
+
+    def get_current_user_override():
+        """Always return the test user for authentication."""
+        return test_user
+
     app.dependency_overrides[db.get_session] = get_session_override
+    app.dependency_overrides[get_current_user] = get_current_user_override
+
     client = TestClient(app)
 
-    # add scores to empty db
+    # add scores to empty db for the authenticated user
     for test_score in test_scores.scores:
         client.post("/scores", json=test_score.model_dump())
 
@@ -59,5 +79,12 @@ def client_fixture(session: Session, test_scores: Scores):
 
 @pytest.fixture(autouse=True)
 def request_mock(mocker, client):
-    """Mock client"""
+    """Mock HTTP client and initialize Streamlit session state for frontend tests."""
+    # Ensure a token and user exist in session state so frontend API helpers can
+    # build Authorization headers without raising attribute errors.
+    if "token" not in st.session_state:
+        st.session_state.token = "test-token"
+    if "user" not in st.session_state:
+        st.session_state.user = "testuser"
+
     mocker.patch("ui.components.api.requests", new=client)

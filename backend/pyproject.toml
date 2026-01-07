@@ -41,6 +41,10 @@ build-backend = "hatchling.build"
 [tool.black]
 line-length = 100
 
+[tool.isort]
+profile = "black"  # Makes isort compatible with Black's spacing
+known_first_party = ["shared", "app"]
+
 [tool.mypy]
 ignore_missing_imports = true
 

@@ -7,14 +7,14 @@ from logging import getLogger
 from typing import Annotated, AsyncGenerator
 
 from fastapi import Depends, FastAPI
-from shared.scores import Score, Scores
-from shared.user import User
 from sqlmodel import Session, select
 
-import app.users as users
+from app import users
 from app.agent import Deps, run_agent
 from app.db import get_session, init_db
 from app.users import get_current_user
+from shared.scores import Score, Scores
+from shared.user import User
 
 logger = getLogger(__name__)
 

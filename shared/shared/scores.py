@@ -7,7 +7,6 @@ from sqlmodel import Field, Relationship, SQLModel
 if TYPE_CHECKING:
     from shared.user import User
 
-
 from pydantic import BaseModel
 from sqlmodel import Field, SQLModel
 
@@ -24,7 +23,7 @@ class Score(SQLModel, table=True):
     period: Optional[str] = None
     genre: Optional[str] = None
 
-    user_id: int = Field(foreign_key="user.id")
+    user_id: int | None = Field(foreign_key="user.id")
     user: Optional["User"] = Relationship(back_populates="scores")
 
 
