@@ -1,6 +1,8 @@
 ## look at http://docutils.sourceforge.net/sandbox/py-rest-doc/utils/pylintrc
 # for some of the options that are available
 
+[MASTER]
+ignore=.venv,.git
 
 [MAIN]
 init-hook='import sys; sys.path.extend(["./shared", "./app"])'

@@ -35,15 +35,8 @@ jobs:
     - name: Run tests
       run: uv run --frozen --project ${{ matrix.code }} --directory ${{ matrix.code }} pytest 
     - name: Run format
-      run: uv run --frozen --project ${{ matrix.code }} black --check ${{ matrix.code }}
+      run: uv run --frozen --project ${{ matrix.code }} --directory ${{ matrix.code }}  --check .
     - name: Run lint
-      run: |
-        if [ "${{ matrix.code }}" = "shared" ]; then
-          uv run --frozen --project shared --directory shared pylint shared tests
-        if [ "${{ matrix.code }}" = "frontend" ]; then
-          uv run --frozen --project frontend --directory frontend pylint ui tests
-        if [ "${{ matrix.code }}" = "backend" ]; then
-          uv run --frozen --project backend --directory backend pylint app tests 
-        fi
+      run: uv run --frozen --project ${{ matrix.code }} pylint --directory ${{ matrix.code }} pylint .
     - name: Run mypy
-      run: uv run --frozen --project ${{ matrix.code }} mypy ${{ matrix.code }}
+      run: uv run --frozen --project ${{ matrix.code }} --directory ${{ matrix.code }} mypy .
