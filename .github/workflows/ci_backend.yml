@@ -8,7 +8,7 @@ on:
     paths:
       - 'backend/**'
 
-defaults:
+# defaults:
   # run:
     # working-directory: backend
 
