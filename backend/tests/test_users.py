@@ -5,7 +5,6 @@ from datetime import timedelta
 import pytest
 from fastapi import HTTPException, status
 from fastapi.testclient import TestClient
-from shared.user import User
 from sqlmodel import Session
 
 from app.users import (
@@ -16,6 +15,7 @@ from app.users import (
     get_user,
     verify_password,
 )
+from shared.user import User
 
 
 @pytest.fixture
@@ -142,7 +142,7 @@ def test_login_for_access_token_wrong_credentials(client: TestClient, user_in_db
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
-def test_add_user_endpoint(session: Session, client: TestClient, mocker):
+def test_add_user_endpoint(client: TestClient):
     """POST /users creates a user with hashed password (covers add_user)."""
     payload = {"username": "bob", "email": "bob@example.com", "password": "pw"}
     resp = client.post("/users", json=payload)
