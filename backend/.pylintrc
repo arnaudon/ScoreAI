@@ -3,7 +3,7 @@
 
 
 [IMPORTS]
-known-modules=shared,app
+known-third-party = shared,app
 
 [MESSAGES CONTROL]
 disable=W0511,W0603,W0621,W3101
