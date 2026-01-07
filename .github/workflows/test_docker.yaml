@@ -3,6 +3,8 @@ name: Docker Test Suite
 on:
   push:
     branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   test:
@@ -29,11 +31,11 @@ jobs:
 
       - name: Run Backend Tests
         # Run your pytest suite inside the running container
-        run: docker compose exec -T backend uv run pytest
+        run: docker compose exec -T backend pytest backend
 
       - name: Run Frontend Tests
         # Run your pytest suite inside the running container
-        run: docker compose exec -T frontend uv run pytest
+        run: docker compose exec -T frontend pytest frontend
 
       - name: Check Container Logs (If failed)
         if: failure()

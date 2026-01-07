@@ -5,8 +5,9 @@ from pathlib import Path
 import pytest
 import sqlalchemy.exc
 from fastapi.testclient import TestClient
-from shared.scores import Score, Scores
 from sqlmodel import Session
+
+from shared.scores import Score, Scores
 
 
 def test_get_score(client: TestClient, test_scores: Scores):
@@ -39,7 +40,9 @@ def test_add_wrong_score(client: TestClient, session: Session):
 
 def test_add_score(client: TestClient, test_scores: Scores):
     """test add score"""
-    score = Score(composer="another_composer", title="another_title", pdf_path="another_score.pdf")
+    score = Score(
+        composer="another_composer", title="another_title", pdf_path="another_score.pdf", user_id=0
+    )
     response = client.post("/scores", json=score.model_dump())
 
     data = response.json()
@@ -62,7 +65,10 @@ def test_delete_score(client: TestClient, test_scores: Scores):
     """test delete score"""
 
     score = Score(
-        composer="yet_another_composer", title="yet_another_title", pdf_path="yet_another_score.pdf"
+        composer="yet_another_composer",
+        title="yet_another_title",
+        pdf_path="yet_another_score.pdf",
+        user_id=0,
     )
     Path(score.pdf_path).touch()
     response = client.post("/scores", json=score.model_dump())
@@ -77,7 +83,10 @@ def test_delete_not_found_score(client: TestClient, test_scores: Scores):
     """test delete score"""
 
     score = Score(
-        composer="yet_another_composer", title="yet_another_title", pdf_path="yet_another_score.pdf"
+        composer="yet_another_composer",
+        title="yet_another_title",
+        pdf_path="yet_another_score.pdf",
+        user_id=0,
     )
     response = client.post("/scores", json=score.model_dump())
 

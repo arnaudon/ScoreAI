@@ -17,7 +17,9 @@ dependencies = [
     "sqlalchemy>=2.0.44",
     "sqlmodel>=0.0.27",
     "uvicorn>=0.37.0",
-    "shared"
+    "shared",
+    "pyjwt>=2.10.1",
+    "pwdlib[argon2]>=0.3.0",
 ]
 [dependency-groups]
 dev = [
@@ -39,6 +41,10 @@ build-backend = "hatchling.build"
 [tool.black]
 line-length = 100
 
+[tool.isort]
+profile = "black"  
+known_first_party = ["shared", "app"]
+
 [tool.mypy]
 ignore_missing_imports = true
 
@@ -47,4 +53,5 @@ typeCheckingMode = "standard"
 reportUnusedFunction = false
 
 [tool.uv.sources]
-shared = { path = "../shared", editable = true }
+ui = {workspace = true}
+shared = {workspace = true}

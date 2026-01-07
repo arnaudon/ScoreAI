@@ -1,9 +1,12 @@
 """Score models."""
 
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from pydantic import BaseModel
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
+
+if TYPE_CHECKING:
+    from shared.user import User
 
 
 class Score(SQLModel, table=True):
@@ -17,6 +20,9 @@ class Score(SQLModel, table=True):
     year: Optional[int] = None
     period: Optional[str] = None
     genre: Optional[str] = None
+
+    user_id: int | None = Field(foreign_key="user.id")
+    user: Optional["User"] = Relationship(back_populates="scores")
 
 
 class Scores(BaseModel):

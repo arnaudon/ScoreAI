@@ -1,0 +1,12 @@
+[project]
+name = "ScoreAI"
+version = "0.1.0"
+description = "scoreai monorepo"
+dependencies = []
+
+[tool.uv.workspace]
+members = ["backend", "frontend", "shared"]
+
+[tool.mypy]
+mypy_path = "shared:backend:frontend"
+explicit_package_bases = true

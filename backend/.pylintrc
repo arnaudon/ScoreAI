@@ -1,8 +1,11 @@
 ## look at http://docutils.sourceforge.net/sandbox/py-rest-doc/utils/pylintrc
 # for some of the options that are available
-#
+
+[MASTER]
+ignore=.venv,.git
+
 [MESSAGES CONTROL]
-disable=W0511,W0603,W0621,W3101
+disable=W0511,W0603,W0621,W3101,C0411
 
 [FORMAT]
 # Maximum number of characters on a single line.

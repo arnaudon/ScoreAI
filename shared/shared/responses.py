@@ -10,7 +10,7 @@ class Response(BaseModel):
     """Response model."""
 
     response: str
-    score_id: Optional[int]
+    score_id: Optional[int] = None
 
 
 class FullResponse(BaseModel):

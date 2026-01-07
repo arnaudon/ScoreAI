@@ -18,7 +18,8 @@ def write_summary_db():
         st.write("You have no scores")
     else:
         st.write(
-            f"You have {len(df)} scores, with {len(df['composer'].unique())} different composers"
+            f"{st.session_state.user}, you have {len(df)} scores"
+            "with {len(df['composer'].unique())} different composers"
         )
 
 
@@ -29,7 +30,7 @@ def add_score():
     composer = st.text_input("Composer", key="composer")
     uploaded_file = st.file_uploader("Upload a file", type=["pdf"])
     if st.button("Add score", key="add"):
-        save_path = f"{DATA_PATH}/{title}_{composer}.pdf"
+        save_path = f"{DATA_PATH}/{title}_{composer}_{st.session_state.user}.pdf"
         if uploaded_file is None:
             st.write("Please upload a file")
             st.stop()
@@ -40,12 +41,13 @@ def add_score():
 
         with open(save_path, "wb") as f:
             f.write(uploaded_file.getbuffer())
-        score_data = {
-            "title": title,
-            "composer": composer,
-            "pdf_path": save_path,
-            "number_of_plays": 0,
-        }
+        score_data = Score(
+            user_id=st.session_state.user_id,
+            title=title,
+            composer=composer,
+            pdf_path=save_path,
+            number_of_plays=0,
+        )
         res = api.add_score(score_data)
         st.success(res)
         st.rerun()
@@ -69,7 +71,8 @@ def show_db(select=True):
             col1, col2 = st.columns(2)
             with col1:
                 if st.button("Open PDF", key="open"):  # pragma: no cover
-                    st.switch_page("reader.py")
+                    print(st.session_state.reader_page.__dict__)
+                    st.switch_page(st.session_state.reader_page)
             with col2:
                 with st.popover("Delete", use_container_width=True):
                     st.warning("Are you sure?")
