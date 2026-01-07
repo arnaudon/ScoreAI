@@ -2,8 +2,8 @@
 # for some of the options that are available
 
 
-[IMPORTS]
-known-third-party = shared,app
+[MAIN]
+init-hook='import sys; sys.path.extend(["./shared"])'
 
 [MESSAGES CONTROL]
 disable=W0511,W0603,W0621,W3101
