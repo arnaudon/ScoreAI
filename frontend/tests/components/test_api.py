@@ -1,3 +1,5 @@
+"""Test the api module."""
+
 import pytest
 from shared.scores import Score
 
@@ -5,9 +7,12 @@ from ui.components import api
 
 pytestmark = pytest.mark.real_api
 
+# pylint: disable=unused-argument,protected-access
+
 
 @pytest.fixture(name="mock_get_scores")
 def mock_get_scores_fixture(mocker, test_scores):
+    """Mock the get_scores function."""
     mock_response = mocker.Mock()
     mock_response.status_code = 200
     mock_response.json.return_value = test_scores.model_dump()["scores"]
@@ -16,6 +21,7 @@ def mock_get_scores_fixture(mocker, test_scores):
 
 @pytest.fixture(name="mock_add_score")
 def mock_add_score_fixture(mocker, mock_get_scores, other_score):
+    """Mock the add_score function."""
     mock_response = mocker.Mock()
     mock_response.status_code = 200
     mock_response.json.return_value = other_score.model_dump()
@@ -37,6 +43,7 @@ def test_get_scores_df(mock_get_scores):
 
 @pytest.fixture(name="other_score")
 def other_score_fixture():
+    """Return another score."""
     return Score(
         user_id=0,
         composer="another_composer",
@@ -50,10 +57,10 @@ def test_add_score(mocker, mock_get_scores, mock_add_score, other_score):
 
     # load _SCORES
     api.get_scores()
-    assert api._SCORES != None
+    assert api._SCORES is not None
     response = api.add_score(score_data=other_score)
     # ensure its refreshed
-    assert api._SCORES == None
+    assert api._SCORES is None
 
     assert response["composer"] == other_score.composer
     assert response["title"] == other_score.title
@@ -63,9 +70,9 @@ def test_add_score(mocker, mock_get_scores, mock_add_score, other_score):
 def test_reset_score_cache(mock_get_scores):
     """Test the reset_score_cache function."""
     api.get_scores()
-    assert api._SCORES != None
+    assert api._SCORES is not None
     api.reset_score_cache()
-    assert api._SCORES == None
+    assert api._SCORES is None
 
 
 def test_delete_score(mocker, mock_get_scores, mock_add_score, other_score):
@@ -73,30 +80,29 @@ def test_delete_score(mocker, mock_get_scores, mock_add_score, other_score):
     api.add_score(score_data=other_score)
 
     api.get_scores()
-    assert api._SCORES != None
+    assert api._SCORES is not None
 
     mock_response = mocker.Mock()
     mock_response.status_code = 200
     mocker.patch("ui.components.api.requests.delete", return_value=mock_response)
 
     api.delete_score(score_id=0)
-    assert api._SCORES == None
+    assert api._SCORES is None
 
 
 def test_add_play(mocker, mock_get_scores):
     """Test the add_play function."""
-
     mock_response = mocker.Mock()
     mock_response.status_code = 200
     mock_response.json.return_value = {"number_of_plays": 1}
     mocker.patch("ui.components.api.requests.post", return_value=mock_response)
 
     api.get_scores()
-    assert api._SCORES != None
+    assert api._SCORES is not None
 
     response = api.add_play(score_id=1)
     assert response["number_of_plays"] == 1
-    assert api._SCORES == None
+    assert api._SCORES is None
 
 
 # def test_run_agent(client: TestClient, agent: None):
@@ -109,11 +115,13 @@ def test_add_play(mocker, mock_get_scores):
 
 def test_register_user_calls_backend(mocker):
     """register_user should POST user JSON to /users endpoint."""
-
     mock_requests = mocker.patch("ui.components.api.requests")
 
     class DummyUser:  # pylint: disable=too-few-public-methods
+        """Dummy user class."""
+
         def model_dump(self):
+            """Dummy model_dump method."""
             return {"username": "alice", "password": "secret"}
 
     user = DummyUser()
@@ -127,7 +135,6 @@ def test_register_user_calls_backend(mocker):
 
 def test_login_user_calls_backend(mocker):
     """login_user should POST credentials to /token endpoint."""
-
     mock_requests = mocker.patch("ui.components.api.requests")
 
     api.login_user("bob", "pw")

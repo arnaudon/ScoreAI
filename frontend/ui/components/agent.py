@@ -16,7 +16,7 @@ def run_agent():
         if response and response.score_id:
             df = api.get_scores_df()
             st.session_state.selected_row = df.loc[response.score_id - 1]
-            if st.button("Open PDF"):  # pragma: no cover
+            if st.button("Open PDF", key="open"):  # pragma: no cover
                 st.switch_page("reader.py")
 
     st.caption(
