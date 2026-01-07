@@ -1,7 +1,6 @@
 """Test database."""
 
 import os
-from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -12,6 +11,7 @@ from ui.components import db_viewer
 
 @pytest.fixture(name="at")
 def app_test(frontend_dir) -> AppTest:
+    """App test fixture"""
     at = AppTest.from_file(frontend_dir / "ui" / "database.py")
     at.session_state["token"] = "fake-token"
     at.session_state["user"] = "fake-user"

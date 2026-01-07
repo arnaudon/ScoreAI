@@ -8,7 +8,8 @@ import streamlit as st
 from pwdlib import PasswordHash
 from shared.responses import FullResponse, Response
 from shared.scores import Score, Scores
-from shared.user import User
+
+# from shared.user import User
 
 API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
 _SCORES = None

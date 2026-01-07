@@ -19,7 +19,6 @@ def test_account_register_user_success(frontend_dir, mocker):
     ui_path = frontend_dir / "ui" / "account.py"
     at = AppTest.from_file(str(ui_path))
 
-    # Simulate logged-out state so the registration form is shown
     at.session_state["token"] = None
 
     mock_register = mocker.patch("ui.components.api.register_user")
@@ -30,12 +29,10 @@ def test_account_register_user_success(frontend_dir, mocker):
 
     at.run()
 
-    # Fill username and password inputs
-    at.text_input[0].input("newuser")  # Username
-    at.text_input[1].input("pw")  # Password
+    at.text_input("username").input("newuser")
+    at.text_input("password").input("pw")
 
-    # Click Sign Up button
-    at.button[0].click().run()
+    at.button("signup").click().run()
 
     mock_register.assert_called_once()
 
@@ -56,9 +53,9 @@ def test_account_register_user_failure_shows_error(frontend_dir, mocker):
 
     at.run()
 
-    at.text_input[0].input("newuser")
-    at.text_input[1].input("pw")
+    at.text_input("username").input("newuser")
+    at.text_input("password").input("pw")
 
-    at.button[0].click().run()
+    at.button("signup").click().run()
 
     mock_register.assert_called_once()

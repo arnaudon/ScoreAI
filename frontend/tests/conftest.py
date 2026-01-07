@@ -4,12 +4,6 @@ import os
 from pathlib import Path
 
 import pytest
-import streamlit as st
-
-# from app import db
-# from app.main import app
-# from app.users import get_current_user
-# from fastapi.testclient import TestClient
 from pydantic_ai import models
 from shared.scores import Score, Scores
 from shared.user import User
@@ -23,6 +17,7 @@ models.ALLOW_MODEL_REQUESTS = False
 
 @pytest.fixture(name="frontend_dir")
 def frontend_dir_fixture():
+    """Frontend dir"""
     return Path(__file__).resolve().parent.parent
 
 

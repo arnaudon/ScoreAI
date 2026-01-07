@@ -18,7 +18,8 @@ def write_summary_db():
         st.write("You have no scores")
     else:
         st.write(
-            f"{st.session_state.user}, you have {len(df)} scores, with {len(df['composer'].unique())} different composers"
+            f"{st.session_state.user}, you have {len(df)} scores"
+            "with {len(df['composer'].unique())} different composers"
         )
 
 

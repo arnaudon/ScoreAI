@@ -33,7 +33,7 @@ jobs:
         sudo apt-get install poppler-utils
         uv sync --frozen
     - name: Run tests
-      run: uv run --frozen --project ${{ matrix.code }} -m pytest ${{ matrix.code }}
+      run: uv run --frozen --project ${{ matrix.code }} --directory ${{ matrix.code }} -m pytest 
     - name: Run format
       run: uv run --frozen --project ${{ matrix.code }} -m black --check ${{ matrix.code }}
     - name: Run lint

@@ -15,8 +15,8 @@ def main():
 
     if token is None:
         st.subheader("Create New Account")
-        username = st.text_input("Username")
-        password = st.text_input("Password", type="password")
+        username = st.text_input("Username", key="username")
+        password = st.text_input("Password", type="password", key="password")
         first_name = st.text_input("First Name", placeholder="Optional")
         last_name = st.text_input("Last Name", placeholder="Optional")
         email = st.text_input("Email", placeholder="Optional")
@@ -27,7 +27,7 @@ def main():
             last_name=last_name,
             email=email,
         )
-        if st.button("Sign Up"):
+        if st.button("Sign Up", key="signup"):
             res = api.register_user(new_user)
             if res.status_code == 200:
                 st.success("Registration successful! Please log in.")
