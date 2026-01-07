@@ -21,6 +21,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.11", "3.12"]
+        code: ["backend", "frontend", "shared"]
 
     steps:
     - uses: actions/checkout@v4
@@ -38,10 +39,10 @@ jobs:
         sudo apt-get install poppler-utils
         uv sync --frozen
     - name: Run tests
-      run: uv run --frozen --project backend -m pytest backend/tests
+      run: uv run --frozen --project ${{ matrix.code }} -m pytest ${{ matrix.code }}
     - name: Run format
-      run: uv run --frozen --project backend -m black --check backend/app backend/tests
+      run: uv run --frozen --project ${{ matrix.code }} -m black --check ${{ matrix.code }}
     - name: Run lint
-      run: uv run --frozen --project backend -m pylint backend/app backend/tests
+      run: uv run --frozen --project ${{ matrix.code }} -m pylint ${{ matrix.code }} 
     - name: Run mypy
-      run: uv run --frozen --project packend -m mypy backend/app backend/tests
+      run: uv run --frozen --project ${{ matrix.code }} -m mypy ${{ matrix.code }}
