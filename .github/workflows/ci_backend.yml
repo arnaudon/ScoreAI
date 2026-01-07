@@ -9,8 +9,8 @@ on:
       - 'backend/**'
 
 defaults:
-  run:
-    working-directory: backend
+  # run:
+    # working-directory: backend
 
 jobs:
   test:
@@ -38,10 +38,10 @@ jobs:
         sudo apt-get install poppler-utils
         uv sync --frozen
     - name: Run tests
-      run: uv run --frozen pytest tests
+      run: uv run --frozen --project backend -m pytest backend/tests
     - name: Run format
-      run: uv run --frozen black --check app tests
+      run: uv run --frozen --project backend -m black --check backend/app backend/tests
     - name: Run lint
-      run: uv run --frozen pylint app tests
+      run: uv run --frozen --project backend -m pylint backend/app backend/tests
     - name: Run mypy
-      run: uv run --frozen mypy app tests
+      run: uv run --frozen --project packend -m mypy backend/app backend/tests
