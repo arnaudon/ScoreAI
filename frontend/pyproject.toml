@@ -14,6 +14,7 @@ dependencies = [
     "streamlit-image-coordinates>=0.4.0",
     "shared",
     "extra-streamlit-components>=0.1.81",
+    "pwdlib[argon2]>=0.3.0",
 ]
 [dependency-groups]
 dev = [
@@ -26,7 +27,7 @@ dev = [
     "pytest-mock>=3.15.1",
     "pytest-asyncio>=1.2.0",
     "anyio>=4.11.0",
-    "app",
+    # "app",
 ]
 
 [build-system]
@@ -46,4 +47,4 @@ reportUnusedFunction = false
 [tool.uv.sources]
 # shared = { path = "../shared", editable = true, workspace=true }
 shared = {workspace = true}
-app = { workspace = true }
+# app = { workspace = true }

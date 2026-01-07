@@ -1,43 +1,18 @@
 """Main frontent entry point."""
 
-from ui.components import api
-import streamlit as st
-
-from ui.components.db_viewer import write_summary_db
-from ui.locales import _, init_i18n_gettext, language_selector
-import datetime
+import time
 
 import extra_streamlit_components as stx
-import time
-cookie_manager = stx.CookieManager()
-init_i18n_gettext()
+import streamlit as st
 
-cookie_expiry_date = datetime.datetime.now() + datetime.timedelta(days=1)
-
-# load cookie with a little waiting
-saved_token = cookie_manager.get(cookie="token")
-if saved_token is None:
-    with st.spinner("Authenticating..."):
-        time.sleep(0.5)
-        saved_token = cookie_manager.get(cookie="token")
-
-if saved_token and "token" not in st.session_state:
-    st.session_state.token = saved_token
-    st.session_state.user =cookie_manager.get(cookie="user")
-
-if "token" not in st.session_state:
-    st.session_state.token = None
-
-welcome_page = st.Page("welcome.py", title=_("Choose a score"))
-database_page = st.Page("database.py", title=_("View database"))
-account_page = st.Page("account.py", title=_("Manage your account"))
-reader_page = st.Page("reader.py", title=_("View a score"))
-st.session_state.reader_page = reader_page
+from ui.components import api
+from ui.components.db_viewer import write_summary_db
+from ui.locales import _, init_i18n_gettext, language_selector
 
 
-def login():
-    """Login logic"""
-    if st.session_state.token is None:
+def login(welcome_page, cookie_manager):
+    """Login/logout sidebar logic."""
+    if getattr(st.session_state, "token", None) is None:
         st.subheader(_("Login"))
         user = st.text_input(_("Username"))
         pw = st.text_input(_("Password"), type="password")
@@ -53,11 +28,8 @@ def login():
                 st.session_state.token = token
                 st.session_state.user = user
                 cookie_manager.set("token", token, key="save_token")
-                                   # expires=cookie_expiry_date,)
                 cookie_manager.set("user", token, key="save_user")
-                                   # expires=cookie_expiry_date,)
                 st.switch_page(welcome_page)
-                st.rerun()
             else:
                 st.error(_("Invalid credentials"))
     else:
@@ -66,17 +38,48 @@ def login():
             st.rerun()
 
 
-with st.sidebar:
+def main():
+    """Render the main navigation app."""
+    init_i18n_gettext()
+
+    cookie_manager = stx.CookieManager()
+
+    # load cookie with a little waiting
+    saved_token = cookie_manager.get(cookie="token")
+    if saved_token is None:
+        with st.spinner("Authenticating..."):
+            time.sleep(0.5)
+            saved_token = cookie_manager.get(cookie="token")
+
+    if saved_token and "token" not in st.session_state:
+        st.session_state.token = saved_token
+        st.session_state.user = cookie_manager.get(cookie="user")
+        st.session_state.user_id = cookie_manager.get(cookie="user_id")
+
+    if "token" not in st.session_state:
+        st.session_state.token = None
+
+    welcome_page = st.Page("welcome.py", title=_("Choose a score"))
+    database_page = st.Page("database.py", title=_("View database"))
+    account_page = st.Page("account.py", title=_("Manage your account"))
+    reader_page = st.Page("reader.py", title=_("View a score"))
+    st.session_state.reader_page = reader_page
+
+    with st.sidebar:
+        if st.session_state.token is not None:
+            write_summary_db()
+            language_selector()
+        login(welcome_page, cookie_manager)
+        st.button("reset cache", on_click=api.reset_score_cache)
+
     if st.session_state.token is not None:
-        write_summary_db()
-        language_selector()
-    login()
-    st.button("reset cache", on_click=api.reset_score_cache)
+        pages = [welcome_page, database_page, reader_page, account_page]
+    else:
+        pages = [account_page]
 
-if st.session_state.token is not None:
-    pages = [welcome_page, database_page, reader_page, account_page]
-else:
-    pages = [account_page]
+    pg = st.navigation(pages)
+    pg.run()
 
-pg = st.navigation(pages)
-pg.run()
+
+if __name__ == "__main__":  # pragma: no cover
+    main()

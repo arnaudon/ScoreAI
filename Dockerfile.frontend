@@ -6,7 +6,7 @@
 
 # Want to help us make this template better? Share your feedback here: https://forms.gle/ybq9Krt8jtBL3iCk7
 
-FROM astral/uv:python3.12-bookworm-slim AS base
+FROM astral/uv:python3.12-bookworm-slim AS builder
 
 # Prevents Python from writing pyc files.
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -27,20 +27,38 @@ ENV UV_TOOL_BIN_DIR=/usr/local/bin
 
 WORKDIR /app
 
-COPY shared /shared
+# this is to get the tests happy, but to be cleaned up somehow
+# COPY backend /backend
 
-FROM base AS frontend
+COPY pyproject.toml uv.lock ./
+COPY backend/pyproject.toml ./backend/
+COPY frontend/pyproject.toml ./frontend/
+COPY shared/pyproject.toml shared/README.md ./shared/
+COPY shared/shared ./shared/shared
+
+RUN uv sync --locked --no-install-project --package ui
+
+COPY frontend/ui ./frontend/ui
+COPY frontend/README.md ./frontend/
+
+RUN uv sync --locked --package ui
+
+FROM python:3.12-slim-bookworm
 
 RUN apt-get update &&\
   apt-get install -y --no-install-recommends poppler-utils && \
   rm -rf /var/lib/apt/lists/*
 
-# this is to get the tests happy, but to be cleaned up somehow
-COPY backend /backend
+WORKDIR /app
 
-COPY frontend/uv.lock frontend/pyproject.toml .
-RUN uv sync --locked --no-install-project
+EXPOSE 8000
 
-COPY frontend .
+COPY --from=builder /app/.venv /app/.venv
+COPY --from=builder /app/frontend /app/frontend
+COPY --from=builder /app/shared /app/shared
 
-CMD uv run --locked streamlit run ui/app.py
+ENV PYTHONPATH=/app
+ENV PATH="/app/.venv/bin:$PATH"
+# CMD ["tail", "-f", "/dev/null"]
+
+CMD streamlit run frontend/ui/app.py

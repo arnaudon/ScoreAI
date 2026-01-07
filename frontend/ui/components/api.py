@@ -3,11 +3,12 @@
 import os
 
 import pandas as pd
-from pwdlib import PasswordHash
 import requests
 import streamlit as st
+from pwdlib import PasswordHash
 from shared.responses import FullResponse, Response
-from shared.scores import Scores
+from shared.scores import Score, Scores
+from shared.user import User
 
 API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
 _SCORES = None
@@ -37,23 +38,23 @@ def login_user(username, password):
     return response
 
 
-def add_score(score_data) -> dict:
+def add_score(score_data: Score) -> dict:
     """Add a score to the db via API"""
-    res = requests.post(
+    response = requests.post(
         f"{API_URL}/scores",
-        headers={"Authorization": f"Bearer {st.session_state.token}"},
-        json=score_data,
+        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+        json=score_data.model_dump(),
     ).json()
     reset_score_cache()
-    return res
+    return response
 
 
 def delete_score(score_id: int):
     """Delete a score from the db via API"""
     requests.delete(
         f"{API_URL}/scores/{score_id}",
-        headers={"Authorization": f"Bearer {st.session_state.token}"},
-    ).json()
+        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+    )
     reset_score_cache()
 
 
@@ -61,7 +62,7 @@ def add_play(score_id: int) -> dict:
     """Add a play to the db via API"""
     res = requests.post(
         f"{API_URL}/scores/{score_id}/play",
-        headers={"Authorization": f"Bearer {st.session_state.token}"},
+        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
     ).json()
     reset_score_cache()
     return res
@@ -74,7 +75,7 @@ def get_scores() -> Scores:
         _SCORES = Scores(
             scores=requests.get(
                 f"{API_URL}/scores",
-                headers={"Authorization": f"Bearer {st.session_state.token}"},
+                headers={"Authorization": f"Bearer {st.session_state.get("token")}"},
             ).json()
         )
     return _SCORES
@@ -96,7 +97,7 @@ def run_agent(question: str) -> Response:  # pragma: no cover
             "deps": scores.model_dump_json(),
             "message_history": st.session_state.message_history,
         },
-        headers={"Authorization": f"Bearer {st.session_state.token}"},
+        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
     )
     try:
         result = result.json()

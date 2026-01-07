@@ -5,10 +5,11 @@ from pathlib import Path
 
 import pytest
 import streamlit as st
-from app import db
-from app.main import app
-from app.users import get_current_user
-from fastapi.testclient import TestClient
+
+# from app import db
+# from app.main import app
+# from app.users import get_current_user
+# from fastapi.testclient import TestClient
 from pydantic_ai import models
 from shared.scores import Score, Scores
 from shared.user import User
@@ -63,45 +64,13 @@ def test_user_fixture():
     return User(username="testuser", email="test@example.com", password="hashed")
 
 
-@pytest.fixture(name="client")
-def client_fixture(session: Session, test_scores: Scores, test_user: User):
-    """Client with authenticated user and pre-populated scores."""
-
-    def get_session_override():
-        """Override DB session to use test session."""
-        return session
-
-    # create a test user that will own all scores
-    session.add(test_user)
-    session.commit()
-    session.refresh(test_user)
-
-    def get_current_user_override():
-        """Always return the test user for authentication."""
-        return test_user
-
-    app.dependency_overrides[db.get_session] = get_session_override
-    app.dependency_overrides[get_current_user] = get_current_user_override
-
-    client = TestClient(app)
-
-    # add scores to empty db for the authenticated user
-    for test_score in test_scores.scores:
-        client.post("/scores", json=test_score.model_dump())
-
-    yield client
-
-    app.dependency_overrides.clear()
-
-
 @pytest.fixture(autouse=True)
-def request_mock(mocker, client):
-    """Mock HTTP client and initialize Streamlit session state for frontend tests."""
-    # Ensure a token and user exist in session state so frontend API helpers can
-    # build Authorization headers without raising attribute errors.
-    if "token" not in st.session_state:
-        st.session_state.token = "test-token"
-    if "user" not in st.session_state:
-        st.session_state.user = "testuser"
+def request_mock(request, mocker, test_scores):
+    """Mock api calls."""
+    if "real_api" in request.keywords:
+        return
+    mocker_get_scores = mocker.patch("ui.components.api.get_scores")
+    mocker_get_scores.return_value = test_scores
 
-    mocker.patch("ui.components.api.requests", new=client)
+    mocker_add_play = mocker.patch("ui.components.api.add_play")
+    mocker_add_play.return_value = {"number_of_plays": 1}

@@ -40,12 +40,13 @@ def add_score():
 
         with open(save_path, "wb") as f:
             f.write(uploaded_file.getbuffer())
-        score_data = {
-            "title": title,
-            "composer": composer,
-            "pdf_path": save_path,
-            "number_of_plays": 0,
-        }
+        score_data = Score(
+            user_id=st.session_state.user_id,
+            title=title,
+            composer=composer,
+            pdf_path=save_path,
+            number_of_plays=0,
+        )
         res = api.add_score(score_data)
         st.success(res)
         st.rerun()

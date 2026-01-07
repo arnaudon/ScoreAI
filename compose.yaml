@@ -7,7 +7,7 @@ services:
     ports:
       - '8000:8000'
     volumes:
-      - ./backend:/app
+      - ./backend:/app/backend
       - ./shared:/app/shared
       - ./database:/app/database
     environment:
@@ -24,7 +24,7 @@ services:
     ports:
       - '8501:8501'
     volumes:
-      - ./frontend:/app
+      - ./frontend:/app/frontend
       - ./data:/app/data
     environment:
       - API_URL=http://backend:8000

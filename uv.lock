@@ -1654,7 +1654,7 @@ wheels = [
 
 [[package]]
 name = "jsonschema"
-version = "4.25.1"
+version = "4.26.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "attrs" },
@@ -1662,9 +1662,9 @@ dependencies = [
     { name = "referencing" },
     { name = "rpds-py" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/74/69/f7185de793a29082a9f3c7728268ffb31cb5095131a9c139a74078e27336/jsonschema-4.25.1.tar.gz", hash = "sha256:e4a9655ce0da0c0b67a085847e00a3a51449e1157f4f75e9fb5aa545e122eb85", size = 357342, upload-time = "2025-08-18T17:03:50.038Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b3/fc/e067678238fa451312d4c62bf6e6cf5ec56375422aee02f9cb5f909b3047/jsonschema-4.26.0.tar.gz", hash = "sha256:0c26707e2efad8aa1bfc5b7ce170f3fccc2e4918ff85989ba9ffa9facb2be326", size = 366583, upload-time = "2026-01-07T13:41:07.246Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bf/9c/8c95d856233c1f82500c2450b8c68576b4cf1c871db3afac5c34ff84e6fd/jsonschema-4.25.1-py3-none-any.whl", hash = "sha256:3fba0169e345c7175110351d456342c364814cfcf3b964ba4587f22915230a63", size = 90040, upload-time = "2025-08-18T17:03:48.373Z" },
+    { url = "https://files.pythonhosted.org/packages/69/90/f63fb5873511e014207a475e2bb4e8b2e570d655b00ac19a9a0ca0a385ee/jsonschema-4.26.0-py3-none-any.whl", hash = "sha256:d489f15263b8d200f8387e64b4c3a75f06629559fb73deb8fdfb525f2dab50ce", size = 90630, upload-time = "2026-01-07T13:41:05.306Z" },
 ]
 
 [[package]]
@@ -1765,7 +1765,7 @@ wheels = [
 
 [[package]]
 name = "logfire"
-version = "4.16.0"
+version = "4.17.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "executing" },
@@ -1776,9 +1776,9 @@ dependencies = [
     { name = "rich" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e2/60/b8040db3598a55da64c45e3e689f2baa87389a4648a6f46ba80be3329f23/logfire-4.16.0.tar.gz", hash = "sha256:03a3ab8fdc13399309cb55d69cba7a6fcbad3526cfad85fc4f72e7d75e22b654", size = 550759, upload-time = "2025-12-04T16:16:39.477Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7d/74/88e8fec6e3fe247a7cdaeba777cbf7aced11de33db423693690e20ab8356/logfire-4.17.0.tar.gz", hash = "sha256:693d47d6b8b0a8f9fd8112d958eb9e3ae00fe5d323e1eee468e4bc6379bb2c4f", size = 558897, upload-time = "2026-01-07T10:52:16.148Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/53/f7/ffcf81eb4aea75e40c0646b9519947d2070626c5d533922df92975045181/logfire-4.16.0-py3-none-any.whl", hash = "sha256:8f895f6c2efa593ad6d49e1b06d8e6e351d3dd0cad61ce5def0c3d401f8ea707", size = 229122, upload-time = "2025-12-04T16:16:35.963Z" },
+    { url = "https://files.pythonhosted.org/packages/39/68/c49baec77c56dcf5698daaa66a097523063d55b2feaecc968000518521a1/logfire-4.17.0-py3-none-any.whl", hash = "sha256:1ed1064a4126f48503f7832ce6039425dff70128d145552d7981ac9ce2151b17", size = 232456, upload-time = "2026-01-07T10:52:13.394Z" },
 ]
 
 [package.optional-dependencies]
@@ -1788,11 +1788,11 @@ httpx = [
 
 [[package]]
 name = "logfire-api"
-version = "4.16.0"
+version = "4.17.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/9a/d9/d5f5e276371d5c8cde559d558de44b8378641231a23f3a632ebfe4b05c9b/logfire_api-4.16.0.tar.gz", hash = "sha256:0efa62f5e73abdea670b5e9384c841b544474207110a089536a0fa8704f9e386", size = 57702, upload-time = "2025-12-04T16:16:40.725Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/8a/2a/76d8fbafa881cb03d5ad6e1d67d537e8c308ae7145812b8891f7b8751224/logfire_api-4.17.0.tar.gz", hash = "sha256:4647dad05146a68af441d59a7746a966df4c2581b316616f1210f8cf74931353", size = 58305, upload-time = "2026-01-07T10:52:17.768Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9b/6e/6d500ce6352c54566d03c65d92a8f3fc7045645814de046707b105dda2a6/logfire_api-4.16.0-py3-none-any.whl", hash = "sha256:7351153c35cb61f0f89d2d4123ebf99b5469d70ef34c613a5ce56f85bf1b14fb", size = 95247, upload-time = "2025-12-04T16:16:38.007Z" },
+    { url = "https://files.pythonhosted.org/packages/cb/bc/3844e103dca998dcc195d6ef09e0f29d9000bac870117db1dd59a29bfeef/logfire_api-4.17.0-py3-none-any.whl", hash = "sha256:80a4b79cd9918934cdf2043d944cfb04182708178d846273484d47f3619a5a39", size = 96146, upload-time = "2026-01-07T10:52:15.088Z" },
 ]
 
 [[package]]
@@ -4182,6 +4182,7 @@ dependencies = [
     { name = "pandas-stubs" },
     { name = "pathlib" },
     { name = "pdf2image" },
+    { name = "pwdlib", extra = ["argon2"] },
     { name = "shared" },
     { name = "streamlit", extra = ["pdf"] },
     { name = "streamlit-aggrid" },
@@ -4191,7 +4192,6 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "anyio" },
-    { name = "app" },
     { name = "black" },
     { name = "mypy" },
     { name = "pylint" },
@@ -4209,6 +4209,7 @@ requires-dist = [
     { name = "pandas-stubs", specifier = ">=2.3.2.250926" },
     { name = "pathlib", specifier = ">=1.0.1" },
     { name = "pdf2image", specifier = ">=1.17.0" },
+    { name = "pwdlib", extras = ["argon2"], specifier = ">=0.3.0" },
     { name = "shared", editable = "shared" },
     { name = "streamlit", extras = ["pdf"], specifier = ">=1.50.0" },
     { name = "streamlit-aggrid", specifier = ">=1.1.9" },
@@ -4218,7 +4219,6 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "anyio", specifier = ">=4.11.0" },
-    { name = "app", editable = "backend" },
     { name = "black", specifier = ">=25.9.0" },
     { name = "mypy", specifier = ">=1.18.2" },
     { name = "pylint", specifier = ">=4.0.2" },
