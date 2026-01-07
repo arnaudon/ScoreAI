@@ -35,7 +35,7 @@ jobs:
     - name: Run tests
       run: uv run --frozen --project ${{ matrix.code }} --directory ${{ matrix.code }} pytest 
     - name: Run format
-      run: uv run --frozen --project ${{ matrix.code }} --directory ${{ matrix.code }}  --check .
+      run: uv run --frozen --project ${{ matrix.code }} --directory ${{ matrix.code }} black --check .
     - name: Run lint
       run: uv run --frozen --project ${{ matrix.code }} pylint --directory ${{ matrix.code }} pylint .
     - name: Run mypy
