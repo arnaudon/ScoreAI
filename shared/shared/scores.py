@@ -2,13 +2,11 @@
 
 from typing import TYPE_CHECKING, List, Optional
 
+from pydantic import BaseModel
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from shared.user import User
-
-from pydantic import BaseModel
-from sqlmodel import Field, SQLModel
 
 
 class Score(SQLModel, table=True):

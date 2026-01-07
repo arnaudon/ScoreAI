@@ -1,3 +1,5 @@
+"""User models."""
+
 from typing import TYPE_CHECKING, List
 
 from sqlmodel import Field, Relationship, SQLModel
@@ -7,6 +9,8 @@ if TYPE_CHECKING:
 
 
 class User(SQLModel, table=True):
+    """User model."""
+
     id: int | None = Field(default=None, primary_key=True)
     username: str
     email: str | None = None
