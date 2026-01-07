@@ -3,11 +3,10 @@ name = "ScoreAI"
 version = "0.1.0"
 description = "scoreai monorepo"
 dependencies = []
-[tool.pytest.ini_options]
-testpaths = ["backend/tests", "frontend/tests"]
-python_files = "test_*.py"
-python_classes = "Test*"
-python_functions = "test_*"
-[tool.uv.workspace]
-members = ["backend", "frontend"]
 
+[tool.uv.workspace]
+members = ["backend", "frontend", "shared"]
+
+[tool.mypy]
+mypy_path = "shared:backend:frontend"
+explicit_package_bases = true

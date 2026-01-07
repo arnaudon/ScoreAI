@@ -53,4 +53,5 @@ typeCheckingMode = "standard"
 reportUnusedFunction = false
 
 [tool.uv.sources]
-shared = { path = "../shared", editable = true }
+ui = {workspace = true}
+shared = {workspace = true}

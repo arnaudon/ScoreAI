@@ -10,6 +10,7 @@ resolution-markers = [
 members = [
     "app",
     "scoreai",
+    "shared",
     "ui",
 ]
 
@@ -3723,6 +3724,19 @@ dependencies = [
     { name = "pydantic" },
     { name = "pydantic-ai" },
     { name = "sqlmodel" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "anyio" },
+    { name = "black" },
+    { name = "mypy" },
+    { name = "pylint" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
+    { name = "pytest-mock" },
+    { name = "pyyaml" },
 ]
 
 [package.metadata]
