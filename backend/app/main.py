@@ -7,12 +7,12 @@ from logging import getLogger
 from typing import Annotated, AsyncGenerator
 
 from fastapi import Depends, FastAPI
-from shared.user import User
 from shared.scores import Score, Scores
+from shared.user import User
 from sqlmodel import Session, select
 
 import app.users as users
-from app.agent import run_agent
+from app.agent import Deps, run_agent
 from app.db import get_session, init_db
 from app.users import get_current_user
 
@@ -99,5 +99,7 @@ async def run(
 ):  # pragma: no cover
     """Run the agent."""
     return await run_agent(
-        prompt, message_history=message_history, deps=[current_user, Scores(**json.loads(deps))]
+        prompt,
+        message_history=message_history,
+        deps=Deps(user=current_user, scores=Scores(**json.loads(deps))),
     )

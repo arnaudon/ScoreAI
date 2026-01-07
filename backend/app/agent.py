@@ -3,10 +3,11 @@
 import os
 import random
 from typing import Any, Union
-from pydantic_ai.exceptions import ModelHTTPError
+
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from pydantic_ai import Agent, RunContext
+from pydantic_ai.exceptions import ModelHTTPError
 from shared.responses import FullResponse, Response
 from shared.scores import Scores
 from shared.user import User
@@ -22,12 +23,19 @@ class Filter(BaseModel):
     composer: str
 
 
+class Deps(BaseModel):
+    """Deps for agent."""
+
+    user: User
+    scores: Scores
+
+
 def get_agent():
     """Get the agent."""
     agent = Agent(
         MODEL,
         output_type=Response,
-        deps_type=Union[User, Scores],
+        deps_type=Deps,
         system_prompt="""Your task it to find a score to play.
         Write score id entry into score_id.
         If multiple scores are possible, return None for the score_id.
@@ -39,20 +47,20 @@ def get_agent():
     )
 
     @agent.tool
-    async def get_score_info(ctx: RunContext[Scores]) -> str:
+    async def get_score_info(ctx: RunContext[Deps]) -> str:
         """Get score info."""
-        return f"The scores infos are {ctx.deps[1].model_dump_json()}."
+        return f"The scores infos are {ctx.deps.scores.model_dump_json()}."
 
     @agent.tool
-    async def get_user_name(ctx: RunContext[User]) -> str:
+    async def get_user_name(ctx: RunContext[Deps]) -> str:
         """Get the user name."""
-        return ctx.deps[0].username
+        return ctx.deps.user.username
 
     @agent.tool
-    async def get_random_score_by_composer(ctx: RunContext[Scores], filter_params: Filter) -> str:
+    async def get_random_score_by_composer(ctx: RunContext[Deps], filter_params: Filter) -> str:
         """Get a random score by composer."""
         scores = []
-        for score in ctx.deps.scores:
+        for score in ctx.deps.scores.scores:
             if score.composer.lower() == filter_params.composer.lower():
                 scores.append(score)
         if scores:
@@ -62,9 +70,10 @@ def get_agent():
     return agent
 
 
-async def run_agent(prompt: str, deps: Scores, message_history=None):
+async def run_agent(prompt: str, deps: Deps, message_history=None):
     """Run the agent."""
     agent = get_agent()
+
     try:
         res = await agent.run(
             prompt,
@@ -73,13 +82,13 @@ async def run_agent(prompt: str, deps: Scores, message_history=None):
         )
         response = res.output
         history = res.all_messages()
-    except ModelHTTPError as e:  # pragma: no cover - external HTTP failure handling
+    except ModelHTTPError as e:  # pragma: no cover
         history = []
         if e.status_code == 429:
             response = Response(response="Rate limit exceeded (Quota hit)")
         else:
             response = Response(response="An HTTP error occurred")
-    except Exception as e:  # pragma: no cover - unexpected external errors
+    except Exception as e:  # pragma: no cover
         history = []
         response = Response(response="An unexpected error occurred")
 

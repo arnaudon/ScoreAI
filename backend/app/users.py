@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
@@ -8,10 +9,9 @@ from jwt.exceptions import InvalidTokenError
 from pwdlib import PasswordHash
 from pydantic import BaseModel
 from shared.user import User
-
 from sqlmodel import Session, select
+
 from app.db import get_session
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -116,17 +116,3 @@ async def add_user(user: User, session: Session = Depends(get_session)):
     session.commit()
     session.refresh(user)
     return user
-
-
-@router.get("/users/me/", response_model=User)
-async def read_users_me(
-    current_user: Annotated[User, Depends(get_current_user)],
-):
-    return current_user
-
-
-@router.get("/users/me/items/")
-async def read_own_items(
-    current_user: Annotated[User, Depends(get_current_user)],
-):
-    return [{"item_id": "Foo", "owner": current_user.username}]

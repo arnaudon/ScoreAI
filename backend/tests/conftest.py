@@ -40,8 +40,13 @@ def test_scores_fixture():
     return Scores(scores=[score_1, score_2, score_3, score_4])
 
 
+@pytest.fixture(name="test_user")
+def test_user_fixture():
+    return User(username="testuser", email="test@example.com", password="hashed")
+
+
 @pytest.fixture(name="client")
-def client_fixture(session: Session, test_scores: Scores):
+def client_fixture(session: Session, test_scores: Scores, test_user: User):
     """client with authenticated user"""
 
     def get_session_override():
@@ -49,7 +54,6 @@ def client_fixture(session: Session, test_scores: Scores):
         return session
 
     # create a test user that will own all scores
-    test_user = User(username="testuser", email="test@example.com", password="hashed")
     session.add(test_user)
     session.commit()
     session.refresh(test_user)
