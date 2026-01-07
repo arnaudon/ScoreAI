@@ -1,11 +1,11 @@
 """test backend agnent.py"""
 
 from pydantic_ai.models.test import TestModel
+
+from app import agent
 from shared.responses import FullResponse
 from shared.scores import Scores
 from shared.user import User
-
-from app import agent
 
 
 async def test_agent_success(test_scores: Scores, test_user: User):
