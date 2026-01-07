@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 SECRET_KEY = "00205d1c7dfd3d9d6ad7b542cb50f308b00e4efa3165ed7c1deefab70ade383a"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 1 
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 1
 
 
 router = APIRouter(prefix="", tags=["users"])
