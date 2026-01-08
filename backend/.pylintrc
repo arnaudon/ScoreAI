@@ -2,7 +2,7 @@
 # for some of the options that are available
 
 [MASTER]
-ignore=.venv,.git
+ignore=.venv,.git,migrations
 
 [MESSAGES CONTROL]
 disable=W0511,W0603,W0621,W3101,C0411
