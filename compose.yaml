@@ -3,6 +3,10 @@ services:
     image: postgres:16-alpine
     container_name: postgres_db
     restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
     volumes:
@@ -29,7 +33,7 @@ services:
       - ./database:/app/database
     environment:
       # - DATABASE_URL=sqlite:///database/database.db
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - DATABASE_URL=${DATABASE_URL}
     env_file: .env
 
   frontend:
