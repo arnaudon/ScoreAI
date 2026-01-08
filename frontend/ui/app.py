@@ -1,6 +1,7 @@
 """Main frontent entry point."""
 
 import time
+from datetime import datetime, timedelta
 
 import extra_streamlit_components as stx
 import streamlit as st
@@ -8,6 +9,8 @@ import streamlit as st
 from ui.components import api
 from ui.components.db_viewer import write_summary_db
 from ui.locales import _, init_i18n_gettext, language_selector
+
+COOKIE_EXPIRES = datetime.now() + timedelta(days=1)
 
 
 def login(welcome_page, cookie_manager):
@@ -27,21 +30,20 @@ def login(welcome_page, cookie_manager):
                 token = res.json().get("access_token")
                 st.session_state.token = token
                 st.session_state.user = user
-                cookie_manager.set("token", token, key="save_token")
-                cookie_manager.set("user", token, key="save_user")
+                cookie_manager.set("token", token, key="save_token", expires_at=COOKIE_EXPIRES)
+                cookie_manager.set("user", user, key="save_user", expires_at=COOKIE_EXPIRES)
                 st.switch_page(welcome_page)
             else:
                 st.error(_("Invalid credentials"))
     else:
         if st.button(_("Logout")):
             st.session_state.token = None
-            st.rerun()
+            cookie_manager.delete("token")
 
 
 def main():
     """Render the main navigation app."""
     init_i18n_gettext()
-
     cookie_manager = stx.CookieManager()
 
     # load cookie with a little waiting

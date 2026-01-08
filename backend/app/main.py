@@ -13,8 +13,7 @@ from app import users
 from app.agent import Deps, run_agent
 from app.db import get_session, init_db
 from app.users import get_current_user
-from shared.scores import Score, Scores
-from shared.user import User
+from shared import Score, Scores, User
 
 logger = getLogger(__name__)
 

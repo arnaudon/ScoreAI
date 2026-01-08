@@ -6,11 +6,19 @@ from pydantic import BaseModel
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
-    from shared.user import User
+    from shared import User
+
+import sys
+
+print("User imported from:", __file__)
+print("Module id:", id(sys.modules[__name__]))
 
 
 class Score(SQLModel, table=True):
     """Score model"""
+
+    __tablename__ = "score"  # type: ignore[reportAssignmentType]
+    __table_args__ = {"extend_existing": True}
 
     id: int | None = Field(default=None, primary_key=True)
     pdf_path: str = Field()
