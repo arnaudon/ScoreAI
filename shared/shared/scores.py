@@ -8,11 +8,6 @@ from sqlmodel import Field, Relationship, SQLModel
 if TYPE_CHECKING:
     from shared import User
 
-import sys
-
-print("User imported from:", __file__)
-print("Module id:", id(sys.modules[__name__]))
-
 
 class Score(SQLModel, table=True):
     """Score model"""

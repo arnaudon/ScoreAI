@@ -69,7 +69,6 @@ def add_play(score_id: int) -> dict:
 def get_scores() -> Scores:
     """Get all scores from the db via API"""
     global _SCORES
-    _SCORES = None
     if _SCORES is None:
         _SCORES = Scores(
             scores=requests.get(
