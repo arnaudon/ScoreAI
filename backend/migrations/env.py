@@ -6,9 +6,10 @@ from sqlalchemy import pool
 from alembic import context
 
 from sqlmodel import SQLModel
-from shared import User, Score 
+from shared import User, Score
 import os
 import dotenv
+
 dotenv.load_dotenv()
 
 
@@ -16,12 +17,15 @@ dotenv.load_dotenv()
 # access to the values within the .ini file in use.
 config = context.config
 
+
 def get_url():
     url = os.getenv("DATABASE_URL")
     # If running locally, 'db' won't resolve, so we swap to 'localhost'
     if url and "db:5432" in url and not os.path.exists("/.dockerenv"):
         url = url.replace("db:5432", "localhost:5432")
     return url
+
+
 db_url = get_url()
 print(db_url)
 if db_url:
@@ -82,9 +86,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()
