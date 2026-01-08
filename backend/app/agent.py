@@ -9,9 +9,7 @@ from pydantic import BaseModel
 from pydantic_ai import Agent, RunContext
 from pydantic_ai.exceptions import ModelHTTPError
 
-from shared.responses import FullResponse, Response
-from shared.scores import Scores
-from shared.user import User
+from shared import FullResponse, Response, Scores, User
 
 load_dotenv()
 

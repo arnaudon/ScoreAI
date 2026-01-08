@@ -1,7 +1,7 @@
 """Account module."""
 
 import streamlit as st
-from shared.user import User
+from shared import User
 
 from ui.components import api
 

@@ -3,7 +3,7 @@
 from pathlib import Path
 
 import streamlit as st
-from shared.scores import Score
+from shared import Score
 from st_aggrid import AgGrid, GridOptionsBuilder
 
 from ui.components import api
@@ -19,7 +19,7 @@ def write_summary_db():
     else:
         st.write(
             f"{st.session_state.user}, you have {len(df)} scores"
-            "with {len(df['composer'].unique())} different composers"
+            f"with {len(df['composer'].unique())} different composers"
         )
 
 
