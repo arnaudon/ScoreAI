@@ -19,7 +19,7 @@ services:
       - ./data:/app/data
     environment:
       - API_URL=http://backend:8000
-      - DATA_PATH=/app/data
+      - DATA_PATH=data
 
 volumes:
   postgres_data:

@@ -29,11 +29,10 @@ class FileUploader:
 
     def __init__(self):
         """Initialize the file uploader."""
-        self.location = None
         if os.getenv("DATA_PATH"):
             self.location = "local"
             self.data_path = Path(str(os.getenv("DATA_PATH")))
-        if os.getenv("S3_ENPOINT"):
+        elif os.getenv("S3_ENPOINT"):
             self.location = "s3"
             s3_config = Config(
                 signature_version="s3v4",
@@ -56,22 +55,24 @@ class FileUploader:
                 config=s3_config,
             )
 
-        raise Exception("You need to set either DATA_PATH or S3_ENDPOINT")
+        else:
+            raise Exception("You need to set either DATA_PATH or S3_ENDPOINT")
 
-    def upload(self, file, title, composer, user):
+    def upload(self, file, title, composer, user) -> str:
         """Save the file."""
         filename = self._get_filename(title, composer, user)
         if self.location == "local":
-            with open(self.data_path / filename, "wb") as f:
+            path = self.data_path / filename
+            with open(path, "wb") as f:
                 f.write(file.getbuffer())
-            return filename
+            return str(path)
 
         if self.location == "s3":
 
             self.s3_client.put_object(Bucket=self.bucket, Key=filename, Body=file)
             return f"https://{self.bucket}.{self.endpoint}/{filename}"
 
-    def _get_filename(self, title, composer, user):
+    def _get_filename(self, title, composer, user) -> str:
         """Get the filename."""
         return f"{title}_{composer}_{user}.pdf"
 
@@ -87,8 +88,8 @@ def add_score():
             st.write("Please upload a file")
             st.stop()
 
-        if "file_uploader" not in st.session_state:
-            st.session_state.file_uploader = FileUploader()
+        # if "file_uploader" not in st.session_state:
+        st.session_state.file_uploader = FileUploader()
         save_path = st.session_state.file_uploader.upload(
             uploaded_file, title, composer, st.session_state.user
         )
