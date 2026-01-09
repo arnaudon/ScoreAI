@@ -1,0 +1,31 @@
+name: Deploy to infomaniak
+
+on:
+  push:
+    branches: [ main ] 
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Infomaniak via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            sudo apt-get update
+            sudo apt-get -y upgrade
+            cd /home/debian/ScoreAI
+            git pull origin main
+            echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" > .env
+            echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
+            echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env
+            #TODO: move this to the db
+            echo "MODEL=google-gla:gemini-2.5-flash-lite" >> .env
+            echo "GOOGLE_API_KEY=AIzaSyBg9bXflw9Xv8FtWzAsOwXUeChPQT7e3lQ" >> .env
+            sudo docker-compose up --build -d

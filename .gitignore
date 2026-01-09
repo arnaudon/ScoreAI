@@ -8,6 +8,9 @@ wheels/
 data/
 database/
 
+*.tfstate*
+.terraform*
+
 .venv
 .env
 .coverage
