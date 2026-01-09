@@ -32,7 +32,7 @@ class FileUploader:
         if os.getenv("DATA_PATH"):
             self.location = "local"
             self.data_path = Path(str(os.getenv("DATA_PATH")))
-        elif os.getenv("S3_ENPOINT"):
+        elif os.getenv("S3_ENDPOINT"):
             self.location = "s3"
             s3_config = Config(
                 signature_version="s3v4",
