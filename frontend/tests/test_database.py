@@ -6,8 +6,6 @@ import pandas as pd
 import pytest
 from streamlit.testing.v1 import AppTest
 
-from ui.components import db_viewer
-
 
 @pytest.fixture(name="at")
 def app_test(frontend_dir) -> AppTest:
@@ -37,7 +35,7 @@ def test_database_selected_score_delete(test_scores, mocker, at):
     """Test database selected score delete."""
     mock_response = mocker.patch("ui.components.db_viewer.AgGrid")
     mock_response.return_value = {
-        "selected_rows": pd.DataFrame([test_scores.scores[0].model_dump()])
+        "selected_rows": pd.DataFrame([test_scores.scores[1].model_dump()])
     }
     at.run()
     at.button("delete").click().run()
@@ -55,7 +53,6 @@ def test_database_selected_score_cancel(test_scores, mocker, at):
 
 def test_database_add_score(mocker, at, frontend_dir):
     """Test database add score."""
-    db_viewer.DATA_PATH = str(frontend_dir / "tests/data")
     at.run()
 
     class MockUpload:  # pylint: disable=R0903

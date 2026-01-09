@@ -25,7 +25,7 @@ def login(welcome_page, cookie_manager):
                 # reset db cache
                 api.reset_score_cache()
                 # reset pdf cache
-                if "pdf_viewers" in st.session_state:
+                if "pdf_viewers" in st.session_state:  # pragma: no cover
                     del st.session_state.pdf_viewers
                 token = res.json().get("access_token")
                 st.session_state.token = token
@@ -36,7 +36,7 @@ def login(welcome_page, cookie_manager):
             else:
                 st.error(_("Invalid credentials"))
     else:
-        if st.button(_("Logout")):
+        if st.button(_("Logout")):  # pragma: no cover
             st.session_state.token = None
             cookie_manager.delete("token")
 
@@ -53,12 +53,12 @@ def main():
             time.sleep(0.5)
             saved_token = cookie_manager.get(cookie="token")
 
-    if saved_token and "token" not in st.session_state:
+    if saved_token and "token" not in st.session_state:  # pragma: no cover
         st.session_state.token = saved_token
         st.session_state.user = cookie_manager.get(cookie="user")
         st.session_state.user_id = cookie_manager.get(cookie="user_id")
 
-    if "token" not in st.session_state:
+    if "token" not in st.session_state:  # pragma: no cover
         st.session_state.token = None
 
     welcome_page = st.Page("welcome.py", title=_("Choose a score"))

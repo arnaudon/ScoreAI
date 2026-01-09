@@ -8,6 +8,10 @@ terraform {
       source  = "terraform-provider-openstack/openstack"
       version = "~> 2.0.0"# (1)!
     }
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
   }
 }
 
@@ -53,12 +57,12 @@ resource "openstack_networking_secgroup_rule_v2" "my_sg_ssh_http" {
   security_group_id = openstack_networking_secgroup_v2.my_security_group.id
 }
 
-resource "openstack_networking_secgroup_rule_v2" "streamlit" {
+resource "openstack_networking_secgroup_rule_v2" "backend" {
   direction         = "ingress"
   ethertype         = "IPv4"
   protocol          = "tcp"
-  port_range_min    = 8501
-  port_range_max    = 8501
+  port_range_min    = 8000
+  port_range_max    = 8000
   remote_ip_prefix  = "0.0.0.0/0"
   security_group_id = openstack_networking_secgroup_v2.my_security_group.id
 }
@@ -100,3 +104,33 @@ resource "openstack_compute_instance_v2" "my_webserver" {
   }
   # user_data = file("./setup.sh")
 }
+
+
+provider "aws" {
+  # Infomaniak Credentials
+  access_key = "798a99de91f84745b1ef757d2eb62447"
+  secret_key = "405f903d221744b6ad6be4658119d380"
+  region     = "us-east-1" # Or your specific Infomaniak region
+
+  # Redirect AWS provider to Infomaniak
+  endpoints {
+    s3 = "https://s3.pub1.infomaniak.cloud"
+  }
+
+  # Required for compatibility with non-AWS S3 providers
+  skip_credentials_validation = true
+  skip_requesting_account_id  = true
+  skip_region_validation      = true
+  s3_use_path_style           = true
+}
+
+# Create the Bucket
+resource "aws_s3_bucket" "scoreai" {
+  bucket = "scoreai"
+}
+
+# Optional: Set Bucket to Private
+# resource "aws_s3_bucket_acl" "example" {
+#   bucket = aws_s3_bucket.my_infomaniak_bucket.id
+#   acl    = "private"
+# }

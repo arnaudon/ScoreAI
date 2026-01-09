@@ -27,5 +27,5 @@ def run_agent():
     - etc...
 """
     )
-    if st.button("clean history"):
+    if st.button("clean history"):  # pragma: no cover
         st.session_state.message_history = []

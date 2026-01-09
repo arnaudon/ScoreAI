@@ -1,14 +1,14 @@
 """DB viewer."""
 
+import os
 from pathlib import Path
 
 import streamlit as st
 from shared import Score
 from st_aggrid import AgGrid, GridOptionsBuilder
+from ui.components.utils import s3_helper
 
 from ui.components import api
-
-DATA_PATH = "data"
 
 
 def write_summary_db():
@@ -23,6 +23,19 @@ def write_summary_db():
         )
 
 
+def upload(file, title: str, composer: str, user: str) -> str | None:
+    """Save the file locally or on S3."""
+    filename = f"{title}_{composer}_{user}.pdf"
+    if s3_helper is not None:
+        s3_helper["s3_client"].put_object(Bucket=s3_helper["bucket"], Key=filename, Body=file)
+        return filename
+
+    path = Path(str(os.getenv("DATA_PATH"))) / filename
+    with open(path, "wb") as f:
+        f.write(file.getbuffer())
+    return str(path)
+
+
 def add_score():
     """Add a score"""
     st.write("Add new score:")
@@ -30,17 +43,12 @@ def add_score():
     composer = st.text_input("Composer", key="composer")
     uploaded_file = st.file_uploader("Upload a file", type=["pdf"])
     if st.button("Add score", key="add"):
-        save_path = f"{DATA_PATH}/{title}_{composer}_{st.session_state.user}.pdf"
         if uploaded_file is None:
             st.write("Please upload a file")
             st.stop()
 
-        if Path(save_path).exists():
-            st.write(f"File {save_path} already exists")
-            st.stop()
+        save_path = upload(uploaded_file, title, composer, st.session_state.user)
 
-        with open(save_path, "wb") as f:
-            f.write(uploaded_file.getbuffer())
         score_data = Score(
             user_id=st.session_state.user_id,
             title=title,
@@ -51,6 +59,17 @@ def add_score():
         res = api.add_score(score_data)
         st.success(res)
         st.rerun()
+
+
+def delete_score(row):
+    """Delete a score"""
+    if s3_helper is not None:
+        s3_helper["s3_client"].delete_object(Bucket=s3_helper["bucket"], Key=row["pdf_path"])
+    else:
+        try:
+            os.remove(row["pdf_path"])
+        except FileNotFoundError:
+            pass
 
 
 def show_db(select=True):
@@ -81,6 +100,7 @@ def show_db(select=True):
                     with col_confirm:
                         if st.button("Delete", key="delete"):
                             api.delete_score(row["id"])
+                            delete_score(row)
                             st.rerun()
                     with col_cancel:
                         if st.button(

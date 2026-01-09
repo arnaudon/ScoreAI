@@ -28,4 +28,4 @@ jobs:
             #TODO: move this to the db
             echo "MODEL=google-gla:gemini-2.5-flash-lite" >> .env
             echo "GOOGLE_API_KEY=AIzaSyBg9bXflw9Xv8FtWzAsOwXUeChPQT7e3lQ" >> .env
-            sudo docker-compose up --build -d
+            sudo docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml up --build -d

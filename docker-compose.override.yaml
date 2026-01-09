@@ -1,0 +1,25 @@
+services:
+  db:
+    ports:
+      - "5432:5432"
+  backend:
+    ports:
+      - '8000:8000'
+    volumes:
+      - ./backend:/app/backend
+      - ./shared:/app/shared
+      - ./database:/app/database
+
+  frontend:
+    ports:
+      - '8501:8501'
+    volumes:
+      - ./frontend:/app/frontend
+      - ./shared:/app/shared
+      - ./data:/app/data
+    environment:
+      - API_URL=http://backend:8000
+      - DATA_PATH=data
+
+volumes:
+  postgres_data:
