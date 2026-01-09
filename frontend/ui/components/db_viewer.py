@@ -1,14 +1,15 @@
 """DB viewer."""
 
+import os
 from pathlib import Path
 
+import boto3
 import streamlit as st
+from botocore.config import Config
 from shared import Score
 from st_aggrid import AgGrid, GridOptionsBuilder
 
 from ui.components import api
-
-DATA_PATH = "data"
 
 
 def write_summary_db():
@@ -23,6 +24,58 @@ def write_summary_db():
         )
 
 
+class FileUploader:
+    """File uploader wrapper of local and S3."""
+
+    def __init__(self):
+        """Initialize the file uploader."""
+        self.location = None
+        if os.getenv("DATA_PATH"):
+            self.location = "local"
+            self.data_path = Path(str(os.getenv("DATA_PATH")))
+        if os.getenv("S3_ENPOINT"):
+            self.location = "s3"
+            s3_config = Config(
+                signature_version="s3v4",
+                request_checksum_calculation="when_required",
+                response_checksum_validation="when_required",
+                s3={
+                    "payload_signing_enabled": False,
+                    "addressing_style": "path",
+                },
+            )
+
+            self.endpoint = os.getenv("S3_ENDPOINT")
+            self.bucket = os.getenv("S3_BUCKET")
+            self.s3_client = boto3.client(
+                "s3",
+                endpoint_url="https://" + str(self.endpoint),
+                aws_access_key_id=os.getenv("S3_ACCESS_KEY"),
+                aws_secret_access_key=os.getenv("S3_SECRET_KEY"),
+                region_name=os.getenv("S3_REGION"),
+                config=s3_config,
+            )
+
+        raise Exception("You need to set either DATA_PATH or S3_ENDPOINT")
+
+    def upload(self, file, title, composer, user):
+        """Save the file."""
+        filename = self._get_filename(title, composer, user)
+        if self.location == "local":
+            with open(self.data_path / filename, "wb") as f:
+                f.write(file.getbuffer())
+            return filename
+
+        if self.location == "s3":
+
+            self.s3_client.put_object(Bucket=self.bucket, Key=filename, Body=file)
+            return f"https://{self.bucket}.{self.endpoint}/{filename}"
+
+    def _get_filename(self, title, composer, user):
+        """Get the filename."""
+        return f"{title}_{composer}_{user}.pdf"
+
+
 def add_score():
     """Add a score"""
     st.write("Add new score:")
@@ -30,17 +83,16 @@ def add_score():
     composer = st.text_input("Composer", key="composer")
     uploaded_file = st.file_uploader("Upload a file", type=["pdf"])
     if st.button("Add score", key="add"):
-        save_path = f"{DATA_PATH}/{title}_{composer}_{st.session_state.user}.pdf"
         if uploaded_file is None:
             st.write("Please upload a file")
             st.stop()
 
-        if Path(save_path).exists():
-            st.write(f"File {save_path} already exists")
-            st.stop()
+        if "file_uploader" not in st.session_state:
+            st.session_state.file_uploader = FileUploader()
+        save_path = st.session_state.file_uploader.upload(
+            uploaded_file, title, composer, st.session_state.user
+        )
 
-        with open(save_path, "wb") as f:
-            f.write(uploaded_file.getbuffer())
         score_data = Score(
             user_id=st.session_state.user_id,
             title=title,

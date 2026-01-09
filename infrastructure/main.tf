@@ -53,12 +53,12 @@ resource "openstack_networking_secgroup_rule_v2" "my_sg_ssh_http" {
   security_group_id = openstack_networking_secgroup_v2.my_security_group.id
 }
 
-resource "openstack_networking_secgroup_rule_v2" "streamlit" {
+resource "openstack_networking_secgroup_rule_v2" "backend" {
   direction         = "ingress"
   ethertype         = "IPv4"
   protocol          = "tcp"
-  port_range_min    = 8501
-  port_range_max    = 8501
+  port_range_min    = 8000
+  port_range_max    = 8000
   remote_ip_prefix  = "0.0.0.0/0"
   security_group_id = openstack_networking_secgroup_v2.my_security_group.id
 }
@@ -98,5 +98,5 @@ resource "openstack_compute_instance_v2" "my_webserver" {
   network {
     name          = "ext-net1"
   }
-  # user_data = file("./setup.sh")
+  user_data = file("./setup.sh")
 }
