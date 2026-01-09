@@ -23,37 +23,17 @@ def write_summary_db():
         )
 
 
-class FileUploader:
-    """File uploader wrapper of local and S3."""
+def upload(file, title: str, composer: str, user: str) -> str | None:
+    """Save the file locally or on S3."""
+    filename = f"{title}_{composer}_{user}.pdf"
+    if s3_helper is not None:
+        s3_helper["s3_client"].put_object(Bucket=s3_helper["bucket"], Key=filename, Body=file)
+        return filename
 
-    def __init__(self):
-        """Initialize the file uploader."""
-        if s3_helper is not None:
-            self.location = "s3"
-        elif os.getenv("DATA_PATH"):
-            self.location = "local"
-            self.data_path = Path(str(os.getenv("DATA_PATH")))
-        else:
-            raise ValueError("You need to set either DATA_PATH or S3_ENDPOINT")
-
-    def upload(self, file, title: str, composer: str, user: str) -> str | None:
-        """Save the file."""
-        filename = self.get_filename(title, composer, user)
-        if self.location == "local":
-            path = self.data_path / filename
-            with open(path, "wb") as f:
-                f.write(file.getbuffer())
-            return str(path)
-
-        if self.location == "s3":
-            s3_helper["s3_client"].put_object(Bucket=s3_helper["bucket"], Key=filename, Body=file)
-            return filename
-
-        return None
-
-    def get_filename(self, title, composer, user) -> str:
-        """Get the filename."""
-        return f"{title}_{composer}_{user}.pdf"
+    path = Path(str(os.getenv("DATA_PATH"))) / filename
+    with open(path, "wb") as f:
+        f.write(file.getbuffer())
+    return str(path)
 
 
 def add_score():
@@ -67,11 +47,7 @@ def add_score():
             st.write("Please upload a file")
             st.stop()
 
-        if "file_uploader" not in st.session_state:
-            st.session_state.file_uploader = FileUploader()
-        save_path = st.session_state.file_uploader.upload(
-            uploaded_file, title, composer, st.session_state.user
-        )
+        save_path = upload(uploaded_file, title, composer, st.session_state.user)
 
         score_data = Score(
             user_id=st.session_state.user_id,
