@@ -65,8 +65,8 @@ def add_score():
             st.write("Please upload a file")
             st.stop()
 
-        # if "file_uploader" not in st.session_state:
-        st.session_state.file_uploader = FileUploader()
+        if "file_uploader" not in st.session_state:
+            st.session_state.file_uploader = FileUploader()
         save_path = st.session_state.file_uploader.upload(
             uploaded_file, title, composer, st.session_state.user
         )
