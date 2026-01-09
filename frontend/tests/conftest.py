@@ -11,6 +11,8 @@ from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 
 os.environ["DATABASE_PATH"] = "test.db"
+frontend_dir = Path(__file__).resolve().parent.parent
+os.environ["DATA_PATH"] = str(frontend_dir / "tests/data")
 pytestmark = pytest.mark.anyio
 models.ALLOW_MODEL_REQUESTS = False
 
@@ -18,7 +20,7 @@ models.ALLOW_MODEL_REQUESTS = False
 @pytest.fixture(name="frontend_dir")
 def frontend_dir_fixture():
     """Frontend dir"""
-    return Path(__file__).resolve().parent.parent
+    return frontend_dir
 
 
 @pytest.fixture(name="session")

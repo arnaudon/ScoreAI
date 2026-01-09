@@ -1,7 +1,6 @@
 """Backend main entry point."""
 
 import json
-import os
 from contextlib import asynccontextmanager
 from logging import getLogger
 from typing import Annotated, AsyncGenerator
