@@ -34,11 +34,11 @@ class FileUploader:
             self.location = "local"
             self.data_path = Path(str(os.getenv("DATA_PATH")))
         else:
-            raise Exception("You need to set either DATA_PATH or S3_ENDPOINT")
+            raise ValueError("You need to set either DATA_PATH or S3_ENDPOINT")
 
     def upload(self, file, title: str, composer: str, user: str) -> str | None:
         """Save the file."""
-        filename = self._get_filename(title, composer, user)
+        filename = self.get_filename(title, composer, user)
         if self.location == "local":
             path = self.data_path / filename
             with open(path, "wb") as f:
@@ -49,7 +49,9 @@ class FileUploader:
             s3_helper["s3_client"].put_object(Bucket=s3_helper["bucket"], Key=filename, Body=file)
             return filename
 
-    def _get_filename(self, title, composer, user) -> str:
+        return None
+
+    def get_filename(self, title, composer, user) -> str:
         """Get the filename."""
         return f"{title}_{composer}_{user}.pdf"
 

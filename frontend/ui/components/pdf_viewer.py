@@ -24,8 +24,7 @@ class PDFViewer:
                 Bucket=s3_helper["bucket"], Key=self.pdf_path
             )
             return convert_from_bytes(response["Body"].read(), dpi=self.dpi)
-        else:
-            return convert_from_path(self.pdf_path, dpi=self.dpi)
+        return convert_from_path(self.pdf_path, dpi=self.dpi)
 
     @property
     def page(self):
