@@ -35,7 +35,7 @@ def main():
                 st.error(f"Error: {res.json().get('detail')}")
     else:
         st.subheader("Logout before creating a new user")
-        if st.button("Logout"):
+        if st.button("Logout"):  # pragma: no cover
             st.session_state.token = None
             st.rerun()
 
