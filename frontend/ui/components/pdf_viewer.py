@@ -1,8 +1,9 @@
 """PDF viewer."""
 
 import streamlit as st
-from pdf2image import convert_from_path
+from pdf2image import convert_from_path, convert_from_bytes
 from streamlit_image_coordinates import streamlit_image_coordinates
+from ui.components.utils import s3_helper
 
 
 class PDFViewer:
@@ -12,9 +13,19 @@ class PDFViewer:
         """Initialize the pdf viewer."""
         self.pdf_path = pdf_path
         self.dpi = dpi
-        self.pages = convert_from_path(self.pdf_path, dpi=dpi)
+        self.pages = self._get_pdf()
         self.total = len(self.pages)
         self._current_page = 1
+
+    def _get_pdf(self):
+        """Get the pdf."""
+        if s3_helper is not None:
+            response = s3_helper["s3_client"].get_object(
+                Bucket=s3_helper["bucket"], Key=self.pdf_path
+            )
+            return convert_from_bytes(response["Body"].read(), dpi=self.dpi)
+        else:
+            return convert_from_path(self.pdf_path, dpi=self.dpi)
 
     @property
     def page(self):

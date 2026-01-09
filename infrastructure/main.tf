@@ -102,7 +102,7 @@ resource "openstack_compute_instance_v2" "my_webserver" {
   network {
     name          = "ext-net1"
   }
-  user_data = file("./setup.sh")
+  # user_data = file("./setup.sh")
 }
 
 
@@ -125,8 +125,8 @@ provider "aws" {
 }
 
 # Create the Bucket
-resource "aws_s3_bucket" "test_bucket" {
-  bucket = "test_bucket"
+resource "aws_s3_bucket" "scoreai" {
+  bucket = "scoreai"
 }
 
 # Optional: Set Bucket to Private

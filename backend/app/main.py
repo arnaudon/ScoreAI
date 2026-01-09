@@ -55,10 +55,6 @@ def delete_score(
         select(Score).where(Score.id == score_id, Score.user_id == current_user.id)
     ).first()
     if score is not None:
-        try:
-            os.remove(score.pdf_path)
-        except FileNotFoundError:
-            pass
         session.delete(score)
     session.commit()
 

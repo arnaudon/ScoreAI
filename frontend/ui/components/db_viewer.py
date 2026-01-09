@@ -3,11 +3,10 @@
 import os
 from pathlib import Path
 
-import boto3
 import streamlit as st
-from botocore.config import Config
 from shared import Score
 from st_aggrid import AgGrid, GridOptionsBuilder
+from ui.components.utils import s3_helper
 
 from ui.components import api
 
@@ -29,36 +28,15 @@ class FileUploader:
 
     def __init__(self):
         """Initialize the file uploader."""
-        if os.getenv("DATA_PATH"):
+        if s3_helper is not None:
+            self.location = "s3"
+        elif os.getenv("DATA_PATH"):
             self.location = "local"
             self.data_path = Path(str(os.getenv("DATA_PATH")))
-        elif os.getenv("S3_ENDPOINT"):
-            self.location = "s3"
-            s3_config = Config(
-                signature_version="s3v4",
-                request_checksum_calculation="when_required",
-                response_checksum_validation="when_required",
-                s3={
-                    "payload_signing_enabled": False,
-                    "addressing_style": "path",
-                },
-            )
-
-            self.endpoint = os.getenv("S3_ENDPOINT")
-            self.bucket = os.getenv("S3_BUCKET")
-            self.s3_client = boto3.client(
-                "s3",
-                endpoint_url="https://" + str(self.endpoint),
-                aws_access_key_id=os.getenv("S3_ACCESS_KEY"),
-                aws_secret_access_key=os.getenv("S3_SECRET_KEY"),
-                region_name=os.getenv("S3_REGION"),
-                config=s3_config,
-            )
-
         else:
             raise Exception("You need to set either DATA_PATH or S3_ENDPOINT")
 
-    def upload(self, file, title, composer, user) -> str:
+    def upload(self, file, title: str, composer: str, user: str) -> str | None:
         """Save the file."""
         filename = self._get_filename(title, composer, user)
         if self.location == "local":
@@ -68,9 +46,8 @@ class FileUploader:
             return str(path)
 
         if self.location == "s3":
-
-            self.s3_client.put_object(Bucket=self.bucket, Key=filename, Body=file)
-            return f"https://{self.bucket}.{self.endpoint}/{filename}"
+            s3_helper["s3_client"].put_object(Bucket=s3_helper["bucket"], Key=filename, Body=file)
+            return filename
 
     def _get_filename(self, title, composer, user) -> str:
         """Get the filename."""
@@ -106,6 +83,17 @@ def add_score():
         st.rerun()
 
 
+def delete_score(row):
+    """Delete a score"""
+    if s3_helper is not None:
+        s3_helper["s3_client"].delete_object(Bucket=s3_helper["bucket"], Key=row["pdf_path"])
+    else:
+        try:
+            os.remove(row["pdf_path"])
+        except FileNotFoundError:
+            pass
+
+
 def show_db(select=True):
     """Show the db"""
     df = api.get_scores_df()
@@ -134,6 +122,7 @@ def show_db(select=True):
                     with col_confirm:
                         if st.button("Delete", key="delete"):
                             api.delete_score(row["id"])
+                            delete_score(row)
                             st.rerun()
                     with col_cancel:
                         if st.button(
