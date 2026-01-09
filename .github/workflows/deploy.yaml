@@ -18,6 +18,8 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            sudo apt-get update
+            sudo apt-get -y upgrade
             cd /home/debian/ScoreAI
             git pull origin main
             echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" > .env
