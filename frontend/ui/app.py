@@ -13,6 +13,10 @@ from ui.locales import _, init_i18n_gettext, language_selector
 COOKIE_EXPIRES = datetime.now() + timedelta(days=1)
 
 
+def admin():
+    st.write("You are admin")
+
+
 def login(welcome_page, cookie_manager):
     """Login/logout sidebar logic."""
     if getattr(st.session_state, "token", None) is None:
@@ -65,12 +69,16 @@ def main():
     database_page = st.Page("database.py", title=_("View database"))
     account_page = st.Page("account.py", title=_("Manage your account"))
     reader_page = st.Page("reader.py", title=_("View a score"))
+    admin_page = st.Page("admin.py", title=_("Admin"))
     st.session_state.reader_page = reader_page
-
+    if "is_admin" not in st.session_state:
+        st.session_state.is_admin = api.is_admin()
     with st.sidebar:
         if st.session_state.token is not None:
             write_summary_db()
             language_selector()
+            if st.session_state.is_admin:
+                admin()
         login(welcome_page, cookie_manager)
         st.button("reset cache", on_click=api.reset_score_cache)
 
@@ -78,7 +86,8 @@ def main():
         pages = [welcome_page, database_page, reader_page, account_page]
     else:
         pages = [account_page]
-
+    if st.session_state.is_admin:
+        pages.append(admin_page)
     pg = st.navigation(pages)
     pg.run()
 

@@ -11,7 +11,7 @@ from sqlmodel import Session, select
 from app import users
 from app.agent import Deps, run_agent
 from app.db import get_session, init_db
-from app.users import get_current_user
+from app.users import get_admin_user, get_current_user
 from shared import Score, Scores, User
 
 logger = getLogger(__name__)
@@ -97,3 +97,10 @@ async def run(
         message_history=message_history,
         deps=Deps(user=current_user, scores=Scores(**json.loads(deps))),
     )
+
+
+@app.get("/is_admin")
+async def test_admin(current_user: Annotated[User, Depends(get_admin_user)]):
+    return True
+
+@app.get

@@ -106,3 +106,22 @@ def run_agent(question: str) -> Response:  # pragma: no cover
     full_result = FullResponse(**result)
     st.session_state.message_history.extend(full_result.message_history)
     return full_result.response
+
+
+def is_admin():
+    """Check if the user is admin via API"""
+    return requests.get(
+        f"{API_URL}/is_admin",
+        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+    ).json()
+
+
+def get_all_users():
+    """Get all users from the db via API"""
+    users = requests.get(
+        f"{API_URL}/users",
+        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+    ).json()
+    df = pd.DataFrame(users)
+    df.drop("password", axis=1, inplace=True)
+    return df
