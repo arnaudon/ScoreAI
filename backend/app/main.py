@@ -102,5 +102,3 @@ async def run(
 @app.get("/is_admin")
 async def test_admin(current_user: Annotated[User, Depends(get_admin_user)]):
     return True
-
-@app.get
