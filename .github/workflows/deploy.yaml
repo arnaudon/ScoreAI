@@ -2,7 +2,7 @@ name: Deploy to infomaniak
 
 on:
   push:
-    branches: [ main ] 
+    # branches: [ main ] 
 
 jobs:
   deploy:
@@ -33,3 +33,5 @@ jobs:
             echo "S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }}" >> .env
             echo "S3_BUCKET=${{ secrets.S3_BUCKET }}" >> .env
             sudo docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml up --build -d
+            # run alembic migration
+            sudo docker exec --workdir /app/backend backend alembic upgrade head
