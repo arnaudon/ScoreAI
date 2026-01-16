@@ -7,19 +7,12 @@ from fastapi import HTTPException, status
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 
-from app.users import (
-    authenticate_user,
-    create_access_token,
-    get_current_user,
-    get_password_hash,
-    get_user,
-    verify_password,
-)
+from app import users
 from shared.user import User
 
 
 @pytest.fixture(name="user_in_db")
-def user_in_db_fixture(session: Session, mocker) -> User:
+def user_in_db_fixture(test_user, session: Session, mocker) -> User:
     """Create a user in the same DB that app.users.get_user will use.
 
     We patch app.users.get_session to return the test session so helpers that
@@ -31,38 +24,37 @@ def user_in_db_fixture(session: Session, mocker) -> User:
 
     mocker.patch("app.users.get_session", get_session_override)
 
-    user = User(username="alice", email="alice@example.com")
-    user.password = get_password_hash("secret")
-    session.add(user)
+    test_user.password = users.get_password_hash("secret")
+    session.add(test_user)
     session.commit()
-    session.refresh(user)
+    session.refresh(test_user)
 
-    return user
+    return test_user
 
 
 def test_password_hash_and_verify():
     """verify_password and get_password_hash work together."""
 
     password = "my-password"
-    hashed = get_password_hash(password)
+    hashed = users.get_password_hash(password)
     assert hashed != password
-    assert verify_password(password, hashed)
+    assert users.verify_password(password, hashed)
 
 
 def test_get_user_and_authenticate_user(user_in_db: User):
     """get_user and authenticate_user return the correct user or False."""
 
     # get_user finds the user by username
-    fetched = get_user(user_in_db.username)
+    fetched = users.get_user(user_in_db.username)
     assert fetched is not None
     assert fetched.id == user_in_db.id
 
     # authenticate_user succeeds with correct password
-    assert authenticate_user(user_in_db.username, "secret")
+    assert users.authenticate_user(user_in_db.username, "secret")
 
     # and fails with wrong password or unknown user
-    assert authenticate_user(user_in_db.username, "wrong") is False
-    assert authenticate_user("unknown", "secret") is False
+    assert users.authenticate_user(user_in_db.username, "wrong") is False
+    assert users.authenticate_user("unknown", "secret") is False
 
 
 @pytest.mark.asyncio
@@ -70,12 +62,12 @@ async def test_create_access_token_and_get_current_user(user_in_db: User):
     """create_access_token embeds username and get_current_user resolves it."""
 
     # shorter expiry to exercise explicit expiry branch
-    token = create_access_token(
+    token = users.create_access_token(
         data={"sub": user_in_db.username},
         expires_delta=timedelta(minutes=5),
     )
 
-    user = await get_current_user(token)
+    user = await users.get_current_user(token)
     assert user.id == user_in_db.id
 
 
@@ -84,19 +76,19 @@ async def test_get_current_user_valid_invalid_and_missing_sub(user_in_db: User):
     """get_current_user returns user for valid token and raises for bad tokens."""
 
     # valid token
-    token = create_access_token(data={"sub": user_in_db.username})
-    user = await get_current_user(token)
+    token = users.create_access_token(data={"sub": user_in_db.username})
+    user = await users.get_current_user(token)
     assert user.id == user_in_db.id
 
     # invalid token string
     with pytest.raises(HTTPException) as exc:
-        await get_current_user("not-a-valid-token")
+        await users.get_current_user("not-a-valid-token")
     assert exc.value.status_code == status.HTTP_401_UNAUTHORIZED
 
     # token without sub should also raise (exercises username is None branch)
-    no_sub_token = create_access_token(data={})
+    no_sub_token = users.create_access_token(data={})
     with pytest.raises(HTTPException) as exc2:
-        await get_current_user(no_sub_token)
+        await users.get_current_user(no_sub_token)
     assert exc2.value.status_code == status.HTTP_401_UNAUTHORIZED
 
 
@@ -111,9 +103,9 @@ async def test_get_current_user_missing_user_raises(session: Session, mocker):
     mocker.patch("app.users.get_session", empty_session_override)
 
     # token with username that does not exist
-    token = create_access_token(data={"sub": "does-not-exist"})
+    token = users.create_access_token(data={"sub": "does-not-exist"})
     with pytest.raises(HTTPException) as exc:
-        await get_current_user(token)
+        await users.get_current_user(token)
     assert exc.value.status_code == status.HTTP_401_UNAUTHORIZED
 
 
@@ -147,3 +139,25 @@ def test_add_user_endpoint(client: TestClient):
     payload = {"username": "bob", "email": "bob@example.com", "password": "pw"}
     resp = client.post("/users", json=payload)
     assert resp.status_code == 200
+
+
+def test_get_users(client: TestClient):
+    """GET /users returns all users (covers get_users)."""
+    resp = client.get("/users")
+    assert resp.status_code == 200
+
+
+async def test_is_admin(test_user):
+    """is_admin returns True if user is admin (covers is_admin)."""
+    assert await users.is_admin(test_user) == True
+    assert await users.is_admin(None) == False
+
+
+async def test_get_admin_user(test_user):
+    """get_admin_user returns admin user or None (covers get_admin_user)."""
+
+    assert await users.get_admin_user(test_user) == None
+    test_user.role = "other"
+    assert await users.get_admin_user(test_user) == None
+    test_user.role = "admin"
+    assert await users.get_admin_user(test_user) == test_user

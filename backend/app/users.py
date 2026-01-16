@@ -114,7 +114,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
 
 
 async def get_admin_user(user: User = Depends(get_current_user)):
-    logger.error(user.role)
+    """Get admin user only."""
     if user.role == "admin":
         return user
     return None
@@ -140,7 +140,8 @@ async def get_users(
 
 
 @router.get("/is_admin")
-async def is_admin(current_user: Annotated[User, Depends(get_admin_user)]):
+async def is_admin(current_user: Annotated[User | None, Depends(get_admin_user)]):
+    """Check if user is admin."""
     if current_user is not None:
         return True
     return False
