@@ -145,7 +145,7 @@ def test_is_admin(mocker):
 
     mock_requests.get.assert_called_once_with(
         f"{api.API_URL}/is_admin",
-        headers={"Authorization": f"Bearer None"},
+        headers={"Authorization": "Bearer None"},
     )
 
 

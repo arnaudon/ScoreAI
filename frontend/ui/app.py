@@ -13,10 +13,6 @@ from ui.locales import _, init_i18n_gettext, language_selector
 COOKIE_EXPIRES = datetime.now() + timedelta(days=1)
 
 
-def admin():
-    st.write("You are admin")
-
-
 def login(welcome_page, cookie_manager):
     """Login/logout sidebar logic."""
     if getattr(st.session_state, "token", None) is None:
@@ -77,8 +73,6 @@ def main():
         if st.session_state.token is not None:
             write_summary_db()
             language_selector()
-            if st.session_state.is_admin:
-                admin()
         login(welcome_page, cookie_manager)
         st.button("reset cache", on_click=api.reset_score_cache)
 

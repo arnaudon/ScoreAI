@@ -1,3 +1,5 @@
+"""Admin page."""
+
 import streamlit as st
 
 from ui.components import api
