@@ -114,12 +114,10 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
 
 
 async def get_admin_user(user: User = Depends(get_current_user)):
-    if user.role != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Operation not permitted: Admin access required",
-        )
-    return user
+    logger.error(user.role)
+    if user.role == "admin":
+        return user
+    return None
 
 
 @router.post("/users")
@@ -134,6 +132,15 @@ async def add_user(user: User, session: Session = Depends(get_session)):
 
 
 @router.get("/users")
-async def get_users(session: Session = Depends(get_session)):
+async def get_users(
+    _: Annotated[User, Depends(get_admin_user)], session: Session = Depends(get_session)
+):
     """Get all users from the db."""
     return session.exec(select(User)).all()
+
+
+@router.get("/is_admin")
+async def is_admin(current_user: Annotated[User, Depends(get_admin_user)]):
+    if current_user is not None:
+        return True
+    return False

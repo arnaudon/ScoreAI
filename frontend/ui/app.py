@@ -84,10 +84,11 @@ def main():
 
     if st.session_state.token is not None:
         pages = [welcome_page, database_page, reader_page, account_page]
+
+        if st.session_state.is_admin:
+            pages.append(admin_page)
     else:
         pages = [account_page]
-    if st.session_state.is_admin:
-        pages.append(admin_page)
     pg = st.navigation(pages)
     pg.run()
 

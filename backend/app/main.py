@@ -97,8 +97,3 @@ async def run(
         message_history=message_history,
         deps=Deps(user=current_user, scores=Scores(**json.loads(deps))),
     )
-
-
-@app.get("/is_admin")
-async def test_admin(current_user: Annotated[User, Depends(get_admin_user)]):
-    return True

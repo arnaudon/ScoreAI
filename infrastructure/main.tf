@@ -66,6 +66,7 @@ resource "openstack_networking_secgroup_rule_v2" "backend" {
   remote_ip_prefix  = "0.0.0.0/0"
   security_group_id = openstack_networking_secgroup_v2.my_security_group.id
 }
+
 # Allow HTTPs
 resource "openstack_networking_secgroup_rule_v2" "my_sg_ssh_https" {
   direction         = "ingress"
@@ -91,6 +92,18 @@ resource "openstack_networking_secgroup_rule_v2" "egress_v6" {
   ethertype         = "IPv6"
   security_group_id = openstack_networking_secgroup_v2.my_security_group.id
 }
+
+# Add a rule to allow your specific IP
+resource "openstack_networking_secgroup_rule_v2" "allow_pg_home" {
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 5432
+  port_range_max    = 5432
+  remote_ip_prefix  = "0.0.0.0/0"
+  security_group_id = openstack_networking_secgroup_v2.my_security_group.id
+}
+
 # Create a web server resource
 resource "openstack_compute_instance_v2" "my_webserver" {
   name            = "web-server"
@@ -104,7 +117,6 @@ resource "openstack_compute_instance_v2" "my_webserver" {
   }
   # user_data = file("./setup.sh")
 }
-
 
 provider "aws" {
   # Infomaniak Credentials

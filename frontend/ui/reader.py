@@ -6,7 +6,7 @@ from ui.components import api
 from ui.components.pdf_viewer import PDFViewer
 
 if hasattr(st.session_state, "selected_row"):
-    st.write(f"Selected: {st.session_state.selected_row.to_dict()}")
+    # st.write(f"Selected: {st.session_state.selected_row.to_dict()}")
     pdf_path = st.session_state.selected_row["pdf_path"]
 
     if "pdf_viewers" not in st.session_state:
