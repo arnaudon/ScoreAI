@@ -65,8 +65,10 @@ def main():
     database_page = st.Page("database.py", title=_("View database"))
     account_page = st.Page("account.py", title=_("Manage your account"))
     reader_page = st.Page("reader.py", title=_("View a score"))
+    admin_page = st.Page("admin.py", title=_("Admin"))
     st.session_state.reader_page = reader_page
-
+    if "is_admin" not in st.session_state:
+        st.session_state.is_admin = api.is_admin()
     with st.sidebar:
         if st.session_state.token is not None:
             write_summary_db()
@@ -76,9 +78,11 @@ def main():
 
     if st.session_state.token is not None:
         pages = [welcome_page, database_page, reader_page, account_page]
+
+        if st.session_state.is_admin:
+            pages.append(admin_page)
     else:
         pages = [account_page]
-
     pg = st.navigation(pages)
     pg.run()
 

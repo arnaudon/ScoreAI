@@ -49,6 +49,9 @@ EXPOSE 8000
 COPY --from=builder /app/.venv /app/.venv
 COPY --from=builder /app/backend /app/backend
 COPY --from=builder /app/shared /app/shared
+# copy these for db migration
+COPY backend/migrations /app/backend/migrations
+COPY backend/alembic.ini /app/backend/alembic.ini
 
 ENV PYTHONPATH=/app
 ENV PATH="/app/.venv/bin:$PATH"

@@ -1,7 +1,7 @@
 """Test the api module."""
 
 import pytest
-from shared.scores import Score
+from shared import Score, User
 
 from ui.components import api
 
@@ -113,24 +113,18 @@ def test_add_play(mocker, mock_get_scores):
 #    assert isinstance(response, Response)
 
 
-def test_register_user_calls_backend(mocker):
+@pytest.fixture(name="test_user")
+def test_user_fixture():
+    """Test user for default db."""
+    return User(username="alice", password="secret")
+
+
+def test_register_user_calls_backend(mocker, test_user):
     """register_user should POST user JSON to /users endpoint."""
     mock_requests = mocker.patch("ui.components.api.requests")
+    api.register_user(test_user)
 
-    class DummyUser:  # pylint: disable=too-few-public-methods
-        """Dummy user class."""
-
-        def model_dump(self):
-            """Dummy model_dump method."""
-            return {"username": "alice", "password": "secret"}
-
-    user = DummyUser()
-
-    api.register_user(user)
-
-    mock_requests.post.assert_called_once_with(
-        f"{api.API_URL}/users", json={"username": "alice", "password": "secret"}
-    )
+    mock_requests.post.assert_called_once_with(f"{api.API_URL}/users", json=test_user.model_dump())
 
 
 def test_login_user_calls_backend(mocker):
@@ -142,3 +136,24 @@ def test_login_user_calls_backend(mocker):
     mock_requests.post.assert_called_once_with(
         f"{api.API_URL}/token", data={"username": "bob", "password": "pw"}
     )
+
+
+def test_is_admin(mocker):
+    """test is_admin"""
+    mock_requests = mocker.patch("ui.components.api.requests")
+    api.is_admin()
+
+    mock_requests.get.assert_called_once_with(
+        f"{api.API_URL}/is_admin",
+        headers={"Authorization": "Bearer None"},
+    )
+
+
+def test_get_all_users(mocker, test_user):
+    """get_all_users should GET all users from /users endpoint."""
+    mock_response = mocker.Mock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = [test_user.model_dump()]
+    mocker.patch("ui.components.api.requests.get", return_value=mock_response)
+    users = api.get_all_users()
+    assert len(users) == 1

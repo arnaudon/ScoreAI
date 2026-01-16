@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 import streamlit as st
 from pwdlib import PasswordHash
-from shared import FullResponse, Response, Score, Scores
+from shared import FullResponse, Response, Score, Scores, User
 
 API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
 _SCORES = None
@@ -24,7 +24,7 @@ def reset_score_cache():
     _SCORES = None
 
 
-def register_user(new_user):
+def register_user(new_user: User):
     """Register a new user via API"""
     response = requests.post(f"{API_URL}/users", json=new_user.model_dump())
     return response
@@ -106,3 +106,23 @@ def run_agent(question: str) -> Response:  # pragma: no cover
     full_result = FullResponse(**result)
     st.session_state.message_history.extend(full_result.message_history)
     return full_result.response
+
+
+def is_admin():
+    """Check if the user is admin via API"""
+    return requests.get(
+        f"{API_URL}/is_admin",
+        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+    ).json()
+
+
+def get_all_users():
+    """Get all users from the db via API"""
+    users = requests.get(
+        f"{API_URL}/users",
+        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+    ).json()
+    print(users)
+    df = pd.DataFrame(users)
+    df.drop("password", axis=1, inplace=True)
+    return df

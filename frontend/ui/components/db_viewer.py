@@ -6,9 +6,9 @@ from pathlib import Path
 import streamlit as st
 from shared import Score
 from st_aggrid import AgGrid, GridOptionsBuilder
-from ui.components.utils import s3_helper
 
 from ui.components import api
+from ui.components.utils import s3_helper
 
 
 def write_summary_db():
@@ -86,7 +86,6 @@ def show_db(select=True):
         if selected is not None:
             row = selected.iloc[0]
             st.session_state.selected_row = row
-            st.write(f"Selected: {Score(**row.to_dict()).model_dump()}")
             col1, col2 = st.columns(2)
             with col1:
                 if st.button("Open PDF", key="open"):  # pragma: no cover

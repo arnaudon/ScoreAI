@@ -51,3 +51,6 @@ def request_mock(request, mocker, test_scores):
 
     mocker_add_play = mocker.patch("ui.components.api.add_play")
     mocker_add_play.return_value = {"number_of_plays": 1}
+
+    mocker_is_admin = mocker.patch("ui.components.api.is_admin")
+    mocker_is_admin.return_value = True

@@ -20,4 +20,5 @@ class User(SQLModel, table=True):
     first_name: str | None = None
     last_name: str | None = None
     password: str | None = None
+    role: str = Field(default="user")
     scores: List["Score"] = Relationship(back_populates="user")

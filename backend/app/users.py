@@ -88,7 +88,7 @@ async def login_for_access_token(
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
+        data={"sub": user.username, "role": user.role}, expires_delta=access_token_expires
     )
     return Token(access_token=access_token, token_type="bearer")
 
@@ -113,6 +113,13 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     return user
 
 
+async def get_admin_user(user: User = Depends(get_current_user)):
+    """Get admin user only."""
+    if user.role == "admin":
+        return user
+    return None
+
+
 @router.post("/users")
 async def add_user(user: User, session: Session = Depends(get_session)):
     """Add a user to the db."""
@@ -122,3 +129,19 @@ async def add_user(user: User, session: Session = Depends(get_session)):
     session.commit()
     session.refresh(user)
     return user
+
+
+@router.get("/users")
+async def get_users(
+    _: Annotated[User, Depends(get_admin_user)], session: Session = Depends(get_session)
+):
+    """Get all users from the db."""
+    return session.exec(select(User)).all()
+
+
+@router.get("/is_admin")
+async def is_admin(current_user: Annotated[User | None, Depends(get_admin_user)]):
+    """Check if user is admin."""
+    if current_user is not None:
+        return True
+    return False

@@ -1,8 +1,9 @@
 """PDF viewer."""
 
 import streamlit as st
-from pdf2image import convert_from_path, convert_from_bytes
+from pdf2image import convert_from_bytes, convert_from_path
 from streamlit_image_coordinates import streamlit_image_coordinates
+
 from ui.components.utils import s3_helper
 
 
@@ -39,7 +40,7 @@ class PDFViewer:
     @page_number.setter
     def page_number(self, value):
         """Set current page number and rerun"""
-        self._current_page = min(value, self.total)
+        self._current_page = max(1, min(value, self.total))
         st.rerun()
 
     def render(self):
