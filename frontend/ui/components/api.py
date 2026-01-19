@@ -122,7 +122,17 @@ def get_all_users():
         f"{API_URL}/users",
         headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
     ).json()
-    print(users)
     df = pd.DataFrame(users)
     df.drop("password", axis=1, inplace=True)
     return df
+
+
+def complete_score_data(score: Score):
+    """Complete a score with agents"""
+    return Score(
+        **requests.post(
+            f"{API_URL}/complete_score",
+            headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+            json=score.model_dump(),
+        ).json()
+    )

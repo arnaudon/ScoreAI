@@ -27,7 +27,6 @@ def get_url():
 
 
 db_url = get_url()
-print(db_url)
 if db_url:
     config.set_main_option("sqlalchemy.url", db_url)
 
