@@ -60,14 +60,8 @@ def _check_token_valid():
         st.session_state.token = None
 
 
-def main():
-    """Render the main navigation app."""
-    _check_token_valid()
-
-    init_i18n_gettext()
-    cookie_manager = stx.CookieManager()
-
-    # load cookie with a little waiting
+def _load_token(cookie_manager: stx.CookieManager):
+    """load cookie with a little waiting"""
     saved_token = cookie_manager.get(cookie="token")
     if saved_token is None:
         with st.spinner("Authenticating..."):
@@ -81,6 +75,16 @@ def main():
 
     if "token" not in st.session_state:  # pragma: no cover
         st.session_state.token = None
+
+
+def main():
+    """Render the main navigation app."""
+
+    init_i18n_gettext()
+    cookie_manager = stx.CookieManager()
+
+    _load_token(cookie_manager)
+    _check_token_valid()
 
     welcome_page = st.Page("welcome.py", title=_("Choose a score"))
     database_page = st.Page("database.py", title=_("View database"))

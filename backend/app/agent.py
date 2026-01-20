@@ -66,13 +66,38 @@ def get_agent():
             return random.choice(scores).model_dump_json()
         return "Not found"  # pragma: no cover
 
+    @agent.tool
+    async def get_easiest_score_by_composer(ctx: RunContext[Deps], filter_params: Filter) -> str:
+        """Get the easiest score by composer."""
+        scores = []
+        for score in ctx.deps.scores.scores:
+            if filter_params.composer.lower() in score.composer.lower():
+                scores.append(score)
+        if scores:
+            from shared.scores import Difficulty
+
+            _map = {
+                Difficulty.easy.name: 0,
+                Difficulty.moderate.name: 1,
+                Difficulty.intermediate.name: 2,
+                Difficulty.advanced.name: 3,
+                Difficulty.expert.name: 4,
+            }
+            difficulties = [_map[score.difficulty] for score in scores]
+            easy_scores = [s for d, s in zip(difficulties, scores) if d == min(difficulties)]
+            import logging
+
+            logger = logging.getLogger(__name__)
+            logger.error(scores)
+            return random.choice(easy_scores).model_dump_json()
+        return "Not found"
+
     return agent
 
 
 async def run_agent(prompt: str, deps: Deps, message_history=None):
     """Run the agent."""
     agent = get_agent()
-
     try:
         res = await agent.run(
             prompt,

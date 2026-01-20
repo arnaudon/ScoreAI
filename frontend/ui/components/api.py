@@ -82,7 +82,9 @@ def get_scores() -> Scores:
 def get_scores_df() -> pd.DataFrame:
     """Get all scores as dataframe from the db via API"""
     scores = get_scores()
-    return pd.DataFrame([s.model_dump() for s in scores.scores])
+    df = pd.DataFrame([s.model_dump() for s in scores.scores])
+    df.index = df.id
+    return df
 
 
 def run_agent(question: str) -> Response:  # pragma: no cover
