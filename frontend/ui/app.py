@@ -46,11 +46,6 @@ def login(welcome_page, cookie_manager):
             cookie_manager.delete("token")
 
 
-import requests
-
-from ui.components.api import API_URL
-
-
 def _load_token(cookie_manager: stx.CookieManager):
     """load cookie with a little waiting"""
     saved_token = cookie_manager.get(cookie="token")
