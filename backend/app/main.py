@@ -9,7 +9,7 @@ from fastapi import Depends, FastAPI
 from sqlmodel import Session, select
 
 from app import users
-from app.agent import Deps, run_agent
+from app.agent import Deps, run_agent, run_complete_agent
 from app.db import get_session, init_db
 from app.users import get_current_user
 from shared import Score, Scores, User
@@ -37,42 +37,16 @@ def add_score(
 ):
     """Add a score to the db."""
     score.user_id = current_user.id
-    import logging
-
-    logger = logging.getLogger(__name__)
-    logger.error(score)
     session.add(score)
     session.commit()
     session.refresh(score)
     return score
 
 
-# import logfire
-
-# logfire.configure()
-# logfire.instrument_pydantic_ai()
-
-
 @app.post("/complete_score")
-async def complete_score(score: Score):
-    from pydantic_ai import Agent
-    from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
-    from app.agent import MODEL
-
-    agent = Agent(
-        MODEL,
-        output_type=Score,
-        system_prompt="""You are a music expert, and your task it to provide accurate informations about a music piece.
-        Use the search tool to find current information if you don't know the answer.
-        Ignore pdf_path, user_id, id and number_of_play.
-        """,
-        retries=5,
-        tools=[duckduckgo_search_tool()],
-    )
-    prompt = f"Find the information about music piece {score.title} composed by {score.composer}."
-    res = await agent.run(prompt)
-    logger.error(res)
-    return res.output
+async def complete_score(score: Score):  # pragma: no cover
+    """Complete a score."""
+    return run_complete_agent(score)
 
 
 @app.delete("/scores/{score_id}")

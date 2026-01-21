@@ -1,8 +1,7 @@
 """Score models."""
 
-from enum import Enum
 from datetime import date
-
+from enum import Enum
 from typing import TYPE_CHECKING, List, Optional
 
 from pydantic import BaseModel
@@ -12,7 +11,7 @@ if TYPE_CHECKING:
     from shared import User
 
 
-class Difficulty(Enum):
+class Difficulty(str, Enum):
     """Difficulty levels."""
 
     easy = "easy"
@@ -22,7 +21,7 @@ class Difficulty(Enum):
     expert = "expert"
 
 
-class Period(Enum):
+class Period(str, Enum):
     """Periods of music history."""
 
     Medieval = "Medieval"
@@ -50,15 +49,17 @@ class Score(SQLModel, table=True):
     # score data
     title: str = Field()
     composer: str = Field()
-    year: int = Field(gt=0, lt=date.today().year)
-    period: Period = Field()
-    genre: str = Field()  # https://en.wikipedia.org/wiki/List_of_classical_music_genres
-    form: str = Field()  # https://en.wikipedia.org/wiki/Musical_form
-    short_description: str = Field()
-    long_description: str = Field()
-    youtube_url: str = Field()
-    difficulty: Difficulty = Field()
-    notable_interpreters: str = Field()
+    year: int = Field(default=1750, gt=0, lt=date.today().year)
+    period: Period = Field(default=Period.Classical)
+    genre: str = Field(
+        default="Classical"
+    )  # https://en.wikipedia.org/wiki/List_of_classical_music_genres
+    form: str = Field(default="Sonata")  # https://en.wikipedia.org/wiki/Musical_form
+    short_description: str = Field(default="")
+    long_description: str = Field(default="")
+    youtube_url: str = Field(default="")
+    difficulty: Difficulty = Field(default=Difficulty.moderate)
+    notable_interpreters: str = Field(default="")
 
     # internal data
     pdf_path: str = Field()
