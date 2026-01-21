@@ -118,6 +118,17 @@ def is_admin():
     ).json()
 
 
+def valid_token():
+    """Check if the token is valid."""
+    result = requests.get(
+        f"{API_URL}/is_admin",
+        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+    )
+    if result.status_code == 401:
+        return False
+    return True
+
+
 def get_all_users():
     """Get all users from the db via API"""
     users = requests.get(

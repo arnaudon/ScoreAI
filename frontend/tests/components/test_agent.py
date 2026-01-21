@@ -11,6 +11,7 @@ def test_agent(mocker, frontend_dir):
     at = AppTest.from_file(frontend_dir / "ui" / "welcome.py")
     at.session_state["token"] = "fake-token"
     at.session_state["user"] = "fake-user"
+    at.session_state["user_id"] = 0
     at.run()
     at.text_input("question").input("test").run()
     at.button("open").click().run()

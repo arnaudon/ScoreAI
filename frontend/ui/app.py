@@ -47,17 +47,8 @@ def login(welcome_page, cookie_manager):
 
 
 import requests
+
 from ui.components.api import API_URL
-
-
-def _check_token_valid():
-    """Check if the token is valid otherwise remove it"""
-    result = requests.get(
-        f"{API_URL}/is_admin",
-        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
-    )
-    if result.status_code == 401:
-        st.session_state.token = None
 
 
 def _load_token(cookie_manager: stx.CookieManager):
@@ -76,6 +67,9 @@ def _load_token(cookie_manager: stx.CookieManager):
     if "token" not in st.session_state:  # pragma: no cover
         st.session_state.token = None
 
+    if not api.valid_token():
+        st.session_state.token = None
+
 
 def main():
     """Render the main navigation app."""
@@ -84,8 +78,6 @@ def main():
     cookie_manager = stx.CookieManager()
 
     _load_token(cookie_manager)
-    _check_token_valid()
-
     welcome_page = st.Page("welcome.py", title=_("Choose a score"))
     database_page = st.Page("database.py", title=_("View database"))
     account_page = st.Page("account.py", title=_("Manage your account"))
