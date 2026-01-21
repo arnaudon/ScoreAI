@@ -20,13 +20,11 @@ def run_agent():
             if st.button("Open PDF", key="open"):  # pragma: no cover
                 st.switch_page("reader.py")
 
-    st.caption(
-        """
+    st.caption("""
            Here is how to use me:\n
     - Ask me a question about a score or a composer\n
     - I can give you a random score from a composer\n
     - etc...
-"""
-    )
+""")
     if st.button("clean history"):  # pragma: no cover
         st.session_state.message_history = []
