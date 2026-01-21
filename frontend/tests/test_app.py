@@ -49,10 +49,6 @@ def test_app_login_success(mocker, frontend_dir):
     mock_response.json.return_value = {"access_token": "fake-token"}
     mock_login.return_value = mock_response
 
-    # alo mock the validity of the token
-    mock_valid = mocker.patch("ui.app.requests.get")
-    mock_valid.return_value.status_code = 200
-
     at.run()
 
     at.sidebar.text_input[0].input("alice")
