@@ -33,11 +33,6 @@ class Period(str, Enum):
     Postmodernist = "Postmodernist"
 
 
-class DataScore(BaseModel):
-    title: str = Field()
-    composer: str = Field()
-
-
 class Score(SQLModel, table=True):
     """Score model"""
 
