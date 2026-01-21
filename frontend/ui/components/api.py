@@ -82,7 +82,9 @@ def get_scores() -> Scores:
 def get_scores_df() -> pd.DataFrame:
     """Get all scores as dataframe from the db via API"""
     scores = get_scores()
-    return pd.DataFrame([s.model_dump() for s in scores.scores])
+    df = pd.DataFrame([s.model_dump() for s in scores.scores])
+    df.index = df.id
+    return df
 
 
 def run_agent(question: str) -> Response:  # pragma: no cover
@@ -116,13 +118,34 @@ def is_admin():
     ).json()
 
 
+def valid_token():
+    """Check if the token is valid."""
+    result = requests.get(
+        f"{API_URL}/is_admin",
+        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+    )
+    if result.status_code == 401:
+        return False
+    return True
+
+
 def get_all_users():
     """Get all users from the db via API"""
     users = requests.get(
         f"{API_URL}/users",
         headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
     ).json()
-    print(users)
     df = pd.DataFrame(users)
     df.drop("password", axis=1, inplace=True)
     return df
+
+
+def complete_score_data(score: Score):
+    """Complete a score with agents"""
+    return Score(
+        **requests.post(
+            f"{API_URL}/complete_score",
+            headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+            json=score.model_dump(),
+        ).json()
+    )

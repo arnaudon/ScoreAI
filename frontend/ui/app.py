@@ -28,10 +28,15 @@ def login(welcome_page, cookie_manager):
                 if "pdf_viewers" in st.session_state:  # pragma: no cover
                     del st.session_state.pdf_viewers
                 token = res.json().get("access_token")
+                user_id = res.json().get("user_id")
                 st.session_state.token = token
                 st.session_state.user = user
+                st.session_state.user_id = user_id
                 cookie_manager.set("token", token, key="save_token", expires_at=COOKIE_EXPIRES)
                 cookie_manager.set("user", user, key="save_user", expires_at=COOKIE_EXPIRES)
+                cookie_manager.set(
+                    "user_id", user_id, key="save_user_id", expires_at=COOKIE_EXPIRES
+                )
                 st.switch_page(welcome_page)
             else:
                 st.error(_("Invalid credentials"))
@@ -41,12 +46,8 @@ def login(welcome_page, cookie_manager):
             cookie_manager.delete("token")
 
 
-def main():
-    """Render the main navigation app."""
-    init_i18n_gettext()
-    cookie_manager = stx.CookieManager()
-
-    # load cookie with a little waiting
+def _load_token(cookie_manager: stx.CookieManager):
+    """load cookie with a little waiting"""
     saved_token = cookie_manager.get(cookie="token")
     if saved_token is None:
         with st.spinner("Authenticating..."):
@@ -61,14 +62,27 @@ def main():
     if "token" not in st.session_state:  # pragma: no cover
         st.session_state.token = None
 
+    if not api.valid_token():
+        st.session_state.token = None
+
+
+def main():
+    """Render the main navigation app."""
+
+    init_i18n_gettext()
+    cookie_manager = stx.CookieManager()
+
+    _load_token(cookie_manager)
     welcome_page = st.Page("welcome.py", title=_("Choose a score"))
     database_page = st.Page("database.py", title=_("View database"))
     account_page = st.Page("account.py", title=_("Manage your account"))
     reader_page = st.Page("reader.py", title=_("View a score"))
     admin_page = st.Page("admin.py", title=_("Admin"))
     st.session_state.reader_page = reader_page
+
     if "is_admin" not in st.session_state:
         st.session_state.is_admin = api.is_admin()
+
     with st.sidebar:
         if st.session_state.token is not None:
             write_summary_db()

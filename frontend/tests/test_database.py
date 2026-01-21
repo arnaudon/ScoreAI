@@ -13,6 +13,7 @@ def app_test(frontend_dir) -> AppTest:
     at = AppTest.from_file(frontend_dir / "ui" / "database.py")
     at.session_state["token"] = "fake-token"
     at.session_state["user"] = "fake-user"
+    at.session_state["user_id"] = 0
     return at
 
 

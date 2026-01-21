@@ -27,7 +27,7 @@ jobs:
             echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env
             #TODO: move the agent stuff to the db
             echo "MODEL=google-gla:gemini-2.5-flash-lite" >> .env
-            echo "GOOGLE_API_KEY=AIzaSyBg9bXflw9Xv8FtWzAsOwXUeChPQT7e3lQ" >> .env
+            echo "GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}" >> .env
             echo "S3_ENDPOINT=${{ secrets.S3_ENDPOINT }}" >> .env
             echo "S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }}" >> .env
             echo "S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }}" >> .env

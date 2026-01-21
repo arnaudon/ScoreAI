@@ -9,7 +9,7 @@ from fastapi import Depends, FastAPI
 from sqlmodel import Session, select
 
 from app import users
-from app.agent import Deps, run_agent
+from app.agent import Deps, run_agent, run_complete_agent
 from app.db import get_session, init_db
 from app.users import get_current_user
 from shared import Score, Scores, User
@@ -41,6 +41,12 @@ def add_score(
     session.commit()
     session.refresh(score)
     return score
+
+
+@app.post("/complete_score")
+async def complete_score(score: Score):  # pragma: no cover
+    """Complete a score."""
+    return run_complete_agent(score)
 
 
 @app.delete("/scores/{score_id}")

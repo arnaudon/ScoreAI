@@ -41,7 +41,6 @@ def test_app_login_success(mocker, frontend_dir):
 
     at = AppTest.from_file(frontend_dir / "ui" / "app.py")
 
-    # Simulate logged-out state so login form is visible
     at.session_state["token"] = None
 
     mock_login = mocker.patch("ui.components.api.login_user")
@@ -52,11 +51,9 @@ def test_app_login_success(mocker, frontend_dir):
 
     at.run()
 
-    # Sidebar login form: first two text_inputs are username and password
     at.sidebar.text_input[0].input("alice")
     at.sidebar.text_input[1].input("secret")
 
-    # First sidebar button should be the Login button
     at.sidebar.button[0].click().run()
 
     assert at.session_state["token"] == "fake-token"
