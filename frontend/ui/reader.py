@@ -12,12 +12,12 @@ def render_pdf(pdf_path):
     st.markdown(
         f"""
             <iframe 
-        src="{url}" 
-        width="100%" 
-        height="800px" 
+        src="{url}"
+        width="100%"
+        height="800px"
         style="border:none;"
-        allowfullscreen="true" 
-        webkitallowfullscreen="true" 
+        allowfullscreen="true"
+        webkitallowfullscreen="true"
         mozallowfullscreen="true"
         allow="fullscreen">
             </iframe>

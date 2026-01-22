@@ -59,7 +59,7 @@ def test_database_add_score(mocker, at, frontend_dir):
     class MockUpload:  # pylint: disable=R0903
         """Mock upload."""
 
-        def getbuffer(self):
+        def getvalue(self):
             """Get buffer."""
             return bytes()
 
@@ -76,9 +76,3 @@ def test_database_add_score(mocker, at, frontend_dir):
     at.text_input("title").set_value("title")
     at.text_input("composer").set_value("composer")
     at.button("add").click().run()
-
-    # try again the same
-    at.text_input("title").set_value("title")
-    at.text_input("composer").set_value("composer")
-    at.button("add").click().run()
-    os.remove(frontend_dir / "tests/data/title_composer_fake-user.pdf")

@@ -86,7 +86,7 @@ def test_delete_score(mocker, mock_get_scores, mock_add_score, other_score):
     mock_response.status_code = 200
     mocker.patch("ui.components.api.requests.delete", return_value=mock_response)
 
-    api.delete_score(score_id=0)
+    api.delete_score({"id": other_score.id, "pdf_path": other_score.pdf_path})
     assert api._SCORES is None
 
 
