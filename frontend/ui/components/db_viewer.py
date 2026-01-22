@@ -23,12 +23,14 @@ def write_summary_db():
         )
 
 
-def upload(file, title: str, composer: str, user: str) -> str | None:
+def upload(file, title: str, composer: str, user: str) -> str:
     """Save the file locally or on S3."""
     filename = f"{title}_{composer}_{user}.pdf"
-    if s3_helper is not None:
-        s3_helper["s3_client"].put_object(Bucket=s3_helper["bucket"], Key=filename, Body=file)
-        return filename
+    api.upload_pdf(file, filename)
+    return filename
+    # if s3_helper is not None:
+    # s3_helper.upload_pdf(filename, file)
+    # return filename
 
     path = Path(str(os.getenv("DATA_PATH"))) / filename
     with open(path, "wb") as f:
@@ -85,6 +87,10 @@ def add_score():
             st.write("Please upload a file")
             st.stop()
 
+        if "score_data_output" not in st.session_state:
+            st.session_state.score_data_output = api.complete_score_data(
+                st.session_state.score_data_input
+            )
         st.session_state.score_data_output.pdf_path = upload(
             uploaded_file, title, composer, st.session_state.user
         )
@@ -99,7 +105,7 @@ def add_score():
 def delete_score(row):
     """Delete a score"""
     if s3_helper is not None:
-        s3_helper["s3_client"].delete_object(Bucket=s3_helper["bucket"], Key=row["pdf_path"])
+        s3_helper.delete_pdf(row["pdf_path"])
     else:
         try:
             os.remove(row["pdf_path"])
@@ -110,7 +116,10 @@ def delete_score(row):
 def show_db(select=True):
     """Show the db"""
     df = api.get_scores_df()
-    reduced_df = df[["id", "title", "composer", "period", "genre", "year", "number_of_plays"]]
+    if len(df):
+        reduced_df = df[["id", "title", "composer", "period", "genre", "year", "number_of_plays"]]
+    else:
+        reduced_df = df
     st.write("Score List:")
     gb = GridOptionsBuilder.from_dataframe(reduced_df)
 
