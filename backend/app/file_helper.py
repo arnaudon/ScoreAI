@@ -1,4 +1,4 @@
-"""Utils."""
+"""File helper to handle both local and S3 bucket."""
 
 import os
 import shutil

@@ -64,7 +64,6 @@ def delete_score(score_data):
     reset_score_cache()
 
 
-
 def add_play(score_id: int) -> dict:
     """Add a play to the db via API"""
     res = requests.post(

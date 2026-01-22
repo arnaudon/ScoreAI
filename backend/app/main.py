@@ -112,12 +112,12 @@ async def run(
     )
 
 
-@app.get("/pdf/{file_id}")
+@app.get("/pdf/{filename}")
 def get_pdf(
-    file_id: str, current_user: Annotated[User, Depends(get_current_user)]
+    filename: str, current_user: Annotated[User, Depends(get_current_user)]
 ):  # pylint: disable=unused-argument
     """Get the url of a pdf file."""
-    obj = file_helper.download_pdf(file_id)
+    obj = file_helper.download_pdf(filename)
     return StreamingResponse(obj["Body"], media_type="application/pdf")
 
 
@@ -137,10 +137,10 @@ def upload_pdf(
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-@app.delete("/pdf/{file_id}")
+@app.delete("/pdf/{filename}")
 def delete_pdf(
-    file_id: str, current_user: Annotated[User, Depends(get_current_user)]
+    filename: str, current_user: Annotated[User, Depends(get_current_user)]
 ):  # pylint: disable=unused-argument
     """Delete a pdf file."""
-    file_helper.delete_pdf(file_id)
+    file_helper.delete_pdf(filename)
     return {"message": "Delete successful"}
