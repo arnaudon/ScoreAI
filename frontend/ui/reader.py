@@ -8,11 +8,10 @@ from ui.components import api
 def render_pdf(pdf_path):
     """Render the pdf."""
     url = api.get_pdf_url(pdf_path)
-    st.write(url)
     st.markdown(
         f"""
             <iframe 
-        src="{url}"
+        src="{url}#disableRange=true&disableStream=true&disableAutoFetch=false"
         width="100%"
         height="800px"
         style="border:none;"

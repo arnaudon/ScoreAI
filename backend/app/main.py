@@ -113,9 +113,7 @@ async def run(
 
 
 @app.get("/pdf/{filename}")
-def get_pdf(
-    filename: str, current_user: Annotated[User, Depends(get_current_user)]
-):  # pylint: disable=unused-argument
+def get_pdf(filename: str):
     """Get the url of a pdf file."""
     obj = file_helper.download_pdf(filename)
     return StreamingResponse(obj["Body"], media_type="application/pdf")
