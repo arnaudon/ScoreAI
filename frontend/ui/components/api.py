@@ -162,7 +162,6 @@ def upload_pdf(file, filename):
     response = requests.post(f"{API_URL}/pdf", files=files)
     if response.status_code == 200:
         data = response.json()
-        logger.debug(f"File uploaded! S3 Key: {data['file_id']}")
     else:
         logger.error("Upload failed.")
         data = None

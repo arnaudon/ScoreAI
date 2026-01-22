@@ -1,14 +1,10 @@
 """DB viewer."""
 
-import os
-from pathlib import Path
-
 import streamlit as st
 from shared import Score
 from st_aggrid import AgGrid, GridOptionsBuilder
 
 from ui.components import api
-from ui.components.utils import s3_helper
 
 
 def write_summary_db():
@@ -28,14 +24,6 @@ def upload(file, title: str, composer: str, user: str) -> str:
     filename = f"{title}_{composer}_{user}.pdf"
     api.upload_pdf(file, filename)
     return filename
-    # if s3_helper is not None:
-    # s3_helper.upload_pdf(filename, file)
-    # return filename
-
-    path = Path(str(os.getenv("DATA_PATH"))) / filename
-    with open(path, "wb") as f:
-        f.write(file.getbuffer())
-    return str(path)
 
 
 def show_score_info(score):
@@ -102,17 +90,6 @@ def add_score():
         st.rerun()
 
 
-def delete_score(row):
-    """Delete a score"""
-    if s3_helper is not None:
-        s3_helper.delete_pdf(row["pdf_path"])
-    else:
-        try:
-            os.remove(row["pdf_path"])
-        except FileNotFoundError:
-            pass
-
-
 def show_db(select=True):
     """Show the db"""
     df = api.get_scores_df()
@@ -143,7 +120,6 @@ def show_db(select=True):
                     with col_confirm:
                         if st.button("Delete", key="delete"):
                             api.delete_score(row["id"])
-                            delete_score(row)
                             st.rerun()
                     with col_cancel:
                         if st.button(
