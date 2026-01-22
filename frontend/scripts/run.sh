@@ -1,5 +1,5 @@
 #!/bin/bash
 
 # Start Streamlit frontend
-uv run --frozen streamlit run ui/app.py
+uv run streamlit run ui/app.py
 

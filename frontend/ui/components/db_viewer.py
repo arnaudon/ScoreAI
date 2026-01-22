@@ -1,14 +1,10 @@
 """DB viewer."""
 
-import os
-from pathlib import Path
-
 import streamlit as st
 from shared import Score
 from st_aggrid import AgGrid, GridOptionsBuilder
 
 from ui.components import api
-from ui.components.utils import s3_helper
 
 
 def write_summary_db():
@@ -23,17 +19,11 @@ def write_summary_db():
         )
 
 
-def upload(file, title: str, composer: str, user: str) -> str | None:
+def upload(file, title: str, composer: str, user: str) -> str:
     """Save the file locally or on S3."""
     filename = f"{title}_{composer}_{user}.pdf"
-    if s3_helper is not None:
-        s3_helper["s3_client"].put_object(Bucket=s3_helper["bucket"], Key=filename, Body=file)
-        return filename
-
-    path = Path(str(os.getenv("DATA_PATH"))) / filename
-    with open(path, "wb") as f:
-        f.write(file.getbuffer())
-    return str(path)
+    api.upload_pdf(file, filename)
+    return filename
 
 
 def show_score_info(score):
@@ -85,6 +75,10 @@ def add_score():
             st.write("Please upload a file")
             st.stop()
 
+        if "score_data_output" not in st.session_state:
+            st.session_state.score_data_output = api.complete_score_data(
+                st.session_state.score_data_input
+            )
         st.session_state.score_data_output.pdf_path = upload(
             uploaded_file, title, composer, st.session_state.user
         )
@@ -96,21 +90,13 @@ def add_score():
         st.rerun()
 
 
-def delete_score(row):
-    """Delete a score"""
-    if s3_helper is not None:
-        s3_helper["s3_client"].delete_object(Bucket=s3_helper["bucket"], Key=row["pdf_path"])
-    else:
-        try:
-            os.remove(row["pdf_path"])
-        except FileNotFoundError:
-            pass
-
-
 def show_db(select=True):
     """Show the db"""
     df = api.get_scores_df()
-    reduced_df = df[["id", "title", "composer", "period", "genre", "year", "number_of_plays"]]
+    if len(df):
+        reduced_df = df[["id", "title", "composer", "period", "genre", "year", "number_of_plays"]]
+    else:
+        reduced_df = df
     st.write("Score List:")
     gb = GridOptionsBuilder.from_dataframe(reduced_df)
 
@@ -133,8 +119,7 @@ def show_db(select=True):
 
                     with col_confirm:
                         if st.button("Delete", key="delete"):
-                            api.delete_score(row["id"])
-                            delete_score(row)
+                            api.delete_score(row)
                             st.rerun()
                     with col_cancel:
                         if st.button(

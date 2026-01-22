@@ -1,5 +1,6 @@
 """API module."""
 
+import logging
 import os
 
 import pandas as pd
@@ -8,7 +9,10 @@ import streamlit as st
 from pwdlib import PasswordHash
 from shared import FullResponse, Response, Score, Scores, User
 
+logger = logging.getLogger(__name__)
+
 API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
+PUBLIC_API_URL = os.getenv("PUBLIC_API_URL", "http://localhost:8000")
 _SCORES = None
 
 password_hash = PasswordHash.recommended()
@@ -47,10 +51,14 @@ def add_score(score_data: Score) -> dict:
     return response
 
 
-def delete_score(score_id: int):
+def delete_score(score_data):
     """Delete a score from the db via API"""
     requests.delete(
-        f"{API_URL}/scores/{score_id}",
+        f"{API_URL}/scores/{score_data['id']}",
+        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+    )
+    requests.delete(
+        f"{API_URL}/pdf/{score_data['pdf_path']}",
         headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
     )
     reset_score_cache()
@@ -83,7 +91,8 @@ def get_scores_df() -> pd.DataFrame:
     """Get all scores as dataframe from the db via API"""
     scores = get_scores()
     df = pd.DataFrame([s.model_dump() for s in scores.scores])
-    df.index = df.id
+    if "id" in df.columns:
+        df.index = df.id
     return df
 
 
@@ -149,3 +158,22 @@ def complete_score_data(score: Score):
             json=score.model_dump(),
         ).json()
     )
+
+
+def upload_pdf(file, filename):
+    """Upload pdf file"""
+    files = {"file": (filename, file.getvalue(), "application/pdf")}
+    response = requests.post(f"{API_URL}/pdf", files=files)
+    if response.status_code == 200:
+        data = response.json()
+    else:
+        logger.error("Upload failed.")
+        data = None
+    return data
+
+
+def get_pdf_url(file_id):
+    """Get pdf url"""
+    url = f"{PUBLIC_API_URL}/pdf/{file_id}"
+    viewer_url = f"{PUBLIC_API_URL}/pdfjs/web/viewer.html"
+    return f"{viewer_url}?file={url}"

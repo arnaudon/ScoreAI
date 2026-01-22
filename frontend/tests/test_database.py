@@ -1,7 +1,5 @@
 """Test database."""
 
-import os
-
 import pandas as pd
 import pytest
 from streamlit.testing.v1 import AppTest
@@ -52,14 +50,14 @@ def test_database_selected_score_cancel(test_scores, mocker, at):
     at.button("cancel").click().run()
 
 
-def test_database_add_score(mocker, at, frontend_dir):
+def test_database_add_score(mocker, at):
     """Test database add score."""
     at.run()
 
     class MockUpload:  # pylint: disable=R0903
         """Mock upload."""
 
-        def getbuffer(self):
+        def getvalue(self):
             """Get buffer."""
             return bytes()
 
@@ -76,9 +74,3 @@ def test_database_add_score(mocker, at, frontend_dir):
     at.text_input("title").set_value("title")
     at.text_input("composer").set_value("composer")
     at.button("add").click().run()
-
-    # try again the same
-    at.text_input("title").set_value("title")
-    at.text_input("composer").set_value("composer")
-    at.button("add").click().run()
-    os.remove(frontend_dir / "tests/data/title_composer_fake-user.pdf")
