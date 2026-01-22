@@ -1,7 +1,5 @@
 """Test database."""
 
-import os
-
 import pandas as pd
 import pytest
 from streamlit.testing.v1 import AppTest
@@ -52,7 +50,7 @@ def test_database_selected_score_cancel(test_scores, mocker, at):
     at.button("cancel").click().run()
 
 
-def test_database_add_score(mocker, at, frontend_dir):
+def test_database_add_score(mocker, at):
     """Test database add score."""
     at.run()
 
