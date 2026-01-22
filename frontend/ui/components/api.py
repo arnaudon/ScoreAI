@@ -51,13 +51,18 @@ def add_score(score_data: Score) -> dict:
     return response
 
 
-def delete_score(score_id: int):
+def delete_score(score_data):
     """Delete a score from the db via API"""
     requests.delete(
-        f"{API_URL}/scores/{score_id}",
+        f"{API_URL}/scores/{score_data['id']}",
+        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+    )
+    requests.delete(
+        f"{API_URL}/pdf/{score_data['pdf_path']}",
         headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
     )
     reset_score_cache()
+
 
 
 def add_play(score_id: int) -> dict:

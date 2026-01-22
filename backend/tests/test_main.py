@@ -2,12 +2,16 @@
 
 from pathlib import Path
 
+import io
 import pytest
 import sqlalchemy.exc
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 
 from shared.scores import Score, Scores
+import os
+backend_dir= Path(__file__).resolve().parent.parent
+os.environ["DATA_PATH"] = str(backend_dir/ "tests/data")
 
 
 def test_get_score(client: TestClient, test_scores: Scores):
@@ -112,6 +116,26 @@ def test_add_play_wrong_id(client: TestClient):
     assert response.status_code == 200
     response = client.get("/scores").json()
 
+def test_get_pdf(client: TestClient):
+    """test get pdf"""
+    response = client.get("/pdf/real_score.pdf")
+    assert response.status_code == 200
+
+def test_upload_pdf(client: TestClient):
+    """test upload pdf"""
+    file = io.BytesIO(b"fake_score")
+    files = {"file": ("fake_score.pdf", file.getvalue(), "application/pdf")}
+    response = client.post("/pdf", files=files)
+    assert response.status_code == 200
+
+def test_delete_pdf(client: TestClient):
+    """test delete pdf"""
+    file = io.BytesIO(b"fake_score")
+    files = {"file": ("fake_score.pdf", file.getvalue(), "application/pdf")}
+    client.post("/pdf", files=files)
+    response = client.delete("/pdf/fake_score.pdf")
+    assert response.status_code == 200
+    response = client.delete("/pdf/fake_score_not_here.pdf")
 
 # def test_agent(client: TestClient, agent: None):
 #    """test agent"""

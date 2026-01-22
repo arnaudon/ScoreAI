@@ -119,7 +119,7 @@ def show_db(select=True):
 
                     with col_confirm:
                         if st.button("Delete", key="delete"):
-                            api.delete_score(row["id"])
+                            api.delete_score(row)
                             st.rerun()
                     with col_cancel:
                         if st.button(

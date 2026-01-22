@@ -113,20 +113,34 @@ async def run(
 
 
 @app.get("/pdf/{file_id}")
-def get_pdf(file_id: str):
+def get_pdf(
+    file_id: str, current_user: Annotated[User, Depends(get_current_user)]
+):  # pylint: disable=unused-argument
     """Get the url of a pdf file."""
     obj = file_helper.download_pdf(file_id)
     return StreamingResponse(obj["Body"], media_type="application/pdf")
 
 
 @app.post("/pdf")
-def upload_pdf(file: UploadFile = File(...)):
+def upload_pdf(
+    current_user: Annotated[User, Depends(get_current_user)],
+    file: UploadFile = File(...),
+):  # pylint: disable=unused-argument
     """Upload a pdf file."""
-    if file.content_type != "application/pdf":
+    if file.content_type != "application/pdf":  # pragma: no cover
         raise HTTPException(status_code=400, detail="Only PDFs allowed")
     try:
         file_helper.upload_pdf(file.filename, file.file)
         return {"message": "Upload successful", "file_id": file.filename}
 
-    except Exception as e:
+    except Exception as e:  # pragma: no cover
         raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@app.delete("/pdf/{file_id}")
+def delete_pdf(
+    file_id: str, current_user: Annotated[User, Depends(get_current_user)]
+):  # pylint: disable=unused-argument
+    """Delete a pdf file."""
+    file_helper.delete_pdf(file_id)
+    return {"message": "Delete successful"}
