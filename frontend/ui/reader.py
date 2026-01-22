@@ -11,7 +11,7 @@ def render_pdf(pdf_path):
     st.markdown(
         f"""
             <iframe 
-        src="{url}"
+        src="{url}#disableRange=true&disableStream=true&disableAutoFetch=false"
         width="100%"
         height="800px"
         style="border:none;"
