@@ -140,7 +140,7 @@ async def get_users(
 
 
 @router.get("/user")
-async def get_current_user(current_user: Annotated[User, Depends(get_current_user)]):
+async def get_current_user_route(current_user: Annotated[User, Depends(get_current_user)]):
     """Get current user."""
     return current_user
 

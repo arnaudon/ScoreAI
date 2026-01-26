@@ -1,8 +1,10 @@
 """View a pdf"""
 
-import streamlit as st
-import extra_streamlit_components as stx
 from datetime import datetime, timedelta
+
+import extra_streamlit_components as stx
+import streamlit as st
+
 from ui.components import api
 
 COOKIE_EXPIRES = datetime.now() + timedelta(days=1)

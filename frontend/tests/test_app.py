@@ -55,9 +55,8 @@ def test_app_login_success(mocker, frontend_dir):
     at.sidebar.text_input[1].input("secret")
 
     at.sidebar.button[0].click().run()
-
     assert at.session_state["token"] == "fake-token"
-    assert at.session_state["user"] == "alice"
+    assert at.session_state["user"]["username"] == "alice"
 
 
 def test_app_login_invalid_credentials_shows_error(mocker, frontend_dir):

@@ -62,3 +62,6 @@ def request_mock(request, mocker, test_scores):
 
     mocker_valid_token = mocker.patch("ui.components.api.valid_token")
     mocker_valid_token.return_value = True
+
+    mock_get_user = mocker.patch("ui.components.api.get_user")
+    mock_get_user.return_value = {"username": "alice", "id": 1}

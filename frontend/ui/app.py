@@ -1,10 +1,10 @@
 """Main frontent entry point."""
 
 import time
-import extra_streamlit_components as stx
-
-import streamlit as st
 from datetime import datetime, timedelta
+
+import extra_streamlit_components as stx
+import streamlit as st
 
 from ui.components import api
 from ui.components.db_viewer import write_summary_db
