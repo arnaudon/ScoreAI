@@ -44,6 +44,7 @@ class FileHelper:
             )
         else:
             path = Path(str(os.getenv("DATA_PATH"))) / filename
+            path.parent.mkdir(parents=True, exist_ok=True)
             with open(path, "wb") as f:
                 shutil.copyfileobj(file, f)
 

@@ -27,11 +27,6 @@ def test_get_score(client: TestClient, test_scores: Scores):
 
 def test_add_wrong_score(client: TestClient, session: Session):
     """test add with missing values"""
-    score = {"composer": "another_composer", "title": "another_title"}
-    with pytest.raises(sqlalchemy.exc.IntegrityError):
-        client.post("/scores", json=score)
-    session.rollback()
-
     score = {"composer": "another_composer"}
     with pytest.raises(sqlalchemy.exc.IntegrityError):
         client.post("/scores", json=score)

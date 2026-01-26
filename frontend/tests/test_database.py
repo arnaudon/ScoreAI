@@ -10,8 +10,7 @@ def app_test(frontend_dir) -> AppTest:
     """App test fixture"""
     at = AppTest.from_file(frontend_dir / "ui" / "database.py")
     at.session_state["token"] = "fake-token"
-    at.session_state["user"] = "fake-user"
-    at.session_state["user_id"] = 0
+    at.session_state["user"] = {"username": "fake-user", "id": 0}
     return at
 
 
@@ -73,4 +72,7 @@ def test_database_add_score(mocker, at):
     mock_uploader.return_value = MockUpload()
     at.text_input("title").set_value("title")
     at.text_input("composer").set_value("composer")
+
+    mock_complete_score = mocker.patch("ui.components.api.complete_score_data")
+    mock_complete_score.return_value = {"title": "title", "composer": "composer"}
     at.button("add").click().run()

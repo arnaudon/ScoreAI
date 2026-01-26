@@ -139,6 +139,12 @@ async def get_users(
     return session.exec(select(User)).all()
 
 
+@router.get("/user")
+async def get_current_user_route(current_user: Annotated[User, Depends(get_current_user)]):
+    """Get current user."""
+    return current_user
+
+
 @router.get("/is_admin")
 async def is_admin(current_user: Annotated[User | None, Depends(get_admin_user)]):
     """Check if user is admin."""

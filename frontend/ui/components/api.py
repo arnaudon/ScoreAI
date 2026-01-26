@@ -40,6 +40,14 @@ def login_user(username, password):
     return response
 
 
+def get_user():
+    """Get the current user via API"""
+    response = requests.get(
+        f"{API_URL}/user", headers={"Authorization": f"Bearer {st.session_state.get('token')}"}
+    ).json()
+    return response
+
+
 def add_score(score_data: Score) -> dict:
     """Add a score to the db via API"""
     response = requests.post(
@@ -163,7 +171,12 @@ def complete_score_data(score: Score):
 def upload_pdf(file, filename):
     """Upload pdf file"""
     files = {"file": (filename, file.getvalue(), "application/pdf")}
-    response = requests.post(f"{API_URL}/pdf", files=files)
+    response = requests.post(
+        f"{API_URL}/pdf",
+        files=files,
+        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+    )
+
     if response.status_code == 200:
         data = response.json()
     else:

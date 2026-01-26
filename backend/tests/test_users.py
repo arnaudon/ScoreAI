@@ -147,17 +147,24 @@ def test_get_users(client: TestClient):
     assert resp.status_code == 200
 
 
+@pytest.mark.asyncio
 async def test_is_admin(test_user):
     """is_admin returns True if user is admin (covers is_admin)."""
     assert await users.is_admin(test_user) is True
     assert await users.is_admin(None) is False
 
 
+@pytest.mark.asyncio
 async def test_get_admin_user(test_user):
     """get_admin_user returns admin user or None (covers get_admin_user)."""
-
     assert await users.get_admin_user(test_user) is None
     test_user.role = "other"
     assert await users.get_admin_user(test_user) is None
     test_user.role = "admin"
     assert await users.get_admin_user(test_user) is test_user
+
+
+def test_get_current_user_route(client: TestClient):
+    """GET /user returns current user (covers get_current_user)."""
+    resp = client.get("/user")
+    assert resp.status_code == 200

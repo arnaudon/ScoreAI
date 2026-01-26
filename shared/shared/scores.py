@@ -57,7 +57,7 @@ class Score(SQLModel, table=True):
     notable_interpreters: str = Field(default="")
 
     # internal data
-    pdf_path: str = Field()
+    pdf_path: str = Field(default="")
     number_of_plays: int = 0
     user_id: int | None = Field(foreign_key="user.id")
     user: Optional["User"] = Relationship(back_populates="scores")
