@@ -14,7 +14,7 @@ def write_summary_db():
         st.write("You have no scores")
     else:
         st.write(
-            f"{st.session_state.user}, you have {len(df)} scores"
+            f"{st.session_state.user['username']}, you have {len(df)} scores"
             f"with {len(df['composer'].unique())} different composers"
         )
 
@@ -43,7 +43,7 @@ def add_score():
     # initialize empty score
     if "score_data" not in st.session_state or st.session_state.score_data_input is None:
         st.session_state.score_data_input = Score(
-            user_id=st.session_state.user_id, title="", composer=""
+            user_id=st.session_state.user["id"], title="", composer=""
         )
     if "update_form" not in st.session_state:
         st.session_state.update_form = True
@@ -80,7 +80,7 @@ def add_score():
                 st.session_state.score_data_input
             )
         st.session_state.score_data_output.pdf_path = upload(
-            uploaded_file, title, composer, st.session_state.user
+            uploaded_file, title, composer, st.session_state.user["username"]
         )
 
         res = api.add_score(st.session_state.score_data_output)

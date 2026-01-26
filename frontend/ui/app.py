@@ -4,10 +4,13 @@ import time
 import extra_streamlit_components as stx
 
 import streamlit as st
-from ui.cookie import COOKIE_EXPIRES, cookie_manager
+from datetime import datetime, timedelta
+
 from ui.components import api
 from ui.components.db_viewer import write_summary_db
 from ui.locales import _, init_i18n_gettext, language_selector
+
+COOKIE_EXPIRES = datetime.now() + timedelta(days=1)
 
 
 def login(welcome_page, cookie_manager):
@@ -25,22 +28,14 @@ def login(welcome_page, cookie_manager):
                 if "pdf_viewers" in st.session_state:  # pragma: no cover
                     del st.session_state.pdf_viewers
                 token = res.json().get("access_token")
-                user_id = res.json().get("user_id")
                 st.session_state.token = token
-                st.session_state.user = user
-                st.session_state.user_id = user_id
                 cookie_manager.set("token", token, key="save_token", expires_at=COOKIE_EXPIRES)
-                cookie_manager.set("user", user, key="save_user", expires_at=COOKIE_EXPIRES)
-                cookie_manager.set(
-                    "user_id", user_id, key="save_user_id", expires_at=COOKIE_EXPIRES
-                )
-                st.switch_page(welcome_page)
             else:
                 st.error(_("Invalid credentials"))
     else:
         if st.button(_("Logout")):  # pragma: no cover
             st.session_state.token = None
-            cookie_manager.delete("token")
+            st.switch_page(welcome_page)
 
 
 def _load_token(cookie_manager: stx.CookieManager):
@@ -53,8 +48,6 @@ def _load_token(cookie_manager: stx.CookieManager):
 
     if saved_token and "token" not in st.session_state:  # pragma: no cover
         st.session_state.token = saved_token
-        st.session_state.user = cookie_manager.get(cookie="user")
-        st.session_state.user_id = cookie_manager.get(cookie="user_id")
 
     if "token" not in st.session_state:  # pragma: no cover
         st.session_state.token = None
@@ -62,12 +55,16 @@ def _load_token(cookie_manager: stx.CookieManager):
     if not api.valid_token():
         st.session_state.token = None
 
+    # set user data
+    st.session_state.user = api.get_user()
+
 
 def main():
     """Render the main navigation app."""
 
     init_i18n_gettext()
 
+    cookie_manager = stx.CookieManager(key="user_cookie")
     _load_token(cookie_manager)
     welcome_page = st.Page("welcome.py", title=_("Choose a score"))
     database_page = st.Page("database.py", title=_("View database"))

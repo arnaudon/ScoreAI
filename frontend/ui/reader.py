@@ -1,8 +1,11 @@
 """View a pdf"""
 
 import streamlit as st
-from ui.cookie import COOKIE_EXPIRES, cookie_manager
+import extra_streamlit_components as stx
+from datetime import datetime, timedelta
 from ui.components import api
+
+COOKIE_EXPIRES = datetime.now() + timedelta(days=1)
 
 
 def render_pdf(pdf_path):
@@ -24,13 +27,14 @@ def render_pdf(pdf_path):
         allowfullscreen="true"
         webkitallowfullscreen="true"
         mozallowfullscreen="true"
-        allow="fullscreen">
-            </iframe>
+        allow="fullscreen"
+        ></iframe>
         """,
         unsafe_allow_html=True,
     )
 
 
+cookie_manager = stx.CookieManager(key="pdf_cookie")
 pdf_path = cookie_manager.get(cookie="pdf_path")
 if hasattr(st.session_state, "selected_row"):
     pdf_path = st.session_state.selected_row["pdf_path"]

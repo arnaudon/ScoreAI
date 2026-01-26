@@ -40,6 +40,14 @@ def login_user(username, password):
     return response
 
 
+def get_user():
+    """Get the current user via API"""
+    response = requests.get(
+        f"{API_URL}/user", headers={"Authorization": f"Bearer {st.session_state.get('token')}"}
+    ).json()
+    return response
+
+
 def add_score(score_data: Score) -> dict:
     """Add a score to the db via API"""
     response = requests.post(
