@@ -35,6 +35,7 @@ def login(welcome_page, cookie_manager):
     else:
         if st.button(_("Logout")):  # pragma: no cover
             st.session_state.token = None
+            cookie_manager.delete("token")
             st.switch_page(welcome_page)
 
 
