@@ -1,16 +1,13 @@
 """Main frontent entry point."""
 
 import time
-from datetime import datetime, timedelta
-
 import extra_streamlit_components as stx
-import streamlit as st
 
+import streamlit as st
+from ui.cookie import COOKIE_EXPIRES, cookie_manager
 from ui.components import api
 from ui.components.db_viewer import write_summary_db
 from ui.locales import _, init_i18n_gettext, language_selector
-
-COOKIE_EXPIRES = datetime.now() + timedelta(days=1)
 
 
 def login(welcome_page, cookie_manager):
@@ -70,7 +67,6 @@ def main():
     """Render the main navigation app."""
 
     init_i18n_gettext()
-    cookie_manager = stx.CookieManager()
 
     _load_token(cookie_manager)
     welcome_page = st.Page("welcome.py", title=_("Choose a score"))

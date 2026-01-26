@@ -44,6 +44,11 @@ class FileHelper:
             )
         else:
             path = Path(str(os.getenv("DATA_PATH"))) / filename
+            import logging
+
+            logger = logging.getLogger(__name__)
+            logger.error(path)
+            path.parent.mkdir(parents=True, exist_ok=True)
             with open(path, "wb") as f:
                 shutil.copyfileobj(file, f)
 

@@ -163,7 +163,12 @@ def complete_score_data(score: Score):
 def upload_pdf(file, filename):
     """Upload pdf file"""
     files = {"file": (filename, file.getvalue(), "application/pdf")}
-    response = requests.post(f"{API_URL}/pdf", files=files)
+    response = requests.post(
+        f"{API_URL}/pdf",
+        files=files,
+        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+    )
+
     if response.status_code == 200:
         data = response.json()
     else:
