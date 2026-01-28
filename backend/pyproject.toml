@@ -59,3 +59,9 @@ reportUnusedFunction = false
 [tool.uv.sources]
 ui = {workspace = true}
 shared = {workspace = true}
+
+
+[tool.uv]
+required-environments = [
+    "sys_platform == 'darwin' and platform_machine == 'x86_64'"
+]
