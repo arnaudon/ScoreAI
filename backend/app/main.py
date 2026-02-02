@@ -11,7 +11,7 @@ from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from sqlmodel import Session, select
 
-from app import users
+from app import imslp, users
 from app.agent import Deps, run_agent, run_complete_agent
 from app.db import get_session, init_db
 from app.file_helper import file_helper
@@ -34,6 +34,7 @@ current_file = Path(__file__).resolve()
 app.mount("/pdfjs", StaticFiles(directory=current_file.parent / "pdfjs"), name="pdfjs")
 
 app.include_router(users.router, tags=["users"])
+app.include_router(imslp.router, tags=["imslp"])
 
 
 @app.post("/scores")
@@ -50,7 +51,7 @@ def add_score(
     return score
 
 
-@app.post("/complete_score")
+@app.post("/complete_score", dependencies=[Depends(get_current_user)])
 async def complete_score(score: Score):  # pragma: no cover
     """Complete a score."""
     return await run_complete_agent(score)
@@ -112,18 +113,15 @@ async def run(
     )
 
 
-@app.get("/pdf/{filename}")
+@app.get("/pdf/{filename}", dependencies=[Depends(get_current_user)])
 def get_pdf(filename: str):
     """Get the url of a pdf file."""
     obj = file_helper.download_pdf(filename)
     return StreamingResponse(obj["Body"], media_type="application/pdf")
 
 
-@app.post("/pdf")
-def upload_pdf(
-    current_user: Annotated[User, Depends(get_current_user)],
-    file: UploadFile = File(...),
-):  # pylint: disable=unused-argument
+@app.post("/pdf", dependencies=[Depends(get_current_user)])
+def upload_pdf(file: UploadFile = File(...)):
     """Upload a pdf file."""
     if file.content_type != "application/pdf":  # pragma: no cover
         raise HTTPException(status_code=400, detail="Only PDFs allowed")
@@ -135,10 +133,8 @@ def upload_pdf(
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-@app.delete("/pdf/{filename}")
-def delete_pdf(
-    filename: str, current_user: Annotated[User, Depends(get_current_user)]
-):  # pylint: disable=unused-argument
+@app.delete("/pdf/{filename}", dependencies=[Depends(get_current_user)])
+def delete_pdf(filename: str):
     """Delete a pdf file."""
     file_helper.delete_pdf(filename)
     return {"message": "Delete successful"}

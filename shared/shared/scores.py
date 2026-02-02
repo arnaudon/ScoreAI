@@ -70,3 +70,19 @@ class Scores(BaseModel):
 
     def __len__(self):
         return len(self.scores)
+
+
+class IMSLPEntry(SQLModel, table=True):
+    """IMSLPEntry model."""
+
+    id: int | None = Field(default=None, primary_key=True)
+    title: str = Field()
+    composer: str = Field()
+    instrumentation: str = Field()
+    style: str = Field()
+    period: str = Field()
+    year: str = Field()
+    key: str = Field()
+    permlink: str = Field()
+    score_metadata: str = Field(default="")
+    pdf_urls: str = Field(default="")

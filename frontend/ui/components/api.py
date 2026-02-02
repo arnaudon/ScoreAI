@@ -190,3 +190,43 @@ def get_pdf_url(file_id):
     url = f"{PUBLIC_API_URL}/pdf/{file_id}"
     viewer_url = f"{PUBLIC_API_URL}/pdfjs/web/viewer.html"
     return f"{viewer_url}?file={url}"
+
+
+def start_imslp_update(max_pages: int = 260):
+    """Update the IMSLP database"""
+    return requests.post(
+        f"{API_URL}/imslp/start/{max_pages}",
+        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+    )
+
+
+def get_imslp_progress():
+    """Get the progress of the IMSLP update"""
+    return requests.post(
+        f"{API_URL}/imslp/progress",
+        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+    ).json()
+
+
+def cancel_imslp():
+    """Cancel the IMSLP update"""
+    requests.post(
+        f"{API_URL}/imslp/cancel",
+        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+    )
+
+
+def get_imslp_stats():
+    """Get IMSLP stats"""
+    return requests.get(
+        f"{API_URL}/imslp/stats",
+        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+    ).json()
+
+
+def empty_imslp_database():
+    """Empty the IMSLP database"""
+    return requests.post(
+        f"{API_URL}/imslp/empty",
+        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+    )
