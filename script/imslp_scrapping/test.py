@@ -8,7 +8,7 @@ import os
 from sqlmodel import Session, create_engine
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///imslp.db")
-bypass_metadata = False
+bypass_metadata = True 
 
 
 class IMSLPEntry(SQLModel, table=True):
@@ -41,24 +41,30 @@ def get_session():
         yield session
 
 
-def get_works(max_pages=2, work_per_page=10):
+def get_works(max_pages=2, work_per_page=None):
     """return a dataframe of works"""
     # TODO: do this once and save in a table
     df = pd.DataFrame()
     gen_db = get_session()
     session = next(gen_db)
-    for i in range(max_pages):
+    for i in tqdm(range(max_pages)):
         print("loading page ", i)
-        start = i * 1000
+        start = i * 1000 + 1e6
         url = f"https://imslp.org/imslpscripts/API.ISCR.php?account=worklist/disclaimer=accepted/sort=id/type=2/start={start}"
         response = requests.get(url)
         data = response.json()
         data.pop("metadata")
-        for i, item in tqdm(data.items()):
+
+        if not len(data):
+            # last page
+            break
+        for i, item in data.items():
             i = int(i) + start
             df.loc[i, "title"] = item["intvals"]["worktitle"]
             df.loc[i, "composer"] = item["intvals"]["composer"]
             df.loc[i, "permlink"] = item["permlink"]
+            score_metadata = ""
+            pdf_urls = ""
             if not bypass_metadata:
                 response = requests.get(item["permlink"])
                 score_metadata = get_metadata(response, bypass=bypass_metadata)
@@ -66,7 +72,7 @@ def get_works(max_pages=2, work_per_page=10):
                 df.loc[i, "score_metadata"] = score_metadata
                 df.loc[i, "pdf_urls"] = pdf_urls
             entry = IMSLPEntry(
-                id=i,
+                id=int(i),
                 title=item["intvals"]["worktitle"],
                 composer=item["intvals"]["composer"],
                 permlink=item["permlink"],
@@ -74,7 +80,7 @@ def get_works(max_pages=2, work_per_page=10):
                 pdf_urls=pdf_urls,
             )
             session.add(entry)
-            if i > work_per_page - 1 + start:
+            if work_per_page is not None and  i > work_per_page - 1 + start:
                 break
         session.commit()
     try:
@@ -138,9 +144,5 @@ def get_pdfs(response):
 
 if __name__ == "__main__":
     init_db()
-    df = get_works()
-    print(df)
+    df = get_works(max_pages=260)
     df.to_csv("imslp.csv")
-    url = df.loc[10, "permlink"]
-    pdf_urls = get_pdfs(url)
-    print(pdf_urls)
