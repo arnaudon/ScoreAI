@@ -2,9 +2,7 @@
 name = "ScoreAI"
 version = "0.1.0"
 description = "scoreai monorepo"
-dependencies = [
-    "beautifulsoup4>=4.14.3",
-]
+dependencies = []
 
 [tool.uv.workspace]
 members = ["backend", "frontend", "shared"]

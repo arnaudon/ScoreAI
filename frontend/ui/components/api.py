@@ -104,6 +104,27 @@ def get_scores_df() -> pd.DataFrame:
     return df
 
 
+def run_imslp_agent(question: str) -> Response:  # pragma: no cover
+    """Run the agent via API"""
+    result = requests.post(
+        API_URL + "/imslp_agent",
+        params={
+            "prompt": question,
+            "message_history": st.session_state.message_history,
+        },
+        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+    )
+    try:
+        result = result.json()
+    except Exception as exc:
+        print("Non-JSON response:", result.text)
+        raise AgentError("Something went wrong, try again later") from exc
+
+    full_result = FullResponse(**result)
+    st.session_state.message_history.extend(full_result.message_history)
+    return full_result.response
+
+
 def run_agent(question: str) -> Response:  # pragma: no cover
     """Run the agent via API"""
     scores = get_scores()
@@ -190,3 +211,43 @@ def get_pdf_url(file_id):
     url = f"{PUBLIC_API_URL}/pdf/{file_id}"
     viewer_url = f"{PUBLIC_API_URL}/pdfjs/web/viewer.html"
     return f"{viewer_url}?file={url}"
+
+
+def start_imslp_update(max_pages: int = 260):
+    """Update the IMSLP database"""
+    return requests.post(
+        f"{API_URL}/imslp/start/{max_pages}",
+        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+    )
+
+
+def get_imslp_progress():
+    """Get the progress of the IMSLP update"""
+    return requests.post(
+        f"{API_URL}/imslp/progress",
+        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+    ).json()
+
+
+def cancel_imslp():
+    """Cancel the IMSLP update"""
+    requests.post(
+        f"{API_URL}/imslp/cancel",
+        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+    )
+
+
+def get_imslp_stats():
+    """Get IMSLP stats"""
+    return requests.get(
+        f"{API_URL}/imslp/stats",
+        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+    ).json()
+
+
+def empty_imslp_database():
+    """Empty the IMSLP database"""
+    return requests.post(
+        f"{API_URL}/imslp/empty",
+        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+    )
