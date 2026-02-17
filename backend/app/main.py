@@ -12,7 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlmodel import Session, select
 
 from app import imslp, users
-from app.agent import Deps, run_agent, run_complete_agent
+from app.agent import Deps, run_agent, run_complete_agent, run_imslp_agent
 from app.db import get_session, init_db
 from app.file_helper import file_helper
 from app.users import get_current_user
@@ -98,8 +98,18 @@ def get_scores(
     return session.exec(select(Score).where(Score.user_id == current_user.id)).all()
 
 
+@app.post("/imslp_agent")
+async def run_imslp_agent_api(
+    prompt: str,
+    current_user: Annotated[User, Depends(get_current_user)],
+    message_history=None,
+):  # pragma: no cover
+    """Run the imslp agent."""
+    return await run_imslp_agent(prompt, message_history=message_history)
+
+
 @app.post("/agent")
-async def run(
+async def run_main_agent(
     prompt: str,
     deps: str,
     current_user: Annotated[User, Depends(get_current_user)],

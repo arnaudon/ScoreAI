@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from pydantic_ai import Agent, RunContext
 from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
 from pydantic_ai.exceptions import ModelHTTPError
+from pydantic_ai.mcp import MCPServerSSE
 
 from shared import FullResponse, Response, Score, Scores, User
 from shared.scores import Difficulty
@@ -16,6 +17,8 @@ from shared.scores import Difficulty
 load_dotenv()
 
 MODEL: Any = os.getenv("MODEL", "google-gla:gemini-2.5-flash-lite")
+postgres_server = MCPServerSSE("http://mcp-postgres:8001/sse")
+
 
 _difficulty_map = {
     Difficulty.easy.name: 0,
@@ -39,7 +42,7 @@ class Deps(BaseModel):
     scores: Scores
 
 
-def get_agent():
+def get_main_agent():
     """Get the agent."""
     agent = Agent(
         MODEL,
@@ -53,6 +56,7 @@ def get_agent():
         If multiple choices are possible, list them without id.
         Use my username in the conversations.
         """,
+        toolsets=[postgres_server],
     )
 
     @agent.tool
@@ -92,9 +96,45 @@ def get_agent():
     return agent
 
 
+async def run_imslp_agent(prompt: str, message_history=None):
+    """Run the agent."""
+    agent = Agent(
+        MODEL,
+        system_prompt="""
+        You are a data assistant for the table public.imslp.
+        For every query, first check the schema of imslp with list_objects.
+        Do not query other tables unless explicitly asked
+        Each entry corresponds to a musical score or simply score with a title, composer, composition year and other metadata.
+        When asked about time related questions, use column 'year'. 
+        Mention me, Alexis, in each response.
+        """,
+        toolsets=[postgres_server],
+        tools=[duckduckgo_search_tool()],
+    )
+
+    try:
+        res = await agent.run(
+            prompt,
+            message_history=message_history,
+        )
+        response = Response(response=res.output, score_id=0)
+        history = res.all_messages()
+    except ModelHTTPError as e:  # pragma: no cover
+        history = []
+        if e.status_code == 429:
+            response = Response(response="Rate limit exceeded (Quota hit)")
+        else:
+            response = Response(response="An HTTP error occurred")
+    except Exception:  # pragma: no cover, pylint: disable=broad-exception-caught
+        history = []
+        response = Response(response="An unexpected error occurred")
+
+    return FullResponse(response=response, message_history=history)
+
+
 async def run_agent(prompt: str, deps: Deps, message_history=None):
     """Run the agent."""
-    agent = get_agent()
+    agent = get_main_agent()
     try:
         res = await agent.run(
             prompt,

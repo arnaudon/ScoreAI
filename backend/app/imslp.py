@@ -2,7 +2,6 @@
 
 import json
 import logging
-import os
 import time
 
 import numpy as np
@@ -10,11 +9,11 @@ import requests
 from bs4 import BeautifulSoup
 from fastapi import APIRouter, BackgroundTasks, Depends
 from sqlalchemy.dialects.postgresql import insert
-from sqlmodel import Field, Session, SQLModel, func, select, text
+from sqlmodel import Session, func, select, text
 
 from app.db import engine, get_session
 from app.users import get_admin_user
-from shared.scores import IMSLPEntry
+from shared.scores import IMSLP
 
 logger = logging.getLogger(__name__)
 progress_tracker = {"status": "idle", "page": 0, "cancel_requested": False}
@@ -82,11 +81,55 @@ def get_page(start):
     return data
 
 
-def add_entry(i, item, session):
+async def fix_entry(entry):
+    import os
+    from typing import Any
+
+    from pydantic import BaseModel
+    from pydantic_ai import Agent
+    from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
+    from sqlmodel import Field
+
+    from shared.scores import Difficulty, Period
+
+    MODEL: Any = os.getenv("MODEL", "google-gla:gemini-2.5-flash-lite")
+
+    class FixData(BaseModel):
+        title: str
+        composer: str
+        year: int = Field(gt=500)
+        instrumentation: str
+        style: str
+        key: str
+        difficulty: Difficulty = Field(default=Difficulty.moderate)
+        form: str = Field(default="Sonata")  # https://en.wikipedia.org/wiki/Musical_form
+        period: Period = Field(default=Period.Classical)
+        genre: str = Field(default="Classical")
+
+    agent = Agent(
+        MODEL,
+        output_type=FixData,
+        system_prompt=""" Fix missing values.""",
+        tools=[duckduckgo_search_tool()],
+    )
+    prompt = f"""Find the information about music piece {entry.model_dump_json()},
+    use score_metadata or internet search if the information is missing."""
+    res = await agent.run(prompt)
+    response = res.output
+    entry.title = response.title
+    entry.composer = response.composer
+    entry.year = response.year
+    entry.instrumentation = response.instrumentation
+    entry.style = response.style
+    entry.key = response.key
+    entry.period = response.period
+
+
+async def add_entry(i, item, session):
     """Add an entry to the database."""
     response = requests.get(item["permlink"])
     metadata = get_metadata(response)
-    entry = IMSLPEntry(
+    entry = IMSLP(
         id=int(i),
         title=metadata.get("Work Title", item["intvals"]["worktitle"]),
         composer=metadata.get("Composer", item["intvals"]["composer"]),
@@ -98,10 +141,11 @@ def add_entry(i, item, session):
         key=metadata.get("Key", ""),
         score_metadata=json.dumps(metadata),
     )
-    stmt = insert(IMSLPEntry).values(entry.model_dump())
+    await fix_entry(entry)
+    stmt = insert(IMSLP).values(entry.model_dump())
     update_columns = {
         col.name: stmt.excluded[col.name]
-        for col in IMSLPEntry.metadata.tables["imslpentry"].columns
+        for col in IMSLP.metadata.tables["imslp"].columns
         if col.name != "id"
     }
     stmt = stmt.on_conflict_do_update(index_elements=["id"], set_=update_columns)
@@ -109,7 +153,7 @@ def add_entry(i, item, session):
     session.commit()
 
 
-def get_works():
+async def get_works():
     """Get all works from IMSLP."""
     progress_tracker["status"] = "processing"
     with Session(engine) as session:
@@ -128,7 +172,7 @@ def get_works():
             # add entries
             for i, item in data.items():
                 i = int(i) + start
-                add_entry(i, item, session)
+                await add_entry(i, item, session)
 
                 # cancelled by user
                 if progress_tracker["cancel_requested"]:
@@ -163,17 +207,13 @@ def cancel():
 @router.get("/stats", dependencies=[Depends(get_admin_user)])
 def get_imslp_stats(session: Session = Depends(get_session)):
     """Get IMSLP stats"""
-    # return {"total_works": 100, "total_composers": 11}
-
     return {
-        "total_works": session.exec(select(func.count()).select_from(IMSLPEntry)).one(),
-        "total_composers": session.exec(
-            select(func.count(func.distinct(IMSLPEntry.composer)))
-        ).one(),
+        "total_works": session.exec(select(func.count()).select_from(IMSLP)).one(),
+        "total_composers": session.exec(select(func.count(func.distinct(IMSLP.composer)))).one(),
     }
 
 
 @router.post("/empty", dependencies=[Depends(get_admin_user)])
 def empty(session: Session = Depends(get_session)):
-    session.execute(text("TRUNCATE TABLE imslpentry RESTART IDENTITY CASCADE;"))
+    session.execute(text("TRUNCATE TABLE imslp RESTART IDENTITY CASCADE;"))
     session.commit()

@@ -74,8 +74,7 @@ def main():
     admin_page = st.Page("admin.py", title=_("Admin"))
     st.session_state.reader_page = reader_page
 
-    if "is_admin" not in st.session_state:
-        st.session_state.is_admin = api.is_admin()
+    st.session_state.is_admin = api.is_admin()
 
     with st.sidebar:
         if st.session_state.token is not None:

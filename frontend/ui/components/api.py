@@ -104,6 +104,27 @@ def get_scores_df() -> pd.DataFrame:
     return df
 
 
+def run_imslp_agent(question: str) -> Response:  # pragma: no cover
+    """Run the agent via API"""
+    result = requests.post(
+        API_URL + "/imslp_agent",
+        params={
+            "prompt": question,
+            "message_history": st.session_state.message_history,
+        },
+        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+    )
+    try:
+        result = result.json()
+    except Exception as exc:
+        print("Non-JSON response:", result.text)
+        raise AgentError("Something went wrong, try again later") from exc
+
+    full_result = FullResponse(**result)
+    st.session_state.message_history.extend(full_result.message_history)
+    return full_result.response
+
+
 def run_agent(question: str) -> Response:  # pragma: no cover
     """Run the agent via API"""
     scores = get_scores()

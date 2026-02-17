@@ -36,6 +36,17 @@ def show_score_info(score):
             col2.write(value)
 
 
+def add_imslp():
+    """Add an IMSLP score"""
+    st.subheader("Add new IMSLP score:")
+    question = st.text_input("Question", key="question")
+    if "message_history" not in st.session_state:
+        st.session_state.message_history = []
+    if question:
+        response = api.run_imslp_agent(question)
+        st.write(response.response)
+
+
 def add_score():
     """Add a score"""
     st.subheader("Add new score:")
@@ -129,3 +140,4 @@ def show_db(select=True):
             show_score_info(row)
 
     add_score()
+    add_imslp()
