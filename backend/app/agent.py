@@ -34,20 +34,20 @@ _difficulty_map = {
 
 
 class Filter(BaseModel):
-    """Filter for random score tool."""
+    """Specifies filtering criteria for selecting musical scores."""
 
     composer: str
 
 
 class Deps(BaseModel):
-    """Deps for agent."""
+    """Defines dependencies to be injected into the agent's context."""
 
     user: User
     scores: Scores
 
 
 def get_main_agent():
-    """Get the agent."""
+    """Initializes and returns the main agent for handling user queries about scores."""
     agent = Agent(
         MODEL,
         output_type=Response,
@@ -65,19 +65,19 @@ def get_main_agent():
 
     @agent.tool
     async def get_score_info(ctx: RunContext[Deps]) -> str:
-        """Get score info."""
+        """Retrieves a JSON string with information about available musical scores."""
         return f"The scores infos are {ctx.deps.scores.model_dump_json()}."
 
     @agent.tool
     async def get_user_name(ctx: RunContext[Deps]) -> str:
-        """Get the user name."""
+        """Retrieves the current user's name from the context."""
         return ctx.deps.user.username
 
     @agent.tool
     async def get_random_score_by_composer(
         ctx: RunContext[Deps], filter_params: Filter
     ) -> str:
-        """Get a random score by composer."""
+        """Selects and returns a random score by a specific composer."""
         scores = []
         for score in ctx.deps.scores.scores:
             if score.composer.lower() == filter_params.composer.lower():
@@ -90,7 +90,11 @@ def get_main_agent():
     async def get_easiest_score_by_composer(
         ctx: RunContext[Deps], filter_params: Filter
     ) -> str:
-        """Get the easiest score by composer."""
+        """
+        Finds the easiest score by a given composer.
+
+        If multiple scores share the minimum difficulty, one is chosen at random.
+        """
         scores = []
         for score in ctx.deps.scores.scores:
             if filter_params.composer.lower() in score.composer.lower():
@@ -107,7 +111,19 @@ def get_main_agent():
 
 
 async def run_imslp_agent(prompt: str, message_history=None):
-    """Run the agent."""
+    """
+    Run an agent specialized for querying the IMSLP database.
+
+    This agent acts as a database assistant for the public.imslp table,
+    translating natural language prompts into SQL queries.
+
+    Args:
+        prompt: The user's query about the IMSLP database.
+        message_history: The previous messages in the conversation.
+
+    Returns:
+        A FullResponse object containing the agent's response and message history.
+    """
     agent = Agent(
         MODEL,
         system_prompt="""
@@ -155,7 +171,17 @@ k
 
 
 async def run_agent(prompt: str, deps: Deps, message_history=None):
-    """Run the agent."""
+    """
+    Run the main conversational agent to find musical scores.
+
+    Args:
+        prompt: The user's message to the agent.
+        deps: The dependencies (user and scores data) for the agent.
+        message_history: The previous messages in the conversation.
+
+    Returns:
+        A FullResponse object containing the agent's response and message history.
+    """
     agent = get_main_agent()
     try:
         res = await agent.run(
@@ -179,7 +205,18 @@ async def run_agent(prompt: str, deps: Deps, message_history=None):
 
 
 async def run_complete_agent(score: Score):  # pragma: no cover
-    """Run the agent to complete a score."""
+    """
+    Run an agent to find and add missing information to a score.
+
+    This agent uses a search tool to enrich a Score object with details
+    like year, instrumentation, etc.
+
+    Args:
+        score: The Score object with potentially missing information.
+
+    Returns:
+        The updated Score object.
+    """
     agent = Agent(
         MODEL,
         output_type=Score,
