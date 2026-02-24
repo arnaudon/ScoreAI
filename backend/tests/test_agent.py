@@ -25,7 +25,7 @@ async def test_agent_success(test_scores: Scores, test_user: User):
 async def test_get_random_score_by_composer_not_found():
     """Test get_random_score_by_composer when no score is found."""
     main_agent = agent.get_main_agent()
-    tool = next(t for t in main_agent.tools if t.__name__ == "get_random_score_by_composer")
+    tool = next(t for t in main_agent._tools if t.__name__ == "get_random_score_by_composer")
     ctx = MagicMock()
     ctx.deps = agent.Deps(user=User(username="test"), scores=Scores(scores=[]))
     result = await tool(ctx, agent.Filter(composer="Unknown"))
@@ -36,7 +36,7 @@ async def test_get_random_score_by_composer_not_found():
 async def test_get_easiest_score_by_composer_not_found():
     """Test get_easiest_score_by_composer when no score is found."""
     main_agent = agent.get_main_agent()
-    tool = next(t for t in main_agent.tools if t.__name__ == "get_easiest_score_by_composer")
+    tool = next(t for t in main_agent._tools if t.__name__ == "get_easiest_score_by_composer")
     ctx = MagicMock()
     ctx.deps = agent.Deps(user=User(username="test"), scores=Scores(scores=[]))
     result = await tool(ctx, agent.Filter(composer="Unknown"))
