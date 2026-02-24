@@ -13,9 +13,9 @@ from shared.user import User
 
 
 @pytest.mark.asyncio
-async def test_agent_success(test_scores: Scores, test_user: User):
+async def test_agent_success(monkeypatch, test_scores: Scores, test_user: User):
     """test agent happy path with TestModel"""
-    agent.MODEL = TestModel()
+    monkeypatch.setattr(agent, "MODEL", TestModel())
     result = await agent.run_agent(
         prompt="test", deps=agent.Deps(user=test_user, scores=test_scores)
     )
