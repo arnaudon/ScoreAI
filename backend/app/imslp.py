@@ -14,7 +14,15 @@ from sqlmodel import Session, func, select, text
 from app.db import engine, get_session
 from app.users import get_admin_user
 from shared.scores import IMSLP
+import os
+from typing import Any
 
+from pydantic_ai import Agent
+from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
+from shared.scores import ScoreBase
+
+
+MODEL: Any = os.getenv("MODEL", "google-gla:gemini-2.5-flash-lite")
 logger = logging.getLogger(__name__)
 progress_tracker = {"status": "idle", "page": 0, "cancel_requested": False}
 router = APIRouter(prefix="/imslp", tags=["imslp"])
@@ -48,13 +56,17 @@ def get_pdfs(response):
     """return a list of pdf urls"""
     soup = BeautifulSoup(response.text, "html.parser")
     links = soup.find_all("a", href=True)
-    pdf_landing_pages = [l["href"] for l in links if "Special:ImagefromIndex" in l["href"]]
+    pdf_landing_pages = [
+        l["href"] for l in links if "Special:ImagefromIndex" in l["href"]
+    ]
 
     session = requests.Session()
     cookies = {"imslpdisclaimeraccepted": "yes"}
     pdf_urls = []
     for pdf_landing_page in pdf_landing_pages:
-        response = session.get(str(pdf_landing_page), cookies=cookies, allow_redirects=True)
+        response = session.get(
+            str(pdf_landing_page), cookies=cookies, allow_redirects=True
+        )
 
         soup = BeautifulSoup(response.text, "html.parser")
         links = soup.find_all("span", id="sm_dl_wait")
@@ -62,7 +74,9 @@ def get_pdfs(response):
             pdf_urls += [l["data-id"] for l in links]
         # try redirect
         else:
-            response = session.head(str(pdf_landing_page), cookies=cookies, allow_redirects=True)
+            response = session.head(
+                str(pdf_landing_page), cookies=cookies, allow_redirects=True
+            )
             pdf_url = response.url
             if pdf_url.endswith("pdf"):
                 pdf_urls.append(pdf_url)
@@ -82,47 +96,18 @@ def get_page(start):
 
 
 async def fix_entry(entry):
-    import os
-    from typing import Any
-
-    from pydantic import BaseModel
-    from pydantic_ai import Agent
-    from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
-    from sqlmodel import Field
-
-    from shared.scores import Difficulty, Period
-
-    MODEL: Any = os.getenv("MODEL", "google-gla:gemini-2.5-flash-lite")
-
-    class FixData(BaseModel):
-        title: str
-        composer: str
-        year: int = Field(gt=500)
-        instrumentation: str
-        style: str
-        key: str
-        difficulty: Difficulty = Field(default=Difficulty.moderate)
-        form: str = Field(default="Sonata")  # https://en.wikipedia.org/wiki/Musical_form
-        period: Period = Field(default=Period.Classical)
-        genre: str = Field(default="Classical")
 
     agent = Agent(
         MODEL,
-        output_type=FixData,
+        output_type=ScoreBase,
         system_prompt=""" Fix missing values.""",
         tools=[duckduckgo_search_tool()],
     )
     prompt = f"""Find the information about music piece {entry.model_dump_json()},
     use score_metadata or internet search if the information is missing."""
     res = await agent.run(prompt)
-    response = res.output
-    entry.title = response.title
-    entry.composer = response.composer
-    entry.year = response.year
-    entry.instrumentation = response.instrumentation
-    entry.style = response.style
-    entry.key = response.key
-    entry.period = response.period
+    for key, value in res.output.model_dump().items():
+        setattr(entry, key, value)
 
 
 async def add_entry(i, item, session):
@@ -209,7 +194,9 @@ def get_imslp_stats(session: Session = Depends(get_session)):
     """Get IMSLP stats"""
     return {
         "total_works": session.exec(select(func.count()).select_from(IMSLP)).one(),
-        "total_composers": session.exec(select(func.count(func.distinct(IMSLP.composer)))).one(),
+        "total_composers": session.exec(
+            select(func.count(func.distinct(IMSLP.composer)))
+        ).one(),
     }
 
 

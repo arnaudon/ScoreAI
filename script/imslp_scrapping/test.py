@@ -8,7 +8,7 @@ import os
 from sqlmodel import Session, create_engine
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///imslp.db")
-bypass_metadata = True 
+bypass_metadata = True
 
 
 class IMSLPEntry(SQLModel, table=True):
@@ -80,7 +80,7 @@ def get_works(max_pages=2, work_per_page=None):
                 pdf_urls=pdf_urls,
             )
             session.add(entry)
-            if work_per_page is not None and  i > work_per_page - 1 + start:
+            if work_per_page is not None and i > work_per_page - 1 + start:
                 break
         session.commit()
     try:

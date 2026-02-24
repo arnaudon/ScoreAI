@@ -29,7 +29,9 @@ def login(welcome_page, cookie_manager):
                     del st.session_state.pdf_viewers
                 token = res.json().get("access_token")
                 st.session_state.token = token
-                cookie_manager.set("token", token, key="save_token", expires_at=COOKIE_EXPIRES)
+                cookie_manager.set(
+                    "token", token, key="save_token", expires_at=COOKIE_EXPIRES
+                )
             else:
                 st.error(_("Invalid credentials"))
     else:

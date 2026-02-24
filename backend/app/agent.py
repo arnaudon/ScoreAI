@@ -4,6 +4,7 @@ import os
 import random
 from typing import Any
 
+import logfire
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from pydantic_ai import Agent, RunContext
@@ -13,6 +14,9 @@ from pydantic_ai.mcp import MCPServerSSE
 
 from shared import FullResponse, Response, Score, Scores, User
 from shared.scores import Difficulty
+
+logfire.configure()
+logfire.instrument_pydantic_ai()
 
 load_dotenv()
 
@@ -70,7 +74,9 @@ def get_main_agent():
         return ctx.deps.user.username
 
     @agent.tool
-    async def get_random_score_by_composer(ctx: RunContext[Deps], filter_params: Filter) -> str:
+    async def get_random_score_by_composer(
+        ctx: RunContext[Deps], filter_params: Filter
+    ) -> str:
         """Get a random score by composer."""
         scores = []
         for score in ctx.deps.scores.scores:
@@ -81,7 +87,9 @@ def get_main_agent():
         return "Not found"  # pragma: no cover
 
     @agent.tool
-    async def get_easiest_score_by_composer(ctx: RunContext[Deps], filter_params: Filter) -> str:
+    async def get_easiest_score_by_composer(
+        ctx: RunContext[Deps], filter_params: Filter
+    ) -> str:
         """Get the easiest score by composer."""
         scores = []
         for score in ctx.deps.scores.scores:
@@ -89,7 +97,9 @@ def get_main_agent():
                 scores.append(score)
         if scores:
             difficulties = [_difficulty_map[score.difficulty] for score in scores]
-            easy_scores = [s for d, s in zip(difficulties, scores) if d == min(difficulties)]
+            easy_scores = [
+                s for d, s in zip(difficulties, scores) if d == min(difficulties)
+            ]
             return random.choice(easy_scores).model_dump_json()
         return "Not found"  # pragma: no cover
 
@@ -101,15 +111,23 @@ async def run_imslp_agent(prompt: str, message_history=None):
     agent = Agent(
         MODEL,
         system_prompt="""
-        You are a data assistant for the table public.imslp.
-        For every query, first check the schema of imslp with list_objects.
-        Do not query other tables unless explicitly asked
-        Each entry corresponds to a musical score or simply score with a title, composer, composition year and other metadata.
-        When asked about time related questions, use column 'year'. 
-        Mention me, Alexis, in each response.
+        You are a database assistant. 
+        Your ONLY source of data is the table: public.imslp.
+        If you are unsure, ALWAYS assume the user is talking about public.imslp.
+        Never ask the user for a table name; always use the one provided here.
+        When asked about a score, consider it as an entry.
+        The column instrumentation works for instrument, with case unsensitive search.
+        When asked about time for scores, use the column year.
+        You are also a SQL expert for PostgreSQL. 
+        CRITICAL: Always use single quotes (') for string literals in SQL queries.
+        Example: WHERE instrumentation LIKE '%piano%'
+        NEVER use double quotes (") for strings.
+
+k
         """,
         toolsets=[postgres_server],
-        tools=[duckduckgo_search_tool()],
+        output_type=Scores,
+        retries=3,
     )
 
     try:
@@ -117,6 +135,10 @@ async def run_imslp_agent(prompt: str, message_history=None):
             prompt,
             message_history=message_history,
         )
+        import logging
+
+        logger = logging.getLogger(__name__)
+        logger.error(res)
         response = Response(response=res.output, score_id=0)
         history = res.all_messages()
     except ModelHTTPError as e:  # pragma: no cover

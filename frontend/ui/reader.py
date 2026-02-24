@@ -22,7 +22,7 @@ def render_pdf(pdf_path):
     st.markdown(
         f"""
             <iframe 
-        src="{url}#{'&'.join(options)}"
+        src="{url}#{"&".join(options)}"
         width="100%"
         height="800px"
         style="border:none;"

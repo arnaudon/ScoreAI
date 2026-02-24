@@ -34,9 +34,14 @@ def session_fixture():
 def test_scores_fixture():
     """Test scores for default db."""
     score_1 = Score(
-        composer="composer", title="title_1", pdf_path="tests/data/real_score.pdf", user_id=0
+        composer="composer",
+        title="title_1",
+        pdf_path="tests/data/real_score.pdf",
+        user_id=0,
     )
-    score_2 = Score(composer="composer", title="title_2", pdf_path="score_2.pdf", user_id=0)
+    score_2 = Score(
+        composer="composer", title="title_2", pdf_path="score_2.pdf", user_id=0
+    )
     score_3 = Score(composer="a", title="title_3", pdf_path="score_3.pdf", user_id=0)
     score_4 = Score(composer="a", title="title_4", pdf_path="score_4.pdf", user_id=0)
     return Scores(scores=[score_1, score_2, score_3, score_4])

@@ -36,14 +36,17 @@ def register_user(new_user: User):
 
 def login_user(username, password):
     """Login a user via API"""
-    response = requests.post(f"{API_URL}/token", data={"username": username, "password": password})
+    response = requests.post(
+        f"{API_URL}/token", data={"username": username, "password": password}
+    )
     return response
 
 
 def get_user():
     """Get the current user via API"""
     response = requests.get(
-        f"{API_URL}/user", headers={"Authorization": f"Bearer {st.session_state.get('token')}"}
+        f"{API_URL}/user",
+        headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
     ).json()
     return response
 
@@ -89,7 +92,7 @@ def get_scores() -> Scores:
         _SCORES = Scores(
             scores=requests.get(
                 f"{API_URL}/scores",
-                headers={"Authorization": f"Bearer {st.session_state.get("token")}"},
+                headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
             ).json()
         )
     return _SCORES

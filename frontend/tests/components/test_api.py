@@ -124,7 +124,9 @@ def test_register_user_calls_backend(mocker, test_user):
     mock_requests = mocker.patch("ui.components.api.requests")
     api.register_user(test_user)
 
-    mock_requests.post.assert_called_once_with(f"{api.API_URL}/users", json=test_user.model_dump())
+    mock_requests.post.assert_called_once_with(
+        f"{api.API_URL}/users", json=test_user.model_dump()
+    )
 
 
 def test_login_user_calls_backend(mocker):

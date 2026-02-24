@@ -88,7 +88,8 @@ async def login_for_access_token(
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.username, "role": user.role}, expires_delta=access_token_expires
+        data={"sub": user.username, "role": user.role},
+        expires_delta=access_token_expires,
     )
     return Token(access_token=access_token, token_type="bearer")
 
@@ -140,7 +141,9 @@ async def get_users(
 
 
 @router.get("/user")
-async def get_current_user_route(current_user: Annotated[User, Depends(get_current_user)]):
+async def get_current_user_route(
+    current_user: Annotated[User, Depends(get_current_user)],
+):
     """Get current user."""
     return current_user
 

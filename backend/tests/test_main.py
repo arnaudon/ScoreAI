@@ -41,7 +41,10 @@ def test_add_wrong_score(client: TestClient, session: Session):
 def test_add_score(client: TestClient, test_scores: Scores):
     """test add score"""
     score = Score(
-        composer="another_composer", title="another_title", pdf_path="another_score.pdf", user_id=0
+        composer="another_composer",
+        title="another_title",
+        pdf_path="another_score.pdf",
+        user_id=0,
     )
     response = client.post("/scores", json=score.model_dump())
 

@@ -43,7 +43,9 @@ with col2:
                 else:
                     st.error(f"Failed to empty: {response.status_code}")
         with col_cancel:
-            if st.button("Cancel", key="cancel", type="secondary", use_container_width=True):
+            if st.button(
+                "Cancel", key="cancel", type="secondary", use_container_width=True
+            ):
                 st.toast("Deletion cancelled.", icon="🚫")
 
 if st.session_state.get("monitoring"):
@@ -64,7 +66,9 @@ if st.session_state.get("monitoring"):
             p_status = res.get("status", "idle")
 
             progress_bar.progress(p_page / p_total)
-            status_container.info(f"Current Status: **{p_status.upper()}** ({p_page}/{p_total})")
+            status_container.info(
+                f"Current Status: **{p_status.upper()}** ({p_page}/{p_total})"
+            )
 
             if p_status in ["completed", "cancelled", "idle"]:
                 if p_status == "completed":

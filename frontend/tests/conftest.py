@@ -38,10 +38,18 @@ def test_scores_fixture(frontend_dir):
         user_id=0,
     )
     score_3 = Score(
-        id=3, composer="a", title="title_3", pdf_path=str(frontend_dir / "score_3.pdf"), user_id=0
+        id=3,
+        composer="a",
+        title="title_3",
+        pdf_path=str(frontend_dir / "score_3.pdf"),
+        user_id=0,
     )
     score_4 = Score(
-        id=4, composer="a", title="title_4", pdf_path=str(frontend_dir / "score_4.pdf"), user_id=0
+        id=4,
+        composer="a",
+        title="title_4",
+        pdf_path=str(frontend_dir / "score_4.pdf"),
+        user_id=0,
     )
     return Scores(scores=[score_1, score_2, score_3, score_4])
 

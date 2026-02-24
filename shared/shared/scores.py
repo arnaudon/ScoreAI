@@ -33,21 +33,18 @@ class Period(str, Enum):
     Postmodernist = "Postmodernist"
 
 
-class ScoreBase(BaseModel):
+class ScoreBase(SQLModel):
     """Score base model."""
 
     title: str = Field()
     composer: str = Field()
     year: int = Field(default=1750, gt=500)
     period: Period = Field(default=Period.Classical)
-    # https://en.wikipedia.org/wiki/List_of_classical_music_genres
     genre: str = Field(default="Classical")
-    form: str = Field(default="Sonata")  # https://en.wikipedia.org/wiki/Musical_form
-    short_description: str = Field(default="")
-    long_description: str = Field(default="")
-    youtube_url: str = Field(default="")
-    difficulty: Difficulty = Field(default=Difficulty.moderate)
-    notable_interpreters: str = Field(default="")
+    form: str = Field(default="Sonata")
+    style: str = Field(default="")
+    key: str = Field(default="")
+    instrumentation: str = Field(default="")
 
 
 class Score(ScoreBase, table=True):
@@ -57,13 +54,18 @@ class Score(ScoreBase, table=True):
     __table_args__ = {"extend_existing": True}
 
     id: int | None = Field(default=None, primary_key=True)
-    # internal data
     pdf_path: str = Field(default="")
     number_of_plays: int = 0
     source: str = Field(default="IMSLP")
     imslp_id: int | None = Field(default=None)
     user_id: int | None = Field(foreign_key="user.id")
     user: Optional["User"] = Relationship(back_populates="scores")
+
+    short_description: str = Field(default="")
+    long_description: str = Field(default="")
+    youtube_url: str = Field(default="")
+    difficulty: Difficulty = Field(default=Difficulty.moderate)
+    notable_interpreters: str = Field(default="")
 
 
 class Scores(BaseModel):

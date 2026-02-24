@@ -11,7 +11,9 @@ LANGUAGES = {"en": "English", "fr": "Français"}
 def initialize_translator(language):
     """Initializes the translator."""
     try:
-        translator = gettext.translation("messages", localedir="locales", languages=[language])
+        translator = gettext.translation(
+            "messages", localedir="locales", languages=[language]
+        )
     except FileNotFoundError:  # pragma: no cover
         translator = gettext.NullTranslations()
 

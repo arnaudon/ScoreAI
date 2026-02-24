@@ -25,6 +25,7 @@ services:
       - "--sse-host=0.0.0.0" 
       - "--sse-port=8001"   
       - "--access-mode=restricted"
+      # - "postgresql://music_agent_user:123@db:5432/${POSTGRES_DB}"
       - "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
     restart: always
 
