@@ -12,5 +12,6 @@ mypy_path = "shared:backend:frontend"
 explicit_package_bases = true
 
 [tool.pytest.ini_options]
-pythonpath = ["."]
+pythonpath = ["backend", "frontend", "shared"]
+testpaths = ["backend/tests", "frontend/tests", "shared/tests"]
 asyncio_mode = "strict"
