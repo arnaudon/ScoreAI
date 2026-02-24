@@ -12,6 +12,7 @@ from shared.scores import Score, Scores
 from shared.user import User
 
 
+@pytest.mark.asyncio
 async def test_agent_success(test_scores: Scores, test_user: User):
     """test agent happy path with TestModel"""
     agent.MODEL = TestModel()

@@ -138,8 +138,6 @@ async def run_imslp_agent(prompt: str, message_history=None):
         CRITICAL: Always use single quotes (') for string literals in SQL queries.
         Example: WHERE instrumentation LIKE '%piano%'
         NEVER use double quotes (") for strings.
-
-k
         """,
         toolsets=[postgres_server],
         output_type=Scores,
@@ -151,11 +149,7 @@ k
             prompt,
             message_history=message_history,
         )
-        import logging
-
-        logger = logging.getLogger(__name__)
-        logger.error(res)
-        response = Response(response=res.output, score_id=0)
+        response = Response(response=res.output.model_dump_json(), score_id=0)
         history = res.all_messages()
     except ModelHTTPError as e:
         history = []
