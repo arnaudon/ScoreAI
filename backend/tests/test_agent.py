@@ -26,7 +26,9 @@ async def test_agent_success(monkeypatch, test_scores: Scores, test_user: User):
 async def test_get_random_score_by_composer_not_found():
     """Test get_random_score_by_composer when no score is found."""
     main_agent = agent.get_main_agent()
-    tool = main_agent._function_tools["get_random_score_by_composer"].function
+    # Accessing internal toolset which might have changed in pydantic-ai
+    # Trying _function_toolset as suggested by error message, assuming it behaves like a dict or has .get
+    tool = main_agent._function_toolset.get("get_random_score_by_composer").function
     ctx = MagicMock()
     ctx.deps = agent.Deps(user=User(username="test"), scores=Scores(scores=[]))
     result = await tool(ctx, agent.Filter(composer="Unknown"))
@@ -37,7 +39,7 @@ async def test_get_random_score_by_composer_not_found():
 async def test_get_easiest_score_by_composer_not_found():
     """Test get_easiest_score_by_composer when no score is found."""
     main_agent = agent.get_main_agent()
-    tool = main_agent._function_tools["get_easiest_score_by_composer"].function
+    tool = main_agent._function_toolset.get("get_easiest_score_by_composer").function
     ctx = MagicMock()
     ctx.deps = agent.Deps(user=User(username="test"), scores=Scores(scores=[]))
     result = await tool(ctx, agent.Filter(composer="Unknown"))
@@ -47,11 +49,11 @@ async def test_get_easiest_score_by_composer_not_found():
 @pytest.mark.asyncio
 async def test_run_imslp_agent_http_error_429(monkeypatch):
     """Test run_imslp_agent with a 429 HTTP error."""
-    mock_agent_run = AsyncMock(side_effect=ModelHTTPError("error", status_code=429))
+    mock_agent_run = AsyncMock(side_effect=ModelHTTPError(429, "error"))
     mock_agent_instance = MagicMock()
     mock_agent_instance.run = mock_agent_run
     mock_agent_class = MagicMock(return_value=mock_agent_instance)
-    monkeypatch.setattr("backend.app.agent.Agent", mock_agent_class)
+    monkeypatch.setattr("app.agent.Agent", mock_agent_class)
     result = await agent.run_imslp_agent("prompt")
     assert result.response.response == "Rate limit exceeded (Quota hit)"
 
@@ -59,11 +61,11 @@ async def test_run_imslp_agent_http_error_429(monkeypatch):
 @pytest.mark.asyncio
 async def test_run_imslp_agent_http_error_other(monkeypatch):
     """Test run_imslp_agent with a non-429 HTTP error."""
-    mock_agent_run = AsyncMock(side_effect=ModelHTTPError("error", status_code=500))
+    mock_agent_run = AsyncMock(side_effect=ModelHTTPError(500, "error"))
     mock_agent_instance = MagicMock()
     mock_agent_instance.run = mock_agent_run
     mock_agent_class = MagicMock(return_value=mock_agent_instance)
-    monkeypatch.setattr("backend.app.agent.Agent", mock_agent_class)
+    monkeypatch.setattr("app.agent.Agent", mock_agent_class)
     result = await agent.run_imslp_agent("prompt")
     assert result.response.response == "An HTTP error occurred"
 
@@ -75,7 +77,7 @@ async def test_run_imslp_agent_exception(monkeypatch):
     mock_agent_instance = MagicMock()
     mock_agent_instance.run = mock_agent_run
     mock_agent_class = MagicMock(return_value=mock_agent_instance)
-    monkeypatch.setattr("backend.app.agent.Agent", mock_agent_class)
+    monkeypatch.setattr("app.agent.Agent", mock_agent_class)
     result = await agent.run_imslp_agent("prompt")
     assert result.response.response == "An unexpected error occurred"
 
@@ -83,10 +85,10 @@ async def test_run_imslp_agent_exception(monkeypatch):
 @pytest.mark.asyncio
 async def test_run_agent_http_error_429(monkeypatch):
     """Test run_agent with a 429 HTTP error."""
-    mock_agent_run = AsyncMock(side_effect=ModelHTTPError("error", status_code=429))
+    mock_agent_run = AsyncMock(side_effect=ModelHTTPError(429, "error"))
     mock_agent = MagicMock()
     mock_agent.run = mock_agent_run
-    monkeypatch.setattr("backend.app.agent.get_main_agent", lambda: mock_agent)
+    monkeypatch.setattr("app.agent.get_main_agent", lambda: mock_agent)
     deps = agent.Deps(user=User(username="test"), scores=Scores(scores=[]))
     result = await agent.run_agent("prompt", deps)
     assert result.response.response == "Rate limit exceeded (Quota hit)"
@@ -95,10 +97,10 @@ async def test_run_agent_http_error_429(monkeypatch):
 @pytest.mark.asyncio
 async def test_run_agent_http_error_other(monkeypatch):
     """Test run_agent with a non-429 HTTP error."""
-    mock_agent_run = AsyncMock(side_effect=ModelHTTPError("error", status_code=500))
+    mock_agent_run = AsyncMock(side_effect=ModelHTTPError(500, "error"))
     mock_agent = MagicMock()
     mock_agent.run = mock_agent_run
-    monkeypatch.setattr("backend.app.agent.get_main_agent", lambda: mock_agent)
+    monkeypatch.setattr("app.agent.get_main_agent", lambda: mock_agent)
     deps = agent.Deps(user=User(username="test"), scores=Scores(scores=[]))
     result = await agent.run_agent("prompt", deps)
     assert result.response.response == "An HTTP error occurred"
@@ -110,7 +112,7 @@ async def test_run_agent_exception(monkeypatch):
     mock_agent_run = AsyncMock(side_effect=Exception("error"))
     mock_agent = MagicMock()
     mock_agent.run = mock_agent_run
-    monkeypatch.setattr("backend.app.agent.get_main_agent", lambda: mock_agent)
+    monkeypatch.setattr("app.agent.get_main_agent", lambda: mock_agent)
     deps = agent.Deps(user=User(username="test"), scores=Scores(scores=[]))
     result = await agent.run_agent("prompt", deps)
     assert result.response.response == "An unexpected error occurred"
@@ -126,7 +128,7 @@ async def test_run_complete_agent_success(monkeypatch):
     mock_agent_instance = MagicMock()
     mock_agent_instance.run = mock_agent_run
     mock_agent_class = MagicMock(return_value=mock_agent_instance)
-    monkeypatch.setattr("backend.app.agent.Agent", mock_agent_class)
+    monkeypatch.setattr("app.agent.Agent", mock_agent_class)
     result = await agent.run_complete_agent(score)
     assert result == score
 
@@ -134,11 +136,11 @@ async def test_run_complete_agent_success(monkeypatch):
 @pytest.mark.asyncio
 async def test_run_complete_agent_http_error_429(monkeypatch):
     """Test run_complete_agent with a 429 HTTP error."""
-    mock_agent_run = AsyncMock(side_effect=ModelHTTPError("error", status_code=429))
+    mock_agent_run = AsyncMock(side_effect=ModelHTTPError(429, "error"))
     mock_agent_instance = MagicMock()
     mock_agent_instance.run = mock_agent_run
     mock_agent_class = MagicMock(return_value=mock_agent_instance)
-    monkeypatch.setattr("backend.app.agent.Agent", mock_agent_class)
+    monkeypatch.setattr("app.agent.Agent", mock_agent_class)
     score = Score(title="test", composer="test")
     result = await agent.run_complete_agent(score)
     assert result == score
@@ -147,11 +149,11 @@ async def test_run_complete_agent_http_error_429(monkeypatch):
 @pytest.mark.asyncio
 async def test_run_complete_agent_http_error_other(monkeypatch):
     """Test run_complete_agent with a non-429 HTTP error."""
-    mock_agent_run = AsyncMock(side_effect=ModelHTTPError("error", status_code=500))
+    mock_agent_run = AsyncMock(side_effect=ModelHTTPError(500, "error"))
     mock_agent_instance = MagicMock()
     mock_agent_instance.run = mock_agent_run
     mock_agent_class = MagicMock(return_value=mock_agent_instance)
-    monkeypatch.setattr("backend.app.agent.Agent", mock_agent_class)
+    monkeypatch.setattr("app.agent.Agent", mock_agent_class)
     score = Score(title="test", composer="test")
     result = await agent.run_complete_agent(score)
     assert result == score
@@ -164,7 +166,7 @@ async def test_run_complete_agent_exception(monkeypatch):
     mock_agent_instance = MagicMock()
     mock_agent_instance.run = mock_agent_run
     mock_agent_class = MagicMock(return_value=mock_agent_instance)
-    monkeypatch.setattr("backend.app.agent.Agent", mock_agent_class)
+    monkeypatch.setattr("app.agent.Agent", mock_agent_class)
     score = Score(title="test", composer="test")
     result = await agent.run_complete_agent(score)
     assert result == score
