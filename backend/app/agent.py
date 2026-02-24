@@ -46,6 +46,50 @@ class Deps(BaseModel):
     scores: Scores
 
 
+async def get_score_info(ctx: RunContext[Deps]) -> str:
+    """Retrieves a JSON string with information about available musical scores."""
+    return f"The scores infos are {ctx.deps.scores.model_dump_json()}."
+
+
+async def get_user_name(ctx: RunContext[Deps]) -> str:
+    """Retrieves the current user's name from the context."""
+    return ctx.deps.user.username
+
+
+async def get_random_score_by_composer(
+    ctx: RunContext[Deps], filter_params: Filter
+) -> str:
+    """Selects and returns a random score by a specific composer."""
+    scores = []
+    for score in ctx.deps.scores.scores:
+        if score.composer.lower() == filter_params.composer.lower():
+            scores.append(score)
+    if scores:
+        return random.choice(scores).model_dump_json()
+    return "Not found"
+
+
+async def get_easiest_score_by_composer(
+    ctx: RunContext[Deps], filter_params: Filter
+) -> str:
+    """
+    Finds the easiest score by a given composer.
+
+    If multiple scores share the minimum difficulty, one is chosen at random.
+    """
+    scores = []
+    for score in ctx.deps.scores.scores:
+        if filter_params.composer.lower() in score.composer.lower():
+            scores.append(score)
+    if scores:
+        difficulties = [_difficulty_map[score.difficulty] for score in scores]
+        easy_scores = [
+            s for d, s in zip(difficulties, scores) if d == min(difficulties)
+        ]
+        return random.choice(easy_scores).model_dump_json()
+    return "Not found"
+
+
 def get_main_agent():
     """Initializes and returns the main agent for handling user queries about scores."""
     agent = Agent(
@@ -62,50 +106,10 @@ def get_main_agent():
         """,
         toolsets=[postgres_server],
     )
-
-    @agent.tool
-    async def get_score_info(ctx: RunContext[Deps]) -> str:
-        """Retrieves a JSON string with information about available musical scores."""
-        return f"The scores infos are {ctx.deps.scores.model_dump_json()}."
-
-    @agent.tool
-    async def get_user_name(ctx: RunContext[Deps]) -> str:
-        """Retrieves the current user's name from the context."""
-        return ctx.deps.user.username
-
-    @agent.tool
-    async def get_random_score_by_composer(
-        ctx: RunContext[Deps], filter_params: Filter
-    ) -> str:
-        """Selects and returns a random score by a specific composer."""
-        scores = []
-        for score in ctx.deps.scores.scores:
-            if score.composer.lower() == filter_params.composer.lower():
-                scores.append(score)
-        if scores:
-            return random.choice(scores).model_dump_json()
-        return "Not found"
-
-    @agent.tool
-    async def get_easiest_score_by_composer(
-        ctx: RunContext[Deps], filter_params: Filter
-    ) -> str:
-        """
-        Finds the easiest score by a given composer.
-
-        If multiple scores share the minimum difficulty, one is chosen at random.
-        """
-        scores = []
-        for score in ctx.deps.scores.scores:
-            if filter_params.composer.lower() in score.composer.lower():
-                scores.append(score)
-        if scores:
-            difficulties = [_difficulty_map[score.difficulty] for score in scores]
-            easy_scores = [
-                s for d, s in zip(difficulties, scores) if d == min(difficulties)
-            ]
-            return random.choice(easy_scores).model_dump_json()
-        return "Not found"
+    agent.tool(get_score_info)
+    agent.tool(get_user_name)
+    agent.tool(get_random_score_by_composer)
+    agent.tool(get_easiest_score_by_composer)
 
     return agent
 

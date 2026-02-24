@@ -25,31 +25,22 @@ async def test_agent_success(monkeypatch, test_scores: Scores, test_user: User):
 @pytest.mark.asyncio
 async def test_get_random_score_by_composer_not_found():
     """Test get_random_score_by_composer when no score is found."""
-    main_agent = agent.get_main_agent()
-    # Iterate over tools to find the one we want
-    tool = next(
-        t.function
-        for t in main_agent._function_toolset
-        if t.name == "get_random_score_by_composer"
-    )
     ctx = MagicMock()
     ctx.deps = agent.Deps(user=User(username="test"), scores=Scores(scores=[]))
-    result = await tool(ctx, agent.Filter(composer="Unknown"))
+    result = await agent.get_random_score_by_composer(
+        ctx, agent.Filter(composer="Unknown")
+    )
     assert result == "Not found"
 
 
 @pytest.mark.asyncio
 async def test_get_easiest_score_by_composer_not_found():
     """Test get_easiest_score_by_composer when no score is found."""
-    main_agent = agent.get_main_agent()
-    tool = next(
-        t.function
-        for t in main_agent._function_toolset
-        if t.name == "get_easiest_score_by_composer"
-    )
     ctx = MagicMock()
     ctx.deps = agent.Deps(user=User(username="test"), scores=Scores(scores=[]))
-    result = await tool(ctx, agent.Filter(composer="Unknown"))
+    result = await agent.get_easiest_score_by_composer(
+        ctx, agent.Filter(composer="Unknown")
+    )
     assert result == "Not found"
 
 
