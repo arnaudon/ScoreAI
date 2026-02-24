@@ -110,7 +110,8 @@ async def test_run_imslp_agent_http_error_429(monkeypatch):
 @pytest.mark.asyncio
 async def test_run_imslp_agent_http_error_other(monkeypatch):
     """Test run_imslp_agent with a non-429 HTTP error."""
-    mock_agent_run = AsyncMock(side_effect=ModelHTTPError(500, "error"))
+    err = ModelHTTPError(500, "error")
+    mock_agent_run = AsyncMock(side_effect=err)
     mock_agent_instance = MagicMock()
     mock_agent_instance.run = mock_agent_run
     mock_agent_class = MagicMock(return_value=mock_agent_instance)
@@ -146,7 +147,8 @@ async def test_run_agent_http_error_429(monkeypatch):
 @pytest.mark.asyncio
 async def test_run_agent_http_error_other(monkeypatch):
     """Test run_agent with a non-429 HTTP error."""
-    mock_agent_run = AsyncMock(side_effect=ModelHTTPError(500, "error"))
+    err = ModelHTTPError(500, "error")
+    mock_agent_run = AsyncMock(side_effect=err)
     mock_agent = MagicMock()
     mock_agent.run = mock_agent_run
     monkeypatch.setattr("app.agent.get_main_agent", lambda: mock_agent)
