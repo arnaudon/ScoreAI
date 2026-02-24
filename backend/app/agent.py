@@ -84,7 +84,7 @@ def get_main_agent():
                 scores.append(score)
         if scores:
             return random.choice(scores).model_dump_json()
-        return "Not found"  # pragma: no cover
+        return "Not found"
 
     @agent.tool
     async def get_easiest_score_by_composer(
@@ -105,7 +105,7 @@ def get_main_agent():
                 s for d, s in zip(difficulties, scores) if d == min(difficulties)
             ]
             return random.choice(easy_scores).model_dump_json()
-        return "Not found"  # pragma: no cover
+        return "Not found"
 
     return agent
 
@@ -157,13 +157,13 @@ k
         logger.error(res)
         response = Response(response=res.output, score_id=0)
         history = res.all_messages()
-    except ModelHTTPError as e:  # pragma: no cover
+    except ModelHTTPError as e:
         history = []
         if e.status_code == 429:
             response = Response(response="Rate limit exceeded (Quota hit)")
         else:
             response = Response(response="An HTTP error occurred")
-    except Exception:  # pragma: no cover, pylint: disable=broad-exception-caught
+    except Exception:  # pylint: disable=broad-exception-caught
         history = []
         response = Response(response="An unexpected error occurred")
 
@@ -191,20 +191,20 @@ async def run_agent(prompt: str, deps: Deps, message_history=None):
         )
         response = res.output
         history = res.all_messages()
-    except ModelHTTPError as e:  # pragma: no cover
+    except ModelHTTPError as e:
         history = []
         if e.status_code == 429:
             response = Response(response="Rate limit exceeded (Quota hit)")
         else:
             response = Response(response="An HTTP error occurred")
-    except Exception:  # pragma: no cover, pylint: disable=broad-exception-caught
+    except Exception:  # pylint: disable=broad-exception-caught
         history = []
         response = Response(response="An unexpected error occurred")
 
     return FullResponse(response=response, message_history=history)
 
 
-async def run_complete_agent(score: Score):  # pragma: no cover
+async def run_complete_agent(score: Score):
     """
     Run an agent to find and add missing information to a score.
 
@@ -231,11 +231,11 @@ async def run_complete_agent(score: Score):  # pragma: no cover
     try:
         res = await agent.run(prompt)
         response = res.output
-    except ModelHTTPError as e:  # pragma: no cover
+    except ModelHTTPError as e:
         if e.status_code == 429:
             response = score
         else:
             response = score
-    except Exception:  # pragma: no cover, pylint: disable=broad-exception-caught
+    except Exception:  # pylint: disable=broad-exception-caught
         response = score
     return response
