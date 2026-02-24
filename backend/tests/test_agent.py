@@ -8,7 +8,7 @@ from pydantic_ai.models.test import TestModel
 
 from app import agent
 from shared.responses import FullResponse
-from shared.scores import Score, Scores
+from shared.scores import Difficulty, Score, Scores
 from shared.user import User
 
 
@@ -23,6 +23,38 @@ async def test_agent_success(monkeypatch, test_scores: Scores, test_user: User):
 
 
 @pytest.mark.asyncio
+async def test_get_score_info():
+    """Test get_score_info tool."""
+    ctx = MagicMock()
+    scores = Scores(scores=[Score(title="test", composer="test")])
+    ctx.deps = agent.Deps(user=User(username="test"), scores=scores)
+    result = await agent.get_score_info(ctx)
+    assert result == f"The scores infos are {scores.model_dump_json()}."
+
+
+@pytest.mark.asyncio
+async def test_get_user_name():
+    """Test get_user_name tool."""
+    ctx = MagicMock()
+    user = User(username="test_user")
+    ctx.deps = agent.Deps(user=user, scores=Scores(scores=[]))
+    result = await agent.get_user_name(ctx)
+    assert result == "test_user"
+
+
+@pytest.mark.asyncio
+async def test_get_random_score_by_composer_found():
+    """Test get_random_score_by_composer when a score is found."""
+    ctx = MagicMock()
+    score = Score(title="test", composer="Bach")
+    ctx.deps = agent.Deps(user=User(username="test"), scores=Scores(scores=[score]))
+    result = await agent.get_random_score_by_composer(
+        ctx, agent.Filter(composer="Bach")
+    )
+    assert result == score.model_dump_json()
+
+
+@pytest.mark.asyncio
 async def test_get_random_score_by_composer_not_found():
     """Test get_random_score_by_composer when no score is found."""
     ctx = MagicMock()
@@ -31,6 +63,25 @@ async def test_get_random_score_by_composer_not_found():
         ctx, agent.Filter(composer="Unknown")
     )
     assert result == "Not found"
+
+
+@pytest.mark.asyncio
+async def test_get_easiest_score_by_composer_found():
+    """Test get_easiest_score_by_composer when scores are found."""
+    ctx = MagicMock()
+    score_easy = Score(
+        title="Easy", composer="Bach", difficulty=Difficulty.easy, difficulty_int=0
+    )
+    score_hard = Score(
+        title="Hard", composer="Bach", difficulty=Difficulty.expert, difficulty_int=4
+    )
+    ctx.deps = agent.Deps(
+        user=User(username="test"), scores=Scores(scores=[score_easy, score_hard])
+    )
+    result = await agent.get_easiest_score_by_composer(
+        ctx, agent.Filter(composer="Bach")
+    )
+    assert result == score_easy.model_dump_json()
 
 
 @pytest.mark.asyncio
