@@ -32,7 +32,7 @@ def test_get_page_returns_data(monkeypatch):
     monkeypatch.setattr(
         imslp.requests,
         "get",
-        lambda url: type("Resp", (), {"json": lambda self: {"a": 1, "metadata": "meta"}})(),
+        lambda url, **kwargs: type("Resp", (), {"json": lambda self: {"a": 1, "metadata": "meta"}})(),
     )
     d = imslp.get_page(0)
     assert d == {"a": 1}
@@ -43,7 +43,7 @@ def test_get_page_no_data(monkeypatch):
     monkeypatch.setattr(
         imslp.requests,
         "get",
-        lambda url: type("Resp", (), {"json": lambda self: {"metadata": "meta"}})(),
+        lambda url, **kwargs: type("Resp", (), {"json": lambda self: {"metadata": "meta"}})(),
     )
     d = imslp.get_page(0)
     assert d == {}
