@@ -22,7 +22,7 @@ from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
 from shared.scores import ScoreBase
 
 
-MODEL: Any = os.getenv("MODEL", "google-gla:gemini-2.5-flash-lite")
+MODEL: Any = os.getenv("MODEL", "test")
 logger = logging.getLogger(__name__)
 progress_tracker = {"status": "idle", "page": 0, "cancel_requested": False}
 router = APIRouter(prefix="/imslp", tags=["imslp"])

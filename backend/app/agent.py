@@ -21,7 +21,7 @@ logfire.instrument_pydantic_ai()
 
 load_dotenv()
 
-MODEL: Any = os.getenv("MODEL", "google-gla:gemini-2.5-flash-lite")
+MODEL: Any = os.getenv("MODEL", "test")
 postgres_server = MCPServerSSE("http://mcp-postgres:8001/sse")
 
 
