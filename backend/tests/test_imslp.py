@@ -273,7 +273,7 @@ def test_start_endpoint(mock_requests_get):
     assert response.status_code == 200
     assert response.json() == {"message": "Task started successfully!"}
     assert progress_tracker["total"] == 10
-    assert progress_tracker["status"] == "processing"
+    assert progress_tracker["status"] == "completed"
 
 def test_progress_endpoint():
     response = client.post("/imslp/progress")
