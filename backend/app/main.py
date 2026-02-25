@@ -99,12 +99,8 @@ def get_scores(
     return session.exec(select(Score).where(Score.user_id == current_user.id)).all()
 
 
-@app.post("/imslp_agent")
-async def run_imslp_agent_api(
-    prompt: str,
-    _current_user: Annotated[User, Depends(get_current_user)],
-    message_history=None,
-):  # pragma: no cover
+@app.post("/imslp_agent", dependencies=[Depends(get_current_user)])
+async def run_imslp_agent_api(prompt: str, message_history=None):  # pragma: no cover
     """Run the imslp agent."""
     return await run_imslp_agent(prompt, message_history=message_history)
 
