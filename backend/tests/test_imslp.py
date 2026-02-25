@@ -137,11 +137,11 @@ def test_get_page(mock_requests_get):
 @pytest.mark.asyncio
 async def test_fix_entry(mock_agent):
     mock_agent_instance = mock_agent.return_value
-    mock_run_result = AsyncMock()
+    mock_run_result = MagicMock()
     mock_run_result.output = ScoreBase(title="Fixed Title", composer="Fixed Composer")
-    mock_agent_instance.run.return_value = mock_run_result
+    mock_agent_instance.run = AsyncMock(return_value=mock_run_result)
     
-    entry = IMSLP(title="Old Title")
+    entry = IMSLP(title="Old Title", permlink="http://example.com")
     await fix_entry(entry)
     
     assert entry.title == "Fixed Title"
@@ -152,9 +152,9 @@ async def test_fix_entry(mock_agent):
 async def test_add_entry(session, mock_requests_get, mock_agent):
     # Mock fix_entry dependencies
     mock_agent_instance = mock_agent.return_value
-    mock_run_result = AsyncMock()
+    mock_run_result = MagicMock()
     mock_run_result.output = ScoreBase(title="Fixed Title", composer="Fixed Composer")
-    mock_agent_instance.run.return_value = mock_run_result
+    mock_agent_instance.run = AsyncMock(return_value=mock_run_result)
 
     # Mock get_metadata dependencies
     html = """
@@ -186,9 +186,9 @@ async def test_add_entry(session, mock_requests_get, mock_agent):
 async def test_get_works(session, mock_requests_get, mock_agent):
     # Mock fix_entry dependencies
     mock_agent_instance = mock_agent.return_value
-    mock_run_result = AsyncMock()
+    mock_run_result = MagicMock()
     mock_run_result.output = ScoreBase(title="Fixed Title", composer="Fixed Composer")
-    mock_agent_instance.run.return_value = mock_run_result
+    mock_agent_instance.run = AsyncMock(return_value=mock_run_result)
 
     # Mock get_page responses
     # First call returns data, second call (next page) returns empty
@@ -259,7 +259,7 @@ def test_start_endpoint(mock_requests_get):
     assert response.status_code == 200
     assert response.json() == {"message": "Task started successfully!"}
     assert progress_tracker["total"] == 10
-    assert progress_tracker["status"] == "starting"
+    assert progress_tracker["status"] == "processing"
 
 def test_progress_endpoint():
     response = client.post("/imslp/progress")
@@ -273,7 +273,7 @@ def test_cancel_endpoint():
 
 def test_stats_endpoint(session):
     # Add dummy data
-    entry = IMSLP(id=1, title="T", composer="C", score_metadata="{}")
+    entry = IMSLP(id=1, title="T", composer="C", score_metadata="{}", permlink="http://example.com/1")
     session.add(entry)
     session.commit()
 
@@ -282,7 +282,7 @@ def test_stats_endpoint(session):
     assert response.json() == {"total_works": 1, "total_composers": 1}
 
 def test_empty_endpoint(session):
-    entry = IMSLP(id=1, title="T", composer="C", score_metadata="{}")
+    entry = IMSLP(id=1, title="T", composer="C", score_metadata="{}", permlink="http://example.com/1")
     session.add(entry)
     session.commit()
     
@@ -294,8 +294,8 @@ def test_empty_endpoint(session):
     assert len(results) == 0
 
 def test_get_by_ids(session):
-    entry1 = IMSLP(id=1, title="T1", composer="C1", score_metadata="{}")
-    entry2 = IMSLP(id=2, title="T2", composer="C2", score_metadata="{}")
+    entry1 = IMSLP(id=1, title="T1", composer="C1", score_metadata="{}", permlink="http://example.com/1")
+    entry2 = IMSLP(id=2, title="T2", composer="C2", score_metadata="{}", permlink="http://example.com/2")
     session.add(entry1)
     session.add(entry2)
     session.commit()
