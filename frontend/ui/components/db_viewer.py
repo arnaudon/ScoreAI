@@ -40,7 +40,6 @@ def show_score_info(score):
 
 def add_imslp():
     """Add an IMSLP score"""
-    st.subheader("Add new IMSLP score:")
     if "question_prev" not in st.session_state:
         st.session_state.question_prev = ""
     if "message_history" not in st.session_state:
@@ -76,8 +75,6 @@ def add_imslp():
 
 def add_score():
     """Add a score"""
-    st.subheader("Add new score:")
-
     # initialize empty score
     if (
         "score_data" not in st.session_state
