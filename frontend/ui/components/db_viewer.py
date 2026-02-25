@@ -1,7 +1,9 @@
 """DB viewer."""
 
+import numpy as np
+import pandas as pd
 import streamlit as st
-from shared import Score
+from shared.scores import Score
 from st_aggrid import AgGrid, GridOptionsBuilder
 
 from ui.components import api
@@ -39,12 +41,37 @@ def show_score_info(score):
 def add_imslp():
     """Add an IMSLP score"""
     st.subheader("Add new IMSLP score:")
-    question = st.text_input("Question", key="question")
+    if "question_prev" not in st.session_state:
+        st.session_state.question_prev = ""
     if "message_history" not in st.session_state:
         st.session_state.message_history = []
-    if question:
+
+    question = st.text_input("Question", key="question")
+    if question and question != st.session_state.question_prev:
+        st.write("Answering...")
+        st.session_state.question_prev = question
         response = api.run_imslp_agent(question)
-        st.write(response.response)
+        scores = api.get_imslp_scores(response.score_ids)
+        st.session_state.score_df = pd.DataFrame(
+            [s.model_dump() for s in scores.scores]
+        )
+    if "score_df" in st.session_state:
+        df = st.session_state.score_df
+        if len(df):
+            df = df[["title", "composer", "year", "instrumentation", "permlink"]]
+
+            gb = GridOptionsBuilder.from_dataframe(df)
+            gb.configure_selection("single")  # allow one row selection
+            grid_options = gb.build()
+            grid_response = AgGrid(
+                df, gridOptions=grid_options, height=200, allow_unsafe_jscode=True
+            )
+            selected = grid_response["selected_rows"]
+            if selected is not None:
+                st.write(selected.iloc[0])
+                st.session_state.score_data_input = Score(**selected.iloc[0].to_dict())
+                st.write(st.session_state.score_data_input)
+                _add_score(key="imslp")
 
 
 def add_score():
@@ -71,8 +98,12 @@ def add_score():
     if composer:
         st.session_state.score_data_input.composer = composer
 
+    _add_score()
+
+
+def _add_score(key="manual"):
     # complete data with AI
-    if st.button("Complete score data with AI", key="complete"):
+    if st.button("Complete score data with AI", key=f"complete_{key}"):
         st.session_state.score_data_output = api.complete_score_data(
             st.session_state.score_data_input
         )
@@ -83,8 +114,8 @@ def add_score():
         show_score_info(st.session_state.score_data_output.model_dump())
 
     # add pdf and submit data
-    uploaded_file = st.file_uploader("Upload a file", type=["pdf"])
-    if st.button("Add score", key="add"):
+    uploaded_file = st.file_uploader("Upload a file", type=["pdf"], key=key)
+    if st.button("Add score", key=f"add_{key}"):
         if uploaded_file is None:
             st.write("Please upload a file")
             st.stop()
@@ -94,7 +125,10 @@ def add_score():
                 st.session_state.score_data_input
             )
         st.session_state.score_data_output.pdf_path = upload(
-            uploaded_file, title, composer, st.session_state.user["username"]
+            uploaded_file,
+            st.session_state.score_data_output.title,
+            st.session_state.score_data_output.composer,
+            st.session_state.user["username"],
         )
 
         res = api.add_score(st.session_state.score_data_output)

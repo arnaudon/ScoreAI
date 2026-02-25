@@ -12,8 +12,9 @@ from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
 from pydantic_ai.exceptions import ModelHTTPError
 from pydantic_ai.mcp import MCPServerSSE
 
-from shared import FullResponse, Response, Score, Scores, User
-from shared.scores import Difficulty
+from shared.responses import FullResponse, ImslpFullResponse, ImslpResponse, Response
+from shared.scores import Difficulty, Score, Scores
+from shared.user import User
 
 logfire.configure()
 logfire.instrument_pydantic_ai()
@@ -144,7 +145,7 @@ async def run_imslp_agent(prompt: str, message_history=None):
         NEVER use double quotes (") for strings.
         """,
         toolsets=[postgres_server],
-        output_type=Scores,
+        output_type=ImslpResponse,
         retries=3,
     )
 
@@ -153,19 +154,21 @@ async def run_imslp_agent(prompt: str, message_history=None):
             prompt,
             message_history=message_history,
         )
-        response = Response(response=res.output.model_dump_json(), score_id=0)
+        response = res.output
         history = res.all_messages()
     except ModelHTTPError as e:
         history = []
         if e.status_code == 429:
-            response = Response(response="Rate limit exceeded (Quota hit)")
+            response = ImslpResponse(
+                response="Rate limit exceeded (Quota hit)", score_ids=[]
+            )
         else:
-            response = Response(response="An HTTP error occurred")
+            response = ImslpResponse(response="An HTTP error occurred", score_ids=[])
     except Exception:  # pylint: disable=broad-exception-caught
         history = []
-        response = Response(response="An unexpected error occurred")
+        response = ImslpResponse(response="An unexpected error occurred", score_ids=[])
 
-    return FullResponse(response=response, message_history=history)
+    return ImslpFullResponse(response=response, message_history=history)
 
 
 async def run_agent(prompt: str, deps: Deps, message_history=None):

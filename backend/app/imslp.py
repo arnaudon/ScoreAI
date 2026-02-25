@@ -204,3 +204,7 @@ def get_imslp_stats(session: Session = Depends(get_session)):
 def empty(session: Session = Depends(get_session)):
     session.execute(text("TRUNCATE TABLE imslp RESTART IDENTITY CASCADE;"))
     session.commit()
+
+@router.get("/scores_by_ids")
+def get_by_ids(score_ids: str, session: Session = Depends(get_session)):
+    return session.exec(select(IMSLP).where(IMSLP.id.in_(json.loads(score_ids)))).all()

@@ -1,13 +1,17 @@
 """API module."""
 
+import json
 import logging
 import os
+from typing import List
 
 import pandas as pd
 import requests
 import streamlit as st
 from pwdlib import PasswordHash
-from shared import FullResponse, Response, Score, Scores, User
+from shared.responses import FullResponse, ImslpFullResponse, ImslpResponse, Response
+from shared.scores import IMSLPScores, Score, Scores
+from shared.user import User
 
 logger = logging.getLogger(__name__)
 
@@ -107,7 +111,7 @@ def get_scores_df() -> pd.DataFrame:
     return df
 
 
-def run_imslp_agent(question: str) -> Response:  # pragma: no cover
+def run_imslp_agent(question: str) -> ImslpResponse:  # pragma: no cover
     """Run the agent via API"""
     result = requests.post(
         API_URL + "/imslp_agent",
@@ -123,9 +127,20 @@ def run_imslp_agent(question: str) -> Response:  # pragma: no cover
         print("Non-JSON response:", result.text)
         raise AgentError("Something went wrong, try again later") from exc
 
-    full_result = FullResponse(**result)
+    full_result = ImslpFullResponse(**result)
     st.session_state.message_history.extend(full_result.message_history)
     return full_result.response
+
+
+def get_imslp_scores(score_ids: List[int]) -> IMSLPScores:
+    """Get imlsp scores from ids."""
+    return IMSLPScores(
+        scores=requests.get(
+            f"{API_URL}/imslp/scores_by_ids",
+            params={"score_ids": json.dumps(score_ids)},
+            headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+        ).json()
+    )
 
 
 def run_agent(question: str) -> Response:  # pragma: no cover

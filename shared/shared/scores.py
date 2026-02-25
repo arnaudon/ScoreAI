@@ -84,3 +84,12 @@ class IMSLP(ScoreBase, table=True):
     permlink: str = Field()
     score_metadata: str = Field(default="")
     pdf_urls: str = Field(default="")
+
+
+class IMSLPScores(BaseModel):
+    """IMLSP scores table"""
+
+    scores: List[IMSLP]
+
+    def __len__(self):
+        return len(self.scores)

@@ -16,7 +16,8 @@ from app.agent import Deps, run_agent, run_complete_agent, run_imslp_agent
 from app.db import get_session, init_db
 from app.file_helper import file_helper
 from app.users import get_current_user
-from shared import Score, Scores, User
+from shared.scores import Score, Scores
+from shared.user import User
 
 logger = getLogger(__name__)
 
