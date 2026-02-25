@@ -45,9 +45,8 @@ def add_imslp():
     if "message_history" not in st.session_state:
         st.session_state.message_history = []
 
-    question = st.text_input("Question", key="question")
+    question = st.text_input("Search in IMSLP database:", key="question")
     if question and question != st.session_state.question_prev:
-        st.write("Answering...")
         st.session_state.question_prev = question
         response = api.run_imslp_agent(question)
         scores = api.get_imslp_scores(response.score_ids)
@@ -67,9 +66,11 @@ def add_imslp():
             )
             selected = grid_response["selected_rows"]
             if selected is not None:
-                st.write(selected.iloc[0])
                 st.session_state.score_data_input = Score(**selected.iloc[0].to_dict())
-                st.write(st.session_state.score_data_input)
+                st.write(
+                    "Download the you want here to add below: ",
+                    selected.iloc[0]["permlink"],
+                )
                 _add_score(key="imslp")
 
 

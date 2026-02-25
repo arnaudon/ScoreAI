@@ -13,6 +13,7 @@ COOKIE_EXPIRES = datetime.now() + timedelta(days=1)
 def render_pdf(pdf_path):
     """Render the pdf."""
     url = api.get_pdf_url(pdf_path)
+    st.write(url)
     options = [
         "pagemode=none",
         "disableRange=true",
