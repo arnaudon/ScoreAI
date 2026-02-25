@@ -96,6 +96,11 @@ async def login_for_access_token(
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     """Get current user."""
+    return get_current_user_from_token(token)
+
+
+def get_current_user_from_token(token: str):
+    """Validate a token and return the corresponding user."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",

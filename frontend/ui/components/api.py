@@ -4,6 +4,7 @@ import json
 import logging
 import os
 from typing import List
+from urllib.parse import quote
 
 import pandas as pd
 import requests
@@ -226,9 +227,10 @@ def upload_pdf(file, filename):
 
 def get_pdf_url(file_id):
     """Get pdf url"""
-    url = f"{PUBLIC_API_URL}/pdf/{file_id}"
+    token = st.session_state.get("token", "")
+    url = f"{PUBLIC_API_URL}/pdf/{file_id}?token={token}"
     viewer_url = f"{PUBLIC_API_URL}/pdfjs/web/viewer.html"
-    return f"{viewer_url}?file={url}"
+    return f"{viewer_url}?file={quote(url, safe='')}"
 
 
 def start_imslp_update(max_pages: int = 260):

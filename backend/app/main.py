@@ -15,7 +15,7 @@ from app import imslp, users
 from app.agent import Deps, run_agent, run_complete_agent, run_imslp_agent
 from app.db import get_session, init_db
 from app.file_helper import file_helper
-from app.users import get_current_user
+from app.users import get_current_user, get_current_user_from_token
 from shared.scores import Score, Scores
 from shared.user import User
 
@@ -124,8 +124,13 @@ async def run_main_agent(
     )
 
 
-@app.get("/pdf/{filename}", dependencies=[Depends(get_current_user)])
-def get_pdf(filename: str):
+def get_pdf_user(token: str = ""):
+    """Dependency for PDF endpoints - accepts token as query param."""
+    return get_current_user_from_token(token)
+
+
+@app.get("/pdf/{filename}")
+def get_pdf(filename: str, _user=Depends(get_pdf_user)):
     """Get the url of a pdf file."""
     obj = file_helper.download_pdf(filename)
     return StreamingResponse(obj["Body"], media_type="application/pdf")

@@ -9,7 +9,7 @@ from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 
 from app import db
-from app.main import app
+from app.main import app, get_pdf_user
 from app.users import get_current_user
 from shared.scores import Score, Scores
 from shared.user import User
@@ -72,6 +72,7 @@ def client_fixture(session: Session, test_scores: Scores, test_user: User):
 
     app.dependency_overrides[db.get_session] = get_session_override
     app.dependency_overrides[get_current_user] = get_current_user_override
+    app.dependency_overrides[get_pdf_user] = get_current_user_override
 
     client = TestClient(app)
 
