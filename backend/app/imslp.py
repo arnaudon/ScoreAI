@@ -21,7 +21,6 @@ from pydantic_ai import Agent
 from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
 from shared.scores import ScoreBase
 
-
 MODEL: Any = os.getenv("MODEL", "test")
 logger = logging.getLogger(__name__)
 progress_tracker = {"status": "idle", "page": 0, "cancel_requested": False}
@@ -56,17 +55,13 @@ def get_pdfs(response):
     """return a list of pdf urls"""
     soup = BeautifulSoup(response.text, "html.parser")
     links = soup.find_all("a", href=True)
-    pdf_landing_pages = [
-        l["href"] for l in links if "Special:ImagefromIndex" in l["href"]
-    ]
+    pdf_landing_pages = [l["href"] for l in links if "Special:ImagefromIndex" in l["href"]]
 
     session = requests.Session()
     cookies = {"imslpdisclaimeraccepted": "yes"}
     pdf_urls = []
     for pdf_landing_page in pdf_landing_pages:
-        response = session.get(
-            str(pdf_landing_page), cookies=cookies, allow_redirects=True
-        )
+        response = session.get(str(pdf_landing_page), cookies=cookies, allow_redirects=True)
 
         soup = BeautifulSoup(response.text, "html.parser")
         links = soup.find_all("span", id="sm_dl_wait")
@@ -74,9 +69,7 @@ def get_pdfs(response):
             pdf_urls += [l["data-id"] for l in links]
         # try redirect
         else:
-            response = session.head(
-                str(pdf_landing_page), cookies=cookies, allow_redirects=True
-            )
+            response = session.head(str(pdf_landing_page), cookies=cookies, allow_redirects=True)
             pdf_url = response.url
             if pdf_url.endswith("pdf"):
                 pdf_urls.append(pdf_url)
@@ -194,9 +187,7 @@ def get_imslp_stats(session: Session = Depends(get_session)):
     """Get IMSLP stats"""
     return {
         "total_works": session.exec(select(func.count()).select_from(IMSLP)).one(),
-        "total_composers": session.exec(
-            select(func.count(func.distinct(IMSLP.composer)))
-        ).one(),
+        "total_composers": session.exec(select(func.count(func.distinct(IMSLP.composer)))).one(),
     }
 
 
@@ -207,6 +198,7 @@ def empty(session: Session = Depends(get_session)):
     else:
         session.execute(text("DELETE FROM imslp;"))
     session.commit()
+
 
 @router.get("/scores_by_ids")
 def get_by_ids(score_ids: str, session: Session = Depends(get_session)):

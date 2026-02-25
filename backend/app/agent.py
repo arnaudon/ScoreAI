@@ -57,9 +57,7 @@ async def get_user_name(ctx: RunContext[Deps]) -> str:
     return ctx.deps.user.username
 
 
-async def get_random_score_by_composer(
-    ctx: RunContext[Deps], filter_params: Filter
-) -> str:
+async def get_random_score_by_composer(ctx: RunContext[Deps], filter_params: Filter) -> str:
     """Selects and returns a random score by a specific composer."""
     scores = []
     for score in ctx.deps.scores.scores:
@@ -70,9 +68,7 @@ async def get_random_score_by_composer(
     return "Not found"
 
 
-async def get_easiest_score_by_composer(
-    ctx: RunContext[Deps], filter_params: Filter
-) -> str:
+async def get_easiest_score_by_composer(ctx: RunContext[Deps], filter_params: Filter) -> str:
     """
     Finds the easiest score by a given composer.
 
@@ -84,9 +80,7 @@ async def get_easiest_score_by_composer(
             scores.append(score)
     if scores:
         difficulties = [_difficulty_map[score.difficulty] for score in scores]
-        easy_scores = [
-            s for d, s in zip(difficulties, scores) if d == min(difficulties)
-        ]
+        easy_scores = [s for d, s in zip(difficulties, scores) if d == min(difficulties)]
         return random.choice(easy_scores).model_dump_json()
     return "Not found"
 
@@ -159,14 +153,14 @@ async def run_imslp_agent(prompt: str, message_history=None):
     except ModelHTTPError as e:
         history = []
         if e.status_code == 429:
-            response = ImslpResponse(
-                response="Rate limit exceeded (Quota hit)", score_ids=[]
-            )
+            response = ImslpResponse(response="Rate limit exceeded (Quota hit)", score_ids=[])
         else:
             response = ImslpResponse(response="An HTTP error occurred", score_ids=[])
     except Exception:  # pylint: disable=broad-exception-caught
         history = []
-        response = ImslpResponse(response="An unexpected error occurred", score_ids=[])  # pragma: no cover
+        response = ImslpResponse(
+            response="An unexpected error occurred", score_ids=[]
+        )  # pragma: no cover
 
     return ImslpFullResponse(response=response, message_history=history)
 

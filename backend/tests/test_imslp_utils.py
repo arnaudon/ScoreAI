@@ -65,6 +65,7 @@ def test_get_pdfs_handles_non_pdf_redirect(monkeypatch):
         # Capture print output
         import io
         import sys
+
         capturedOutput = io.StringIO()
         sys.stdout = capturedOutput
         urls = imslp.get_pdfs(DummyResponse())

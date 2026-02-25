@@ -48,9 +48,7 @@ async def test_get_random_score_by_composer_found():
     ctx = MagicMock()
     score = Score(title="test", composer="Bach")
     ctx.deps = agent.Deps(user=User(username="test"), scores=Scores(scores=[score]))
-    result = await agent.get_random_score_by_composer(
-        ctx, agent.Filter(composer="Bach")
-    )
+    result = await agent.get_random_score_by_composer(ctx, agent.Filter(composer="Bach"))
     assert result == score.model_dump_json()
 
 
@@ -59,9 +57,7 @@ async def test_get_random_score_by_composer_not_found():
     """Test get_random_score_by_composer when no score is found."""
     ctx = MagicMock()
     ctx.deps = agent.Deps(user=User(username="test"), scores=Scores(scores=[]))
-    result = await agent.get_random_score_by_composer(
-        ctx, agent.Filter(composer="Unknown")
-    )
+    result = await agent.get_random_score_by_composer(ctx, agent.Filter(composer="Unknown"))
     assert result == "Not found"
 
 
@@ -69,18 +65,14 @@ async def test_get_random_score_by_composer_not_found():
 async def test_get_easiest_score_by_composer_found():
     """Test get_easiest_score_by_composer when scores are found."""
     ctx = MagicMock()
-    score_easy = Score(
-        title="Easy", composer="Bach", difficulty=Difficulty.easy, difficulty_int=0
-    )
+    score_easy = Score(title="Easy", composer="Bach", difficulty=Difficulty.easy, difficulty_int=0)
     score_hard = Score(
         title="Hard", composer="Bach", difficulty=Difficulty.expert, difficulty_int=4
     )
     ctx.deps = agent.Deps(
         user=User(username="test"), scores=Scores(scores=[score_easy, score_hard])
     )
-    result = await agent.get_easiest_score_by_composer(
-        ctx, agent.Filter(composer="Bach")
-    )
+    result = await agent.get_easiest_score_by_composer(ctx, agent.Filter(composer="Bach"))
     assert result == score_easy.model_dump_json()
 
 
@@ -89,9 +81,7 @@ async def test_get_easiest_score_by_composer_not_found():
     """Test get_easiest_score_by_composer when no score is found."""
     ctx = MagicMock()
     ctx.deps = agent.Deps(user=User(username="test"), scores=Scores(scores=[]))
-    result = await agent.get_easiest_score_by_composer(
-        ctx, agent.Filter(composer="Unknown")
-    )
+    result = await agent.get_easiest_score_by_composer(ctx, agent.Filter(composer="Unknown"))
     assert result == "Not found"
 
 

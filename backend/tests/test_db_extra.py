@@ -35,9 +35,7 @@ def test_init_db_creates_tables(tmp_path):
         db.init_db()
         insp = engine.connect().connection
         # SQLite: check at least one table exists
-        res = insp.execute(
-            "SELECT name FROM sqlite_master WHERE type='table';"
-        ).fetchall()
+        res = insp.execute("SELECT name FROM sqlite_master WHERE type='table';").fetchall()
         assert len(res) > 0
     finally:
         db.DATABASE_URL = orig_url
