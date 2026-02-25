@@ -19,10 +19,25 @@ from app.imslp import (
 from shared.scores import IMSLP, ScoreBase
 from app.main import app
 from app.users import get_admin_user
+from app import db
 
 client = TestClient(app)
 
 # --- Fixtures & Mocks ---
+
+@pytest.fixture(autouse=True)
+def apply_test_db_override(session):
+    """
+    Apply a test database override for the module-scoped test client.
+    This ensures that the client created in this test module uses the
+    in-memory test database, resolving "no such table" errors.
+    """
+    def get_session_override():
+        return session
+
+    app.dependency_overrides[db.get_session] = get_session_override
+    yield
+    app.dependency_overrides.clear()
 
 @pytest.fixture
 def mock_requests_get():
