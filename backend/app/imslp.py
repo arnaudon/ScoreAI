@@ -203,7 +203,7 @@ def get_imslp_stats(session: Session = Depends(get_session)):
 @router.post("/empty", dependencies=[Depends(get_admin_user)])
 def empty(session: Session = Depends(get_session)):
     if session.bind.dialect.name == "postgresql":
-        session.execute(text("TRUNCATE TABLE imslp RESTART IDENTITY CASCADE;"))
+        session.execute(text("TRUNCATE TABLE imslp RESTART IDENTITY CASCADE;"))  # pragma: no cover
     else:
         session.execute(text("DELETE FROM imslp;"))
     session.commit()

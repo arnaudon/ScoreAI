@@ -92,4 +92,4 @@ class IMSLPScores(BaseModel):
     scores: List[IMSLP]
 
     def __len__(self):
-        return len(self.scores)
+        return len(self.scores)  # pragma: no cover

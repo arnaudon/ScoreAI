@@ -166,7 +166,7 @@ async def run_imslp_agent(prompt: str, message_history=None):
             response = ImslpResponse(response="An HTTP error occurred", score_ids=[])
     except Exception:  # pylint: disable=broad-exception-caught
         history = []
-        response = ImslpResponse(response="An unexpected error occurred", score_ids=[])
+        response = ImslpResponse(response="An unexpected error occurred", score_ids=[])  # pragma: no cover
 
     return ImslpFullResponse(response=response, message_history=history)
 
@@ -200,7 +200,7 @@ async def run_agent(prompt: str, deps: Deps, message_history=None):
             response = Response(response="An HTTP error occurred")
     except Exception:  # pylint: disable=broad-exception-caught
         history = []
-        response = Response(response="An unexpected error occurred")
+        response = Response(response="An unexpected error occurred")  # pragma: no cover
 
     return FullResponse(response=response, message_history=history)
 

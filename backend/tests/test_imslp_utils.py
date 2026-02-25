@@ -44,3 +44,31 @@ def test_get_pdfs_extracts_pdf_urls(monkeypatch):
         m.setattr(requests, "Session", lambda: MockSession())
         urls = imslp.get_pdfs(DummyResponse())
         assert "url.pdf" in urls
+
+
+def test_get_pdfs_handles_non_pdf_redirect(monkeypatch):
+    class DummyResponse:
+        text = '<a href="Special:ImagefromIndex/456">Download</a>'
+
+    with monkeypatch.context() as m:
+
+        class MockSession:
+            def get(self, url, **kwargs):
+                # No 'sm_dl_wait', so it goes to else block
+                return type("Resp", (), {"text": "<html></html>"})()
+
+            def head(self, url, **kwargs):
+                # Redirects to non-pdf
+                return type("Resp", (), {"url": "http://example.com/not_a_pdf.html"})()
+
+        m.setattr(requests, "Session", lambda: MockSession())
+        # Capture print output
+        import io
+        import sys
+        capturedOutput = io.StringIO()
+        sys.stdout = capturedOutput
+        urls = imslp.get_pdfs(DummyResponse())
+        sys.stdout = sys.__stdout__
+
+        assert "http://example.com/not_a_pdf.html" in capturedOutput.getvalue()
+        assert urls == []
