@@ -180,5 +180,16 @@ def show_db(select=True):
                             st.toast("Deletion cancelled.", icon="🚫")
             show_score_info(row)
 
-    add_score()
-    add_imslp()
+    add_new_score()
+
+
+def add_new_score():
+    """Add a new score"""
+    st.subheader("Add new score")
+    tab_manual, tab_imslp = st.tabs(["Manual", "IMSLP"])
+
+    with tab_manual:
+        add_score()
+
+    with tab_imslp:
+        add_imslp()
