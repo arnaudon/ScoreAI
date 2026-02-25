@@ -35,7 +35,11 @@ def apply_test_db_override(session):
     def get_session_override():
         return session
 
+    def override_get_admin_user():
+        return True
+
     app.dependency_overrides[db.get_session] = get_session_override
+    app.dependency_overrides[get_admin_user] = override_get_admin_user
     yield
     app.dependency_overrides.clear()
 
@@ -57,11 +61,6 @@ def mock_agent():
 @pytest.fixture(name="session")
 def session_fixture(session: Session):
     return session
-
-def override_get_admin_user():
-    return True
-
-app.dependency_overrides[get_admin_user] = override_get_admin_user
 
 # --- Tests for Helper Functions ---
 
