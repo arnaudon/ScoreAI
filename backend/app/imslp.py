@@ -2,24 +2,22 @@
 
 import json
 import logging
+import os
 import time
+from typing import Any
 
 import numpy as np
 import requests
 from bs4 import BeautifulSoup
 from fastapi import APIRouter, BackgroundTasks, Depends
+from pydantic_ai import Agent
+from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
 from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import Session, func, select, text
 
 from app.db import engine, get_session
 from app.users import get_admin_user
-from shared.scores import IMSLP
-import os
-from typing import Any
-
-from pydantic_ai import Agent
-from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
-from shared.scores import ScoreBase
+from shared.scores import IMSLP, ScoreBase
 
 MODEL: Any = os.getenv("MODEL", "test")
 logger = logging.getLogger(__name__)
@@ -81,15 +79,18 @@ def get_pdfs(response):
 
 def get_page(start):
     """Get a page of works from IMSLP."""
-    url = f"https://imslp.org/imslpscripts/API.ISCR.php?account=worklist/disclaimer=accepted/sort=id/type=2/start={start}"
-    response = requests.get(url)
+    url = (
+        "https://imslp.org/imslpscripts/API.ISCR.php?account=worklist/"
+        f"disclaimer=accepted/sort=id/type=2/start={start}"
+    )
+    response = requests.get(url, timeout=60)
     data = response.json()
     data.pop("metadata")
     return data
 
 
 async def fix_entry(entry):
-
+    """Fix missing values in the entry using an agent."""
     agent = Agent(
         MODEL,
         output_type=ScoreBase,
@@ -105,7 +106,7 @@ async def fix_entry(entry):
 
 async def add_entry(i, item, session):
     """Add an entry to the database."""
-    response = requests.get(item["permlink"])
+    response = requests.get(item["permlink"], timeout=60)
     metadata = get_metadata(response)
     entry = IMSLP(
         id=int(i),
@@ -144,7 +145,7 @@ async def get_works():
             data = get_page(start)
 
             # last page, we stop
-            if not len(data):
+            if not data:
                 break
 
             # add entries
@@ -193,6 +194,7 @@ def get_imslp_stats(session: Session = Depends(get_session)):
 
 @router.post("/empty", dependencies=[Depends(get_admin_user)])
 def empty(session: Session = Depends(get_session)):
+    """Empty the IMSLP table."""
     if session.bind.dialect.name == "postgresql":
         session.execute(text("TRUNCATE TABLE imslp RESTART IDENTITY CASCADE;"))  # pragma: no cover
     else:
@@ -202,4 +204,6 @@ def empty(session: Session = Depends(get_session)):
 
 @router.get("/scores_by_ids")
 def get_by_ids(score_ids: str, session: Session = Depends(get_session)):
+    """Get scores by ids."""
+    # pylint: disable=no-member
     return session.exec(select(IMSLP).where(IMSLP.id.in_(json.loads(score_ids)))).all()
