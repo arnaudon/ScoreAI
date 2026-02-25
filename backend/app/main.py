@@ -102,7 +102,7 @@ def get_scores(
 @app.post("/imslp_agent")
 async def run_imslp_agent_api(
     prompt: str,
-    current_user: Annotated[User, Depends(get_current_user)],
+    _current_user: Annotated[User, Depends(get_current_user)],
     message_history=None,
 ):  # pragma: no cover
     """Run the imslp agent."""

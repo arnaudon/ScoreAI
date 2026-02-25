@@ -186,6 +186,7 @@ def cancel():
 @router.get("/stats", dependencies=[Depends(get_admin_user)])
 def get_imslp_stats(session: Session = Depends(get_session)):
     """Get IMSLP stats"""
+    # pylint: disable=not-callable
     return {
         "total_works": session.exec(select(func.count()).select_from(IMSLP)).one(),
         "total_composers": session.exec(select(func.count(func.distinct(IMSLP.composer)))).one(),

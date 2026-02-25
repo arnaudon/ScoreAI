@@ -9,8 +9,8 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///database/app.db")
 
 def init_db():
     """Initialize database."""
-    engine = create_engine(DATABASE_URL, echo=True)
-    SQLModel.metadata.create_all(engine)
+    init_engine = create_engine(DATABASE_URL, echo=True)
+    SQLModel.metadata.create_all(init_engine)
 
 
 engine = create_engine(
