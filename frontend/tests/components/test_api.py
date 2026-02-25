@@ -1,7 +1,8 @@
 """Test the api module."""
 
 import pytest
-from shared import Score, User
+from shared.scores import Score
+from shared.user import User
 
 from ui.components import api
 
