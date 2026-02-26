@@ -54,9 +54,7 @@ def add_imslp():
         st.session_state.question_prev = question
         response = api.run_imslp_agent(question)
         scores = api.get_imslp_scores(response.score_ids)
-        st.session_state.score_df = pd.DataFrame(
-            [s.model_dump() for s in scores.scores]
-        )
+        st.session_state.score_df = pd.DataFrame([s.model_dump() for s in scores.scores])
     if "score_df" in st.session_state:
         df = st.session_state.score_df
         if len(df):
@@ -81,10 +79,7 @@ def add_imslp():
 def add_score():
     """Add a score"""
     # initialize empty score
-    if (
-        "score_data" not in st.session_state
-        or st.session_state.score_data_input is None
-    ):
+    if "score_data" not in st.session_state or st.session_state.score_data_input is None:
         st.session_state.score_data_input = Score(
             user_id=st.session_state.user["id"], title="", composer=""
         )
@@ -144,9 +139,7 @@ def show_db(select=True):
     """Show the db"""
     df = api.get_scores_df()
     if len(df):
-        reduced_df = df[
-            ["id", "title", "composer", "period", "genre", "year", "number_of_plays"]
-        ]
+        reduced_df = df[["id", "title", "composer", "period", "genre", "year", "number_of_plays"]]
     else:
         reduced_df = df
     st.write("Score List:")
@@ -155,9 +148,7 @@ def show_db(select=True):
     if select:
         gb.configure_selection("single")  # allow one row selection
         grid_options = gb.build()
-        grid_response = AgGrid(
-            df, gridOptions=grid_options, height=200, allow_unsafe_jscode=True
-        )
+        grid_response = AgGrid(df, gridOptions=grid_options, height=200, allow_unsafe_jscode=True)
         selected = grid_response["selected_rows"]
         if selected is not None:
             row = selected.iloc[0]
