@@ -1,4 +1,5 @@
 """Tests for IMSLP integration."""
+
 from unittest.mock import MagicMock, patch, AsyncMock
 
 import pytest
@@ -175,7 +176,9 @@ async def test_fix_entry(mock_agent):  # pylint: disable=redefined-outer-name
 
 
 @pytest.mark.asyncio
-async def test_add_entry(session, mock_requests_get, mock_agent):  # pylint: disable=redefined-outer-name
+async def test_add_entry(
+    session, mock_requests_get, mock_agent
+):  # pylint: disable=redefined-outer-name
     """Test adding entry."""
     # Mock fix_entry dependencies
     mock_agent_instance = mock_agent.return_value
@@ -210,7 +213,9 @@ async def test_add_entry(session, mock_requests_get, mock_agent):  # pylint: dis
 
 
 @pytest.mark.asyncio
-async def test_get_works(session, mock_requests_get, mock_agent):  # pylint: disable=redefined-outer-name
+async def test_get_works(
+    session, mock_requests_get, mock_agent
+):  # pylint: disable=redefined-outer-name
     """Test getting works."""
     # Mock fix_entry dependencies
     mock_agent_instance = mock_agent.return_value

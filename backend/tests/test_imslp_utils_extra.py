@@ -9,8 +9,10 @@ from app import imslp
 
 def test_get_metadata_bypass_true():
     """Test bypass in get_metadata."""
+
     class DummyResp:  # pylint: disable=too-few-public-methods
         """Mock response."""
+
         text = "something"
 
     assert not imslp.get_metadata(DummyResp(), bypass=True)
@@ -18,8 +20,10 @@ def test_get_metadata_bypass_true():
 
 def test_get_metadata_no_table():
     """Test get_metadata missing table."""
+
     class DummyResp:  # pylint: disable=too-few-public-methods
         """Mock response."""
+
         text = "<span id='General_Information'></span>"
 
     assert not imslp.get_metadata(DummyResp())
@@ -27,8 +31,10 @@ def test_get_metadata_no_table():
 
 def test_get_pdfs_no_pdf_found():
     """Test get_pdfs no pdf found."""
+
     class DummyResp:  # pylint: disable=too-few-public-methods
         """Mock response."""
+
         text = "<html></html>"
 
     result = imslp.get_pdfs(DummyResp())

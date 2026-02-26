@@ -6,8 +6,10 @@ from app import imslp
 
 def test_get_metadata_returns_dict():
     """Test that metadata is extracted correctly from HTML."""
+
     class DummyResponse:  # pylint: disable=too-few-public-methods
         """Mock response object."""
+
         text = """
         <span id='General_Information'></span>
         <table><tr><th>Work Title</th><td>Symphony No. 5</td></tr><tr><th>Composer</th><td>Beethoven</td></tr></table>
@@ -20,8 +22,10 @@ def test_get_metadata_returns_dict():
 
 def test_get_metadata_returns_empty_when_none_found():
     """Test that empty metadata is returned when no info is found."""
+
     class DummyResponse:  # pylint: disable=too-few-public-methods
         """Mock response object."""
+
         text = "<html></html>"
 
     assert not imslp.get_metadata(DummyResponse())
@@ -29,8 +33,10 @@ def test_get_metadata_returns_empty_when_none_found():
 
 def test_get_pdfs_extracts_pdf_urls(monkeypatch):
     """Test that PDF URLs are extracted correctly."""
+
     class DummyResponse:  # pylint: disable=too-few-public-methods
         """Mock response object."""
+
         text = '<a href="Special:ImagefromIndex/123">Download</a>'
 
     # Patch requests.Session.get and .head for test isolation
@@ -38,6 +44,7 @@ def test_get_pdfs_extracts_pdf_urls(monkeypatch):
 
         class MockSession:
             """Mock requests session."""
+
             def get(self, url, **kwargs):  # pylint: disable=unused-argument
                 """Mock get request."""
                 return type(
@@ -57,14 +64,17 @@ def test_get_pdfs_extracts_pdf_urls(monkeypatch):
 
 def test_get_pdfs_handles_non_pdf_redirect(monkeypatch):
     """Test handling of redirects that do not result in a PDF."""
+
     class DummyResponse:  # pylint: disable=too-few-public-methods
         """Mock response object."""
+
         text = '<a href="Special:ImagefromIndex/456">Download</a>'
 
     with monkeypatch.context() as m:
 
         class MockSession:
             """Mock requests session."""
+
             def get(self, url, **kwargs):  # pylint: disable=unused-argument
                 """Mock get request."""
                 # No 'sm_dl_wait', so it goes to else block

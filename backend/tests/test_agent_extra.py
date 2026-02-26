@@ -3,7 +3,9 @@ Extended agent.py test coverage, especially for error handling and edge cases.
 """
 
 from unittest import mock
+
 import pytest
+
 from app import agent
 from shared.responses import FullResponse
 from shared.scores import Score
@@ -22,6 +24,7 @@ async def test_run_agent_model_http_error(monkeypatch, test_scores, test_user):
     # Patch ModelHTTPError in agent module's namespace
     class PatchedModelHTTPError(Exception):
         """Mock ModelHTTPError."""
+
         def __init__(self, msg, status_code=500):
             super().__init__(msg)
             self.status_code = status_code
@@ -29,10 +32,10 @@ async def test_run_agent_model_http_error(monkeypatch, test_scores, test_user):
     monkeypatch.setattr(agent, "ModelHTTPError", PatchedModelHTTPError)
 
     async def raise_429(*a, **kw):  # pylint: disable=unused-argument
-        raise agent.ModelHTTPError("429", status_code=429, model_name="test")
+        raise agent.ModelHTTPError(status_code=429, model_name="test")
 
     async def raise_500(*a, **kw):  # pylint: disable=unused-argument
-        raise agent.ModelHTTPError("500", status_code=500, model_name="test")
+        raise agent.ModelHTTPError(status_code=500, model_name="test")
 
     dummy_agent = mock.Mock()
     dummy_agent.run = raise_429
@@ -73,6 +76,7 @@ async def test_run_complete_agent_model_http_error(monkeypatch):  # pylint: disa
     # Patch Agent.run to raise ModelHTTPError(429)
     class DummyModelHTTPError(Exception):
         """Mock ModelHTTPError."""
+
         status_code = 429
 
     async def fail(*a, **kw):  # pylint: disable=unused-argument
