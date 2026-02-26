@@ -24,7 +24,7 @@ def test_app_empty_db(mocker, at):
     # Mock API calls to ensure token remains valid
     mocker.patch("ui.components.api.valid_token", return_value=True)
     mocker.patch("ui.components.api.get_user", return_value={"username": "foo", "id": 1})
-    
+
     mock_get = mocker.patch("ui.components.api.get_scores_df")
     mock_get.return_value = pd.DataFrame()
 
@@ -60,31 +60,31 @@ def test_app_login_success(mocker, frontend_dir):
 
     # Mock stx.CookieManager because it is not available in test
     at.session_state["token"] = None
-    
+
     # Patch stx in ui.app to avoid ImportError/AttributeError
-    # We patch the 'stx' variable in the app module scope if possible, 
+    # We patch the 'stx' variable in the app module scope if possible,
     # but since AppTest runs the script, we might need to mock the module import.
-    
+
     # Instead of patching module that fails, let's rely on the try/except block in app.py
     # and just ensure we don't crash.
     # But wait, app.py logic uses cookie_manager if stx is present.
     # In tests stx is None. So cookie_manager is None.
     # So `login` function is called with `cookie_manager=None`.
     # Inside `login`: `cookie_manager.set(...)` will crash if cookie_manager is None.
-    
+
     # We need to ensure we don't crash on cookie_manager usage.
     # We can mock ui.app.stx to be not None, and return a mock cookie manager.
-    
+
     # Using `mock.patch.dict(sys.modules, ...)` is one way, but AppTest execution is separate.
     # AppTest doesn't easily share mocks with the running script unless patched via library.
-    
+
     # Easier fix: Modify app.py to handle cookie_manager being None in login().
     # OR: Patch ui.app.stx via mocker if accessible? No, AppTest runs in its own context.
-    
+
     # However, since we can't easily inject into AppTest execution environment without
     # standard mocking that AppTest supports (which hooks into imports),
     # let's try to mock the module `extra_streamlit_components`.
-    
+
     mock_stx = mocker.MagicMock()
     mock_cookie_manager = mocker.MagicMock()
     mock_stx.CookieManager.return_value = mock_cookie_manager
@@ -102,12 +102,12 @@ def test_app_login_success(mocker, frontend_dir):
     # In ui/app.py:
     # user = st.text_input(_("Username"))
     # pw = st.text_input(_("Password"), type="password")
-    
+
     # Check if text_input exists
     if len(at.sidebar.text_input) >= 2:
         at.sidebar.text_input[0].input("alice")
         at.sidebar.text_input[1].input("secret")
-        
+
         # Find login button
         for btn in at.sidebar.button:
             if btn.label == "Login":
@@ -168,12 +168,12 @@ def test_app_token_retry(mocker, frontend_dir):
 
     # Mock cookie_manager.get to return None first, then "token"
     mock_cookie_manager.get.side_effect = [None, "valid-token", "valid-token", "valid-token"]
-    
+
     # We also need mocks for what happens after token is loaded
     mocker.patch("ui.components.api.valid_token", return_value=True)
     mocker.patch("ui.components.api.get_user", return_value={"username": "user"})
     mocker.patch("ui.components.api.get_scores_df", return_value=pd.DataFrame())
 
     at.run()
-    
+
     assert at.session_state["token"] == "valid-token"

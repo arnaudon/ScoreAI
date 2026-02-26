@@ -43,9 +43,7 @@ def test_admin_update_imslp(frontend_dir, mocker):
         "ui.components.api.get_imslp_stats",
         return_value={"total_works": 10, "total_composers": 2},
     )
-    mock_start = mocker.patch(
-        "ui.components.api.start_imslp_update", return_value=MockResponse({})
-    )
+    mock_start = mocker.patch("ui.components.api.start_imslp_update", return_value=MockResponse({}))
 
     at.run()
 
@@ -77,7 +75,7 @@ def test_admin_delete_imslp(frontend_dir, mocker):
     )
 
     at.run()
-    
+
     # Check delete button exists (inside popover)
     if at.button(key="delete"):
         at.button(key="delete").click().run()
@@ -96,18 +94,18 @@ def test_admin_monitoring(frontend_dir, mocker):
         "ui.components.api.get_imslp_stats",
         return_value={"total_works": 10, "total_composers": 2},
     )
-    
+
     # Mock progress to return running then completed
     mock_progress = mocker.patch("ui.components.api.get_imslp_progress")
     mock_progress.side_effect = [
         {"page": 1, "total": 10, "status": "running"},
         {"page": 10, "total": 10, "status": "completed"},
     ]
-    
+
     mock_sleep = mocker.patch("time.sleep")
-    
+
     at.run()
-    
+
     # If logic works, monitoring should be False after completion
     assert at.session_state["monitoring"] is False
     assert at.session_state["finished"] is True

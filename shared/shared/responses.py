@@ -5,8 +5,6 @@ from typing import List, Optional
 from pydantic import BaseModel
 from pydantic_ai.messages import ModelMessage
 
-from shared.scores import Scores
-
 
 class Response(BaseModel):
     """Response model."""

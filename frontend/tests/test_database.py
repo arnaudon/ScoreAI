@@ -108,9 +108,7 @@ def test_database_add_score(mocker, at):
     at.text_input(key="composer").set_value("composer")
 
     mock_complete_score = mocker.patch("ui.components.api.complete_score_data")
-    mock_complete_score.return_value = Score(
-        title="title", composer="composer", user_id=0
-    )
+    mock_complete_score.return_value = Score(title="title", composer="composer", user_id=0)
 
     # Mock upload_pdf which is called in upload
     mocker.patch("ui.components.api.upload_pdf")
@@ -170,9 +168,7 @@ def test_database_add_imslp(mocker, at):
 
     # Now mock selection for the grid interaction
     # The app code checks `grid_response["selected_rows"]`
-    mock_aggrid.return_value = {
-        "selected_rows": pd.DataFrame([imslp_score.model_dump()])
-    }
+    mock_aggrid.return_value = {"selected_rows": pd.DataFrame([imslp_score.model_dump()])}
 
     # Ensure score_df is present in session state for the rerun logic
     # (Although it should persist, explicit setting guarantees it for this test flow)
