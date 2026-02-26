@@ -8,6 +8,15 @@ from ui.components import api
 
 st.title("Admin page")
 
+# Check if a task is already running in the backend
+if "monitoring" not in st.session_state:
+    try:
+        current_status = api.get_imslp_progress()
+        if current_status.get("status") in ["running", "pending"]:
+            st.session_state.monitoring = True
+    except Exception:
+        pass
+
 st.subheader("All users table")
 users = api.get_all_users()
 st.write(users)
