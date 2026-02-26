@@ -48,7 +48,15 @@ def test_admin_update_imslp(frontend_dir, mocker):
     )
 
     at.run()
-    at.button("Update IMSLP database").click().run()
+
+    found = False
+    for btn in at.button:
+        if btn.label == "Update IMSLP database":
+            btn.click().run()
+            found = True
+            break
+    assert found
+
     mock_start.assert_called()
     assert at.session_state["monitoring"] is True
 
