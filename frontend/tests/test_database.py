@@ -182,4 +182,9 @@ def test_database_add_imslp(mocker, at):
     at.run()
 
     # Verify add button appears
-    assert at.button(key="add_imslp").exists
+    found = False
+    for btn in at.button:
+        if btn.key == "add_imslp":
+            found = True
+            break
+    assert found
