@@ -36,13 +36,11 @@ def test_add_score(mocker):
 
 def test_run_imslp_agent_success(mocker):
     """Test run_imslp_agent success."""
-    mock_state = mocker.MagicMock()
-    mock_state.message_history = []
-    mock_state.get.return_value = "fake-token"
-    # Ensure attributes persist
-    mock_state.message_history.extend = lambda x: mock_state.message_history.extend(x)
-    
-    mocker.patch("streamlit.session_state", mock_state)
+    # Use a real dict-like object for session state or just standard MagicMock behavior
+    mock_history = []
+    mocker.patch("streamlit.session_state", mocker.MagicMock())
+    api.st.session_state.message_history = mock_history
+    api.st.session_state.get.return_value = "fake-token"
     
     mock_post = mocker.patch("requests.post")
     mock_post.return_value = MockResponse({
@@ -54,7 +52,7 @@ def test_run_imslp_agent_success(mocker):
     
     assert res.response == "Found"
     assert res.score_ids == [1]
-    assert len(api.st.session_state.message_history) == 1
+    assert len(mock_history) == 1
 
 
 def test_run_imslp_agent_error(mocker):

@@ -21,6 +21,23 @@ def test_database(at):
     at.run()
 
 
+def test_database_empty(mocker, at):
+    """Test database with empty scores to hit else block."""
+    mocker.patch("ui.components.db_viewer.GridOptionsBuilder")
+    mocker.patch("ui.components.db_viewer.AgGrid")
+    mocker.patch("ui.components.api.get_scores_df", return_value=pd.DataFrame())
+    at.run()
+    # Just running it is enough to cover the lines
+
+
+def test_database_empty(mocker, at):
+    """Test database with empty scores."""
+    mocker.patch("ui.components.api.get_scores_df", return_value=pd.DataFrame())
+    at.run()
+    # verify "You have no scores" is present. it might be markdown.
+    assert "You have no scores" in at.markdown[0].value
+
+
 def test_database_selected_score(test_scores, mocker, at):
     """Test database selected score."""
     # We must patch GridOptionsBuilder as well because it's None in the module due to Import error
@@ -143,16 +160,20 @@ def test_database_add_imslp(mocker, at):
 
     at.run()
     
-    # Mock selection BEFORE running the search which triggers AgGrid
-    mock_aggrid.return_value = {
-        "selected_rows": pd.DataFrame([imslp_score.model_dump()])
-    }
-
-    # Switch to IMSLP tab - tabs index 1
+    # Run first to populate the grid
     at.text_input(key="question").set_value("Beethoven").run()
     
     mock_run_agent.assert_called()
     mock_get_scores.assert_called()
+
+    # Now mock selection for the grid interaction
+    # The app code checks `grid_response["selected_rows"]`
+    mock_aggrid.return_value = {
+        "selected_rows": pd.DataFrame([imslp_score.model_dump()])
+    }
+    
+    # Run again to process selection and show add button
+    at.run()
     
     # Verify add button appears
     assert at.button(key="add_imslp").exists
