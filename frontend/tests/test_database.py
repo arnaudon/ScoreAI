@@ -4,6 +4,8 @@ import pandas as pd
 import pytest
 from streamlit.testing.v1 import AppTest
 
+from shared.scores import Score
+
 
 @pytest.fixture(name="at")
 def app_test(frontend_dir) -> AppTest:
