@@ -1,10 +1,9 @@
 """Test admin"""
 
-import pytest
 from streamlit.testing.v1 import AppTest
 
 
-class MockResponse:
+class MockResponse:  # pylint: disable=too-few-public-methods
     """Mock requests response."""
 
     def __init__(self, json_data, status_code=200):
@@ -12,6 +11,7 @@ class MockResponse:
         self.status_code = status_code
 
     def json(self):
+        """Return json data."""
         return self.json_data
 
 
@@ -102,7 +102,7 @@ def test_admin_monitoring(frontend_dir, mocker):
         {"page": 10, "total": 10, "status": "completed"},
     ]
 
-    mock_sleep = mocker.patch("time.sleep")
+    mocker.patch("time.sleep")
 
     at.run()
 

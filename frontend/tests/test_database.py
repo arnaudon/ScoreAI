@@ -2,8 +2,8 @@
 
 import pandas as pd
 import pytest
-from shared.scores import IMSLP, Score
 from streamlit.testing.v1 import AppTest
+from shared.scores import IMSLP, Score
 
 
 @pytest.fixture(name="at")
@@ -20,7 +20,7 @@ def test_database(at):
     at.run()
 
 
-def test_database_empty(mocker, at):
+def test_database_empty_else(mocker, at):
     """Test database with empty scores to hit else block."""
     mocker.patch("ui.components.db_viewer.GridOptionsBuilder")
     mocker.patch("ui.components.db_viewer.AgGrid")

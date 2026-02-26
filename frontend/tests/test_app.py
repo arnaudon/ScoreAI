@@ -115,7 +115,8 @@ def test_app_login_success(mocker, frontend_dir):
                 break
 
         assert at.session_state["token"] == "fake-token"
-        # We didn't mock get_user, so it might be missing from session state if api.get_user wasn't called or mocked
+        # We didn't mock get_user, so it might be missing from session state if api.get_user
+        # wasn't called or mocked.
         # api.get_user is called in _load_token, which might run.
         # But we mocked login_user.
         # Let's ensure api.get_user is mocked too to populate session state correctly
