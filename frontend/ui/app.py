@@ -47,7 +47,7 @@ def login(welcome_page, cookie_manager):
             st.switch_page(welcome_page)
 
 
-def _load_token(cookie_manager: stx.CookieManager):
+def _load_token(cookie_manager):
     """load cookie with a little waiting"""
     saved_token = cookie_manager.get(cookie="token")
     if saved_token is None:
