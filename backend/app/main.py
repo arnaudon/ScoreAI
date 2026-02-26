@@ -11,12 +11,13 @@ from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from sqlmodel import Session, select
 
-from app import users
-from app.agent import Deps, run_agent, run_complete_agent
+from app import imslp, users
+from app.agent import Deps, run_agent, run_complete_agent, run_imslp_agent
 from app.db import get_session, init_db
 from app.file_helper import file_helper
-from app.users import get_current_user
-from shared import Score, Scores, User
+from app.users import get_current_user, get_current_user_from_token
+from shared.scores import Score, Scores
+from shared.user import User
 
 logger = getLogger(__name__)
 
@@ -34,6 +35,7 @@ current_file = Path(__file__).resolve()
 app.mount("/pdfjs", StaticFiles(directory=current_file.parent / "pdfjs"), name="pdfjs")
 
 app.include_router(users.router, tags=["users"])
+app.include_router(imslp.router, tags=["imslp"])
 
 
 @app.post("/scores")
@@ -50,7 +52,7 @@ def add_score(
     return score
 
 
-@app.post("/complete_score")
+@app.post("/complete_score", dependencies=[Depends(get_current_user)])
 async def complete_score(score: Score):  # pragma: no cover
     """Complete a score."""
     return await run_complete_agent(score)
@@ -97,8 +99,14 @@ def get_scores(
     return session.exec(select(Score).where(Score.user_id == current_user.id)).all()
 
 
+@app.post("/imslp_agent", dependencies=[Depends(get_current_user)])
+async def run_imslp_agent_api(prompt: str, message_history=None):  # pragma: no cover
+    """Run the imslp agent."""
+    return await run_imslp_agent(prompt, message_history=message_history)
+
+
 @app.post("/agent")
-async def run(
+async def run_main_agent(
     prompt: str,
     deps: str,
     current_user: Annotated[User, Depends(get_current_user)],
@@ -112,18 +120,20 @@ async def run(
     )
 
 
+def get_pdf_user(token: str = ""):  # pragma: no cover
+    """Dependency for PDF endpoints - accepts token as query param."""
+    return get_current_user_from_token(token)
+
+
 @app.get("/pdf/{filename}")
-def get_pdf(filename: str):
+def get_pdf(filename: str, _user=Depends(get_pdf_user)):
     """Get the url of a pdf file."""
     obj = file_helper.download_pdf(filename)
     return StreamingResponse(obj["Body"], media_type="application/pdf")
 
 
-@app.post("/pdf")
-def upload_pdf(
-    current_user: Annotated[User, Depends(get_current_user)],
-    file: UploadFile = File(...),
-):  # pylint: disable=unused-argument
+@app.post("/pdf", dependencies=[Depends(get_current_user)])
+def upload_pdf(file: UploadFile = File(...)):
     """Upload a pdf file."""
     if file.content_type != "application/pdf":  # pragma: no cover
         raise HTTPException(status_code=400, detail="Only PDFs allowed")
@@ -135,10 +145,8 @@ def upload_pdf(
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-@app.delete("/pdf/{filename}")
-def delete_pdf(
-    filename: str, current_user: Annotated[User, Depends(get_current_user)]
-):  # pylint: disable=unused-argument
+@app.delete("/pdf/{filename}", dependencies=[Depends(get_current_user)])
+def delete_pdf(filename: str):
     """Delete a pdf file."""
     file_helper.delete_pdf(filename)
     return {"message": "Delete successful"}

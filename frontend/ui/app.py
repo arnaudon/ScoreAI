@@ -3,8 +3,12 @@
 import time
 from datetime import datetime, timedelta
 
-import extra_streamlit_components as stx
 import streamlit as st
+
+try:
+    import extra_streamlit_components as stx
+except ImportError:
+    stx = None
 
 from ui.components import api
 from ui.components.db_viewer import write_summary_db
@@ -29,17 +33,19 @@ def login(welcome_page, cookie_manager):
                     del st.session_state.pdf_viewers
                 token = res.json().get("access_token")
                 st.session_state.token = token
-                cookie_manager.set("token", token, key="save_token", expires_at=COOKIE_EXPIRES)
+                if cookie_manager:
+                    cookie_manager.set("token", token, key="save_token", expires_at=COOKIE_EXPIRES)
             else:
                 st.error(_("Invalid credentials"))
     else:
         if st.button(_("Logout")):  # pragma: no cover
             st.session_state.token = None
-            cookie_manager.delete("token")
+            if cookie_manager:
+                cookie_manager.delete("token")
             st.switch_page(welcome_page)
 
 
-def _load_token(cookie_manager: stx.CookieManager):
+def _load_token(cookie_manager):
     """load cookie with a little waiting"""
     saved_token = cookie_manager.get(cookie="token")
     if saved_token is None:
@@ -47,7 +53,7 @@ def _load_token(cookie_manager: stx.CookieManager):
             time.sleep(0.5)
             saved_token = cookie_manager.get(cookie="token")
 
-    if saved_token and "token" not in st.session_state:  # pragma: no cover
+    if saved_token and st.session_state.get("token") is None:
         st.session_state.token = saved_token
 
     if "token" not in st.session_state:  # pragma: no cover
@@ -65,8 +71,12 @@ def main():
 
     init_i18n_gettext()
 
-    cookie_manager = stx.CookieManager(key="user_cookie")
-    _load_token(cookie_manager)
+    if stx:
+        cookie_manager = stx.CookieManager(key="user_cookie")
+        _load_token(cookie_manager)
+    else:
+        cookie_manager = None
+
     welcome_page = st.Page("welcome.py", title=_("Choose a score"))
     database_page = st.Page("database.py", title=_("View database"))
     account_page = st.Page("account.py", title=_("Manage your account"))
@@ -74,14 +84,14 @@ def main():
     admin_page = st.Page("admin.py", title=_("Admin"))
     st.session_state.reader_page = reader_page
 
-    if "is_admin" not in st.session_state:
-        st.session_state.is_admin = api.is_admin()
+    st.session_state.is_admin = api.is_admin()
 
     with st.sidebar:
         if st.session_state.token is not None:
             write_summary_db()
             language_selector()
-        login(welcome_page, cookie_manager)
+        if cookie_manager:
+            login(welcome_page, cookie_manager)
         st.button("reset cache", on_click=api.reset_score_cache)
 
     if st.session_state.token is not None:

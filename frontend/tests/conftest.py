@@ -8,8 +8,8 @@ from pydantic_ai import models
 from shared.scores import Score, Scores
 
 os.environ["DATABASE_PATH"] = "test.db"
-frontend_dir = Path(__file__).resolve().parent.parent
-os.environ["DATA_PATH"] = str(frontend_dir / "tests/data")
+FRONTEND_DIR = Path(__file__).resolve().parent.parent
+os.environ["DATA_PATH"] = str(FRONTEND_DIR / "tests/data")
 pytestmark = pytest.mark.anyio
 models.ALLOW_MODEL_REQUESTS = False
 
@@ -17,7 +17,7 @@ models.ALLOW_MODEL_REQUESTS = False
 @pytest.fixture(name="frontend_dir")
 def frontend_dir_fixture():
     """Frontend dir"""
-    return frontend_dir
+    return FRONTEND_DIR
 
 
 @pytest.fixture(name="test_scores")
@@ -38,10 +38,18 @@ def test_scores_fixture(frontend_dir):
         user_id=0,
     )
     score_3 = Score(
-        id=3, composer="a", title="title_3", pdf_path=str(frontend_dir / "score_3.pdf"), user_id=0
+        id=3,
+        composer="a",
+        title="title_3",
+        pdf_path=str(frontend_dir / "score_3.pdf"),
+        user_id=0,
     )
     score_4 = Score(
-        id=4, composer="a", title="title_4", pdf_path=str(frontend_dir / "score_4.pdf"), user_id=0
+        id=4,
+        composer="a",
+        title="title_4",
+        pdf_path=str(frontend_dir / "score_4.pdf"),
+        user_id=0,
     )
     return Scores(scores=[score_1, score_2, score_3, score_4])
 

@@ -5,7 +5,7 @@
 ignore=.venv,.git,migrations
 
 [MESSAGES CONTROL]
-disable=W0511,W0603,W0621,W3101,C0411
+disable=W0511,W0603,W0621,W3101,C0411,W0233,W0231
 
 [FORMAT]
 # Maximum number of characters on a single line.

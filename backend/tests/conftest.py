@@ -9,7 +9,7 @@ from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 
 from app import db
-from app.main import app
+from app.main import app, get_pdf_user
 from app.users import get_current_user
 from shared.scores import Score, Scores
 from shared.user import User
@@ -34,7 +34,10 @@ def session_fixture():
 def test_scores_fixture():
     """Test scores for default db."""
     score_1 = Score(
-        composer="composer", title="title_1", pdf_path="tests/data/real_score.pdf", user_id=0
+        composer="composer",
+        title="title_1",
+        pdf_path="tests/data/real_score.pdf",
+        user_id=0,
     )
     score_2 = Score(composer="composer", title="title_2", pdf_path="score_2.pdf", user_id=0)
     score_3 = Score(composer="a", title="title_3", pdf_path="score_3.pdf", user_id=0)
@@ -67,6 +70,7 @@ def client_fixture(session: Session, test_scores: Scores, test_user: User):
 
     app.dependency_overrides[db.get_session] = get_session_override
     app.dependency_overrides[get_current_user] = get_current_user_override
+    app.dependency_overrides[get_pdf_user] = get_current_user_override
 
     client = TestClient(app)
 

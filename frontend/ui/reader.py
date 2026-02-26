@@ -10,9 +10,9 @@ from ui.components import api
 COOKIE_EXPIRES = datetime.now() + timedelta(days=1)
 
 
-def render_pdf(pdf_path):
+def render_pdf(file_path):
     """Render the pdf."""
-    url = api.get_pdf_url(pdf_path)
+    url = api.get_pdf_url(file_path)
     options = [
         "pagemode=none",
         "disableRange=true",
@@ -20,9 +20,8 @@ def render_pdf(pdf_path):
         "disableAutoFetch=false",
     ]
     st.markdown(
-        f"""
-            <iframe 
-        src="{url}#{'&'.join(options)}"
+        f"""<iframe
+        src="{url}#{"&".join(options)}"
         width="100%"
         height="800px"
         style="border:none;"

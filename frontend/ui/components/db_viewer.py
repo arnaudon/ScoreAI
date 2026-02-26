@@ -1,10 +1,16 @@
 """DB viewer."""
 
+import pandas as pd
 import streamlit as st
-from shared import Score
-from st_aggrid import AgGrid, GridOptionsBuilder
+from shared.scores import Score
 
 from ui.components import api
+
+try:
+    from st_aggrid import AgGrid, GridOptionsBuilder
+except ImportError:
+    AgGrid = None
+    GridOptionsBuilder = None
 
 
 def write_summary_db():
@@ -36,10 +42,42 @@ def show_score_info(score):
             col2.write(value)
 
 
+def add_imslp():
+    """Add an IMSLP score"""
+    if "question_prev" not in st.session_state:
+        st.session_state.question_prev = ""
+    if "message_history" not in st.session_state:
+        st.session_state.message_history = []
+
+    question = st.text_input("Search in IMSLP database:", key="question")
+    if question and question != st.session_state.question_prev:
+        st.session_state.question_prev = question
+        response = api.run_imslp_agent(question)
+        scores = api.get_imslp_scores(response.score_ids)
+        st.session_state.score_df = pd.DataFrame([s.model_dump() for s in scores.scores])
+    if "score_df" in st.session_state:
+        df = st.session_state.score_df
+        if len(df):
+            df = df[["title", "composer", "year", "instrumentation", "permlink"]]
+
+            gb = GridOptionsBuilder.from_dataframe(df)
+            gb.configure_selection("single")  # allow one row selection
+            grid_options = gb.build()
+            grid_response = AgGrid(
+                df, gridOptions=grid_options, height=200, allow_unsafe_jscode=True
+            )
+            selected = grid_response["selected_rows"]
+            if selected is not None:
+                st.session_state.score_data_input = Score(**selected.iloc[0].to_dict())
+                st.write(
+                    "Download the you want here to add below: ",
+                    selected.iloc[0]["permlink"],
+                )
+                _add_score(key="imslp")
+
+
 def add_score():
     """Add a score"""
-    st.subheader("Add new score:")
-
     # initialize empty score
     if "score_data" not in st.session_state or st.session_state.score_data_input is None:
         st.session_state.score_data_input = Score(
@@ -57,8 +95,12 @@ def add_score():
     if composer:
         st.session_state.score_data_input.composer = composer
 
+    _add_score()
+
+
+def _add_score(key="manual"):
     # complete data with AI
-    if st.button("Complete score data with AI", key="complete"):
+    if st.button("Complete score data with AI", key=f"complete_{key}"):
         st.session_state.score_data_output = api.complete_score_data(
             st.session_state.score_data_input
         )
@@ -69,8 +111,8 @@ def add_score():
         show_score_info(st.session_state.score_data_output.model_dump())
 
     # add pdf and submit data
-    uploaded_file = st.file_uploader("Upload a file", type=["pdf"])
-    if st.button("Add score", key="add"):
+    uploaded_file = st.file_uploader("Upload a file", type=["pdf"], key=key)
+    if st.button("Add score", key=f"add_{key}"):
         if uploaded_file is None:
             st.write("Please upload a file")
             st.stop()
@@ -80,7 +122,10 @@ def add_score():
                 st.session_state.score_data_input
             )
         st.session_state.score_data_output.pdf_path = upload(
-            uploaded_file, title, composer, st.session_state.user["username"]
+            uploaded_file,
+            st.session_state.score_data_output.title,
+            st.session_state.score_data_output.composer,
+            st.session_state.user["username"],
         )
 
         res = api.add_score(st.session_state.score_data_output)
@@ -123,9 +168,24 @@ def show_db(select=True):
                             st.rerun()
                     with col_cancel:
                         if st.button(
-                            "Cancel", key="cancel", type="secondary", use_container_width=True
+                            "Cancel",
+                            key="cancel",
+                            type="secondary",
+                            use_container_width=True,
                         ):
                             st.toast("Deletion cancelled.", icon="🚫")
             show_score_info(row)
 
-    add_score()
+    add_new_score()
+
+
+def add_new_score():
+    """Add a new score"""
+    st.subheader("Add new score")
+    tab_manual, tab_imslp = st.tabs(["Manual", "IMSLP"])
+
+    with tab_manual:
+        add_score()
+
+    with tab_imslp:
+        add_imslp()

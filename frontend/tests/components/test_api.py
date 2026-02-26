@@ -1,7 +1,8 @@
 """Test the api module."""
 
 import pytest
-from shared import Score, User
+from shared.scores import Score
+from shared.user import User
 
 from ui.components import api
 
@@ -124,7 +125,9 @@ def test_register_user_calls_backend(mocker, test_user):
     mock_requests = mocker.patch("ui.components.api.requests")
     api.register_user(test_user)
 
-    mock_requests.post.assert_called_once_with(f"{api.API_URL}/users", json=test_user.model_dump())
+    mock_requests.post.assert_called_once_with(
+        f"{api.API_URL}/users", json=test_user.model_dump(), timeout=30
+    )
 
 
 def test_login_user_calls_backend(mocker):
@@ -134,7 +137,9 @@ def test_login_user_calls_backend(mocker):
     api.login_user("bob", "pw")
 
     mock_requests.post.assert_called_once_with(
-        f"{api.API_URL}/token", data={"username": "bob", "password": "pw"}
+        f"{api.API_URL}/token",
+        data={"username": "bob", "password": "pw"},
+        timeout=30,
     )
 
 
@@ -146,6 +151,7 @@ def test_is_admin(mocker):
     mock_requests.get.assert_called_once_with(
         f"{api.API_URL}/is_admin",
         headers={"Authorization": "Bearer None"},
+        timeout=30,
     )
 
 

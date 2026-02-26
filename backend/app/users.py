@@ -88,13 +88,19 @@ async def login_for_access_token(
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.username, "role": user.role}, expires_delta=access_token_expires
+        data={"sub": user.username, "role": user.role},
+        expires_delta=access_token_expires,
     )
     return Token(access_token=access_token, token_type="bearer")
 
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     """Get current user."""
+    return get_current_user_from_token(token)
+
+
+def get_current_user_from_token(token: str):
+    """Validate a token and return the corresponding user."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -140,7 +146,9 @@ async def get_users(
 
 
 @router.get("/user")
-async def get_current_user_route(current_user: Annotated[User, Depends(get_current_user)]):
+async def get_current_user_route(
+    current_user: Annotated[User, Depends(get_current_user)],
+):
     """Get current user."""
     return current_user
 

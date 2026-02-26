@@ -29,10 +29,10 @@ def test_account_register_user_success(frontend_dir, mocker):
 
     at.run()
 
-    at.text_input("username").input("newuser")
-    at.text_input("password").input("pw")
+    at.text_input(key="username").input("newuser")
+    at.text_input(key="password").input("pw")
 
-    at.button("signup").click().run()
+    at.button(key="signup").click().run()
 
     mock_register.assert_called_once()
 

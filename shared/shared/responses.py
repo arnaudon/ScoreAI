@@ -18,3 +18,17 @@ class FullResponse(BaseModel):
 
     response: Response
     message_history: List[ModelMessage]
+
+
+class ImslpResponse(BaseModel):
+    """Response model for IMSLP agent."""
+
+    response: str
+    score_ids: List[int]
+
+
+class ImslpFullResponse(BaseModel):
+    """Full response model with history for IMSLP agent."""
+
+    response: ImslpResponse
+    message_history: List[ModelMessage]
