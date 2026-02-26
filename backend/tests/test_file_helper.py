@@ -3,7 +3,6 @@
 import io
 import os
 from pathlib import Path
-from unittest import mock
 
 import pytest
 from app.file_helper import file_helper
@@ -11,6 +10,7 @@ from app.file_helper import file_helper
 
 @pytest.fixture(autouse=True)
 def set_data_path_tmp(tmp_path, monkeypatch):
+    """Set DATA_PATH env var to tmp_path."""
     monkeypatch.setenv("DATA_PATH", str(tmp_path))
 
 

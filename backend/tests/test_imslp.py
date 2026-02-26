@@ -14,10 +14,10 @@ from app.imslp import (
     progress_tracker,
     get_metadata,
 )
-from shared.scores import IMSLP, ScoreBase
 from app.main import app
 from app.users import get_admin_user
 from app import db
+from shared.scores import IMSLP, ScoreBase
 
 client = TestClient(app)
 
@@ -67,6 +67,7 @@ def mock_agent():
 
 @pytest.fixture(name="session")
 def session_fixture(session: Session):
+    """Fixture for session."""
     return session
 
 

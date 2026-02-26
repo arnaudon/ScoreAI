@@ -1,5 +1,7 @@
 """
-Extended coverage for imslp.py - error/empty cases for get_metadata/get_pdfs, and dummy coverage for get_page edge.
+Extended coverage for imslp.py.
+
+Includes error/empty cases for get_metadata/get_pdfs, and dummy coverage for get_page edge.
 """
 
 from app import imslp

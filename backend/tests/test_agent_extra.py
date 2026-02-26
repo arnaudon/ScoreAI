@@ -2,8 +2,8 @@
 Extended agent.py test coverage, especially for error handling and edge cases.
 """
 
-import pytest
 from unittest import mock
+import pytest
 from app import agent
 from shared.responses import FullResponse
 from shared.scores import Score
@@ -29,10 +29,10 @@ async def test_run_agent_model_http_error(monkeypatch, test_scores, test_user):
     monkeypatch.setattr(agent, "ModelHTTPError", PatchedModelHTTPError)
 
     async def raise_429(*a, **kw):  # pylint: disable=unused-argument
-        raise agent.ModelHTTPError("429", status_code=429)
+        raise agent.ModelHTTPError("429", status_code=429, model_name="test")
 
     async def raise_500(*a, **kw):  # pylint: disable=unused-argument
-        raise agent.ModelHTTPError("500", status_code=500)
+        raise agent.ModelHTTPError("500", status_code=500, model_name="test")
 
     dummy_agent = mock.Mock()
     dummy_agent.run = raise_429
