@@ -8,8 +8,8 @@ from pydantic_ai import models
 from shared.scores import Score, Scores
 
 os.environ["DATABASE_PATH"] = "test.db"
-frontend_dir = Path(__file__).resolve().parent.parent
-os.environ["DATA_PATH"] = str(frontend_dir / "tests/data")
+FRONTEND_DIR = Path(__file__).resolve().parent.parent
+os.environ["DATA_PATH"] = str(FRONTEND_DIR / "tests/data")
 pytestmark = pytest.mark.anyio
 models.ALLOW_MODEL_REQUESTS = False
 
@@ -17,7 +17,7 @@ models.ALLOW_MODEL_REQUESTS = False
 @pytest.fixture(name="frontend_dir")
 def frontend_dir_fixture():
     """Frontend dir"""
-    return frontend_dir
+    return FRONTEND_DIR
 
 
 @pytest.fixture(name="test_scores")
