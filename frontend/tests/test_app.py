@@ -153,3 +153,27 @@ def test_app_login_invalid_credentials_shows_error(mocker, frontend_dir):
                 break
 
         mock_login.assert_called_once_with("alice", "wrong")
+
+
+def test_app_token_retry(mocker, frontend_dir):
+    """Test token loading retry logic."""
+    at = AppTest.from_file(frontend_dir / "ui" / "app.py")
+    at.session_state["token"] = None
+
+    # Mock stx module
+    mock_stx = mocker.MagicMock()
+    mock_cookie_manager = mocker.MagicMock()
+    mock_stx.CookieManager.return_value = mock_cookie_manager
+    mocker.patch.dict("sys.modules", {"extra_streamlit_components": mock_stx})
+
+    # Mock cookie_manager.get to return None first, then "token"
+    mock_cookie_manager.get.side_effect = [None, "valid-token", "valid-token", "valid-token"]
+    
+    # We also need mocks for what happens after token is loaded
+    mocker.patch("ui.components.api.valid_token", return_value=True)
+    mocker.patch("ui.components.api.get_user", return_value={"username": "user"})
+    mocker.patch("ui.components.api.get_scores_df", return_value=pd.DataFrame())
+
+    at.run()
+    
+    assert at.session_state["token"] == "valid-token"

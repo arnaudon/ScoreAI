@@ -99,3 +99,56 @@ def test_database_add_score(mocker, at):
     mocker.patch("ui.components.api.add_score", return_value="Success")
     
     at.button(key="add_manual").click().run()
+
+
+def test_database_complete_ai(mocker, at):
+    """Test AI completion of score data."""
+    mocker.patch("ui.components.db_viewer.GridOptionsBuilder")
+    mocker.patch("ui.components.db_viewer.AgGrid")
+    
+    at.run()
+    
+    at.text_input(key="title").set_value("Symphony 5")
+    at.text_input(key="composer").set_value("Beethoven")
+    
+    mock_complete = mocker.patch("ui.components.api.complete_score_data")
+    mock_complete.return_value = Score(title="Symphony 5", composer="Beethoven", year=1808, user_id=0)
+    
+    at.button(key="complete_manual").click().run()
+    
+    mock_complete.assert_called()
+    assert "score_data_output" in at.session_state
+    assert at.session_state.score_data_output.year == 1808
+
+
+def test_database_add_imslp(mocker, at):
+    """Test adding score via IMSLP tab."""
+    # Mock dependencies
+    mocker.patch("ui.components.db_viewer.GridOptionsBuilder")
+    mock_aggrid = mocker.patch("ui.components.db_viewer.AgGrid")
+    
+    # Mock IMSLP API calls
+    mock_run_agent = mocker.patch("ui.components.api.run_imslp_agent")
+    mock_run_agent.return_value.score_ids = [123]
+    
+    mock_get_scores = mocker.patch("ui.components.api.get_imslp_scores")
+    imslp_score = Score(title="IMSLP Title", composer="IMSLP Composer", year=1900, user_id=0)
+    mock_get_scores.return_value.scores = [imslp_score]
+
+    at.run()
+    
+    # Switch to IMSLP tab - tabs index 1
+    at.text_input(key="question").set_value("Beethoven").run()
+    
+    mock_run_agent.assert_called()
+    mock_get_scores.assert_called()
+    
+    # Now mock selection for the next run
+    mock_aggrid.return_value = {
+        "selected_rows": pd.DataFrame([imslp_score.model_dump()])
+    }
+    
+    at.run()
+    
+    # Verify add button appears
+    assert at.button(key="add_imslp").exists
