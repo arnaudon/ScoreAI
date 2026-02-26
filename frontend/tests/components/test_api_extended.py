@@ -1,20 +1,22 @@
 """Extended tests for API module to improve coverage."""
 
 import pytest
-import requests
-from ui.components import api
 from shared.scores import Score
 
+from ui.components import api
 
-class MockResponse:
+
+class MockResponse:  # pylint: disable=too-few-public-methods
     """Mock requests response."""
 
     def __init__(self, json_data, status_code=200, text=""):
+        """Initialize mock response."""
         self.json_data = json_data
         self.status_code = status_code
         self.text = text
 
     def json(self):
+        """Get json data."""
         return self.json_data
 
 
@@ -44,9 +46,15 @@ def test_run_imslp_agent_success(mocker):
 
     mock_post = mocker.patch("requests.post")
     # Message history needs to match Pydantic AI message structure (kind discriminator)
-    mock_message = {"kind": "request", "parts": [{"content": "hi", "part_kind": "user-prompt"}]}
+    mock_message = {
+        "kind": "request",
+        "parts": [{"content": "hi", "part_kind": "user-prompt"}],
+    }
     mock_post.return_value = MockResponse(
-        {"response": {"response": "Found", "score_ids": [1]}, "message_history": [mock_message]}
+        {
+            "response": {"response": "Found", "score_ids": [1]},
+            "message_history": [mock_message],
+        }
     )
 
     res = api.run_imslp_agent("query")
