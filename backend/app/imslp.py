@@ -11,6 +11,7 @@ import requests
 from bs4 import BeautifulSoup
 from fastapi import APIRouter, BackgroundTasks, Depends
 from pydantic_ai import Agent
+from pydantic_ai.exceptions import ModelHTTPError
 from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
 from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import Session, func, select, text
@@ -99,9 +100,23 @@ async def fix_entry(entry):
     )
     prompt = f"""Find the information about music piece {entry.model_dump_json()},
     use score_metadata or internet search if the information is missing."""
-    res = await agent.run(prompt)
-    for key, value in res.output.model_dump().items():
-        setattr(entry, key, value)
+
+    max_retries = 5
+    for attempt in range(max_retries):
+        try:
+            res = await agent.run(prompt)
+            for key, value in res.output.model_dump().items():
+                setattr(entry, key, value)
+            break
+        except ModelHTTPError as e:
+            if e.status_code == 503 and attempt < max_retries - 1:
+                wait_time = 2**attempt * 5  # Exponential backoff
+                logger.warning(
+                    f"Model 503 error, retrying in {wait_time}s (attempt {attempt+1}/{max_retries})"
+                )
+                time.sleep(wait_time)
+            else:
+                raise e
 
 
 async def add_entry(i, item, session):
