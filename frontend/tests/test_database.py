@@ -132,7 +132,13 @@ def test_database_add_imslp(mocker, at):
     mock_run_agent.return_value.score_ids = [123]
     
     mock_get_scores = mocker.patch("ui.components.api.get_imslp_scores")
-    imslp_score = Score(title="IMSLP Title", composer="IMSLP Composer", year=1900, user_id=0)
+    imslp_score = Score(
+        title="IMSLP Title",
+        composer="IMSLP Composer",
+        year=1900,
+        user_id=0,
+        permlink="http://imslp.org",
+    )
     mock_get_scores.return_value.scores = [imslp_score]
 
     at.run()

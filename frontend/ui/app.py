@@ -55,7 +55,7 @@ def _load_token(cookie_manager):
             time.sleep(0.5)
             saved_token = cookie_manager.get(cookie="token")
 
-    if saved_token and "token" not in st.session_state:  # pragma: no cover
+    if saved_token and st.session_state.get("token") is None:
         st.session_state.token = saved_token
 
     if "token" not in st.session_state:  # pragma: no cover
