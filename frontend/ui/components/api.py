@@ -36,9 +36,7 @@ def reset_score_cache():
 
 def register_user(new_user: User):
     """Register a new user via API"""
-    response = requests.post(
-        f"{API_URL}/users", json=new_user.model_dump(), timeout=TIMEOUT
-    )
+    response = requests.post(f"{API_URL}/users", json=new_user.model_dump(), timeout=TIMEOUT)
     return response
 
 

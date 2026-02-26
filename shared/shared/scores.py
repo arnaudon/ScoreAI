@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
-    from shared import User
+    from shared.user import User
 
 
 class Difficulty(str, Enum):
