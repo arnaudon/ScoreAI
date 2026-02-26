@@ -1,8 +1,7 @@
-import json
+"""Tests for IMSLP integration."""
 from unittest.mock import MagicMock, patch, AsyncMock
 
 import pytest
-from bs4 import BeautifulSoup
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
@@ -12,7 +11,6 @@ from app.imslp import (
     fix_entry,
     add_entry,
     get_works,
-    router,
     progress_tracker,
     get_metadata,
 )
@@ -48,18 +46,21 @@ def apply_test_db_override(session):
 
 @pytest.fixture
 def mock_requests_get():
+    """Mock requests.get."""
     with patch("app.imslp.requests.get") as mock:
         yield mock
 
 
 @pytest.fixture
 def mock_requests_session():
+    """Mock requests.Session."""
     with patch("app.imslp.requests.Session") as mock:
         yield mock
 
 
 @pytest.fixture
 def mock_agent():
+    """Mock Agent."""
     with patch("app.imslp.Agent") as mock:
         yield mock
 
@@ -73,6 +74,7 @@ def session_fixture(session: Session):
 
 
 def test_get_metadata():
+    """Test get_metadata extraction."""
     html = """
     <html>
         <span id="General_Information"></span>
@@ -90,18 +92,19 @@ def test_get_metadata():
     assert metadata["Composer"] == "Beethoven"
 
     # Test bypass
-    assert get_metadata(None, bypass=True) == {}
+    assert not get_metadata(None, bypass=True)
 
     # Test missing General_Information
     mock_response.text = "<html></html>"
-    assert get_metadata(mock_response) == {}
+    assert not get_metadata(mock_response)
 
     # Test missing table
     mock_response.text = "<html><span id='General_Information'></span></html>"
-    assert get_metadata(mock_response) == {}
+    assert not get_metadata(mock_response)
 
 
-def test_get_pdfs(mock_requests_session):
+def test_get_pdfs(mock_requests_session):  # pylint: disable=redefined-outer-name
+    """Test get_pdfs extraction."""
     html_landing = """
     <html>
         <a href="Special:ImagefromIndex/12345">Link 1</a>
@@ -141,10 +144,11 @@ def test_get_pdfs(mock_requests_session):
     # Test with redirect not PDF
     mock_head_response.url = "http://example.com/redirected.html"
     pdfs = get_pdfs(mock_response_landing)
-    assert pdfs == []
+    assert not pdfs
 
 
-def test_get_page(mock_requests_get):
+def test_get_page(mock_requests_get):  # pylint: disable=redefined-outer-name
+    """Test get_page API call."""
     mock_response = MagicMock()
     mock_response.json.return_value = {"metadata": {"some": "meta"}, "1": {"title": "Work 1"}}
     mock_requests_get.return_value = mock_response
@@ -155,7 +159,8 @@ def test_get_page(mock_requests_get):
 
 
 @pytest.mark.asyncio
-async def test_fix_entry(mock_agent):
+async def test_fix_entry(mock_agent):  # pylint: disable=redefined-outer-name
+    """Test fixing entry with agent."""
     mock_agent_instance = mock_agent.return_value
     mock_run_result = MagicMock()
     mock_run_result.output = ScoreBase(title="Fixed Title", composer="Fixed Composer")
@@ -169,7 +174,8 @@ async def test_fix_entry(mock_agent):
 
 
 @pytest.mark.asyncio
-async def test_add_entry(session, mock_requests_get, mock_agent):
+async def test_add_entry(session, mock_requests_get, mock_agent):  # pylint: disable=redefined-outer-name
+    """Test adding entry."""
     # Mock fix_entry dependencies
     mock_agent_instance = mock_agent.return_value
     mock_run_result = MagicMock()
@@ -203,7 +209,8 @@ async def test_add_entry(session, mock_requests_get, mock_agent):
 
 
 @pytest.mark.asyncio
-async def test_get_works(session, mock_requests_get, mock_agent):
+async def test_get_works(session, mock_requests_get, mock_agent):  # pylint: disable=redefined-outer-name
+    """Test getting works."""
     # Mock fix_entry dependencies
     mock_agent_instance = mock_agent.return_value
     mock_run_result = MagicMock()
@@ -225,16 +232,12 @@ async def test_get_works(session, mock_requests_get, mock_agent):
     # 1. get_page -> API call
     # 2. add_entry -> permlink call
 
-    def side_effect(url, **kwargs):
+    def side_effect(url, **kwargs):  # pylint: disable=unused-argument
         if "API.ISCR.php" in url:
             if "start=0" in url:
                 return mock_response_page1
-            else:
-                empty = MagicMock()
-                empty.json.return_value = {"metadata": {}}
-                return empty
-        else:
-            return mock_response_metadata
+            return MagicMock(json=lambda: {"metadata": {}})
+        return mock_response_metadata
 
     mock_requests_get.side_effect = side_effect
 
@@ -252,7 +255,8 @@ async def test_get_works(session, mock_requests_get, mock_agent):
 
 
 @pytest.mark.asyncio
-async def test_get_works_cancel(session, mock_requests_get):
+async def test_get_works_cancel(session, mock_requests_get):  # pylint: disable=redefined-outer-name
+    """Test cancelling get_works."""
     progress_tracker["total"] = 10
     progress_tracker["cancel_requested"] = True
 
@@ -265,7 +269,7 @@ async def test_get_works_cancel(session, mock_requests_get):
     mock_requests_get.return_value = mock_response
 
     # Mock add_entry to do nothing or pass
-    with patch("app.imslp.add_entry", new_callable=AsyncMock) as mock_add:
+    with patch("app.imslp.add_entry", new_callable=AsyncMock):
         with patch("app.imslp.Session", return_value=session):
             await get_works()
 
@@ -275,7 +279,8 @@ async def test_get_works_cancel(session, mock_requests_get):
 # --- Tests for Endpoints ---
 
 
-def test_start_endpoint(mock_requests_get):
+def test_start_endpoint(mock_requests_get):  # pylint: disable=redefined-outer-name,unused-argument
+    """Test start endpoint."""
     response = client.post("/imslp/start/10")
     assert response.status_code == 200
     assert response.json() == {"message": "Task started successfully!"}
@@ -284,18 +289,21 @@ def test_start_endpoint(mock_requests_get):
 
 
 def test_progress_endpoint():
+    """Test progress endpoint."""
     response = client.post("/imslp/progress")
     assert response.status_code == 200
     assert "status" in response.json()
 
 
 def test_cancel_endpoint():
+    """Test cancel endpoint."""
     response = client.post("/imslp/cancel")
     assert response.status_code == 200
     assert progress_tracker["cancel_requested"] is True
 
 
 def test_stats_endpoint(session):
+    """Test stats endpoint."""
     # Add dummy data
     entry = IMSLP(
         id=1, title="T", composer="C", score_metadata="{}", permlink="http://example.com/1"
@@ -309,6 +317,7 @@ def test_stats_endpoint(session):
 
 
 def test_empty_endpoint(session):
+    """Test empty endpoint."""
     entry = IMSLP(
         id=1, title="T", composer="C", score_metadata="{}", permlink="http://example.com/1"
     )
@@ -320,10 +329,11 @@ def test_empty_endpoint(session):
 
     # Verify empty
     results = session.exec(select(IMSLP)).all()
-    assert len(results) == 0
+    assert not results
 
 
 def test_get_by_ids(session):
+    """Test get_by_ids endpoint."""
     entry1 = IMSLP(
         id=1, title="T1", composer="C1", score_metadata="{}", permlink="http://example.com/1"
     )

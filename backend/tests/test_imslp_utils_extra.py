@@ -2,33 +2,39 @@
 Extended coverage for imslp.py - error/empty cases for get_metadata/get_pdfs, and dummy coverage for get_page edge.
 """
 
-import pytest
 from app import imslp
 
 
 def test_get_metadata_bypass_true():
-    class DummyResp:
+    """Test bypass in get_metadata."""
+    class DummyResp:  # pylint: disable=too-few-public-methods
+        """Mock response."""
         text = "something"
 
-    assert imslp.get_metadata(DummyResp(), bypass=True) == {}
+    assert not imslp.get_metadata(DummyResp(), bypass=True)
 
 
 def test_get_metadata_no_table():
-    class DummyResp:
+    """Test get_metadata missing table."""
+    class DummyResp:  # pylint: disable=too-few-public-methods
+        """Mock response."""
         text = "<span id='General_Information'></span>"
 
-    assert imslp.get_metadata(DummyResp()) == {}
+    assert not imslp.get_metadata(DummyResp())
 
 
 def test_get_pdfs_no_pdf_found():
-    class DummyResp:
+    """Test get_pdfs no pdf found."""
+    class DummyResp:  # pylint: disable=too-few-public-methods
+        """Mock response."""
         text = "<html></html>"
 
     result = imslp.get_pdfs(DummyResp())
-    assert result == []
+    assert not result
 
 
 def test_get_page_returns_data(monkeypatch):
+    """Test get_page returns data."""
     monkeypatch.setattr(
         imslp.requests,
         "get",
@@ -41,6 +47,7 @@ def test_get_page_returns_data(monkeypatch):
 
 
 def test_get_page_no_data(monkeypatch):
+    """Test get_page returns empty."""
     # .json returns empty dict
     monkeypatch.setattr(
         imslp.requests,
@@ -48,4 +55,4 @@ def test_get_page_no_data(monkeypatch):
         lambda url, **kwargs: type("Resp", (), {"json": lambda self: {"metadata": "meta"}})(),
     )
     d = imslp.get_page(0)
-    assert d == {}
+    assert not d

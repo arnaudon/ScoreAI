@@ -4,35 +4,34 @@ Extended agent.py test coverage, especially for error handling and edge cases.
 
 import pytest
 from unittest import mock
-from pydantic_ai.models.test import TestModel
 from app import agent
-from shared.responses import FullResponse, Response
-from shared.scores import Scores, Score
-from shared.user import User
+from shared.responses import FullResponse
+from shared.scores import Score
 
 
 class DummyExc(Exception):
-    pass
+    """Dummy exception for testing."""
 
 
 @pytest.mark.anyio
-async def test_run_agent_ModelHTTPError(monkeypatch, test_scores, test_user):
+async def test_run_agent_model_http_error(monkeypatch, test_scores, test_user):
     """
     Test agent.ModelHTTPError handling, 429 and non-429.
     """
 
     # Patch ModelHTTPError in agent module's namespace
     class PatchedModelHTTPError(Exception):
+        """Mock ModelHTTPError."""
         def __init__(self, msg, status_code=500):
             super().__init__(msg)
             self.status_code = status_code
 
     monkeypatch.setattr(agent, "ModelHTTPError", PatchedModelHTTPError)
 
-    async def raise_429(*a, **kw):
+    async def raise_429(*a, **kw):  # pylint: disable=unused-argument
         raise agent.ModelHTTPError("429", status_code=429)
 
-    async def raise_500(*a, **kw):
+    async def raise_500(*a, **kw):  # pylint: disable=unused-argument
         raise agent.ModelHTTPError("500", status_code=500)
 
     dummy_agent = mock.Mock()
@@ -49,13 +48,13 @@ async def test_run_agent_ModelHTTPError(monkeypatch, test_scores, test_user):
 
 
 @pytest.mark.anyio
-async def test_run_agent_Exception(monkeypatch, test_scores, test_user):
+async def test_run_agent_exception(monkeypatch, test_scores, test_user):
     """
     Test generic exception handler in run_agent.
     """
 
-    async def fail(*a, **kw):
-        raise Exception("oops")
+    async def fail(*a, **kw):  # pylint: disable=unused-argument
+        raise Exception("oops")  # pylint: disable=broad-exception-raised
 
     dummy_agent = mock.Mock()
     dummy_agent.run = fail
@@ -66,16 +65,17 @@ async def test_run_agent_Exception(monkeypatch, test_scores, test_user):
 
 
 @pytest.mark.anyio
-async def test_run_complete_agent_ModelHTTPError(monkeypatch):
+async def test_run_complete_agent_model_http_error(monkeypatch):  # pylint: disable=unused-argument
     """
     Test error handling in run_complete_agent.
     """
 
     # Patch Agent.run to raise ModelHTTPError(429)
     class DummyModelHTTPError(Exception):
+        """Mock ModelHTTPError."""
         status_code = 429
 
-    async def fail(*a, **kw):
+    async def fail(*a, **kw):  # pylint: disable=unused-argument
         raise DummyModelHTTPError()
 
     agent.Agent.run = fail

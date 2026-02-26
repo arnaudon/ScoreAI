@@ -15,6 +15,7 @@ def set_data_path_tmp(tmp_path, monkeypatch):
 
 
 def test_upload_and_download_and_delete_local(monkeypatch):
+    """Test local file upload, download and delete."""
     # Ensure we're not using S3
     monkeypatch.setenv("S3_ENDPOINT", "")
     monkeypatch.setenv("S3_BUCKET", "")
@@ -38,6 +39,7 @@ def test_upload_and_download_and_delete_local(monkeypatch):
 
 
 def test_upload_and_delete_local_handles_missing_file(monkeypatch):
+    """Test deleting missing local file handles exception silently."""
     # This test ensures no exception raised if deleting a non-existent local file
     monkeypatch.setenv("S3_ENDPOINT", "")
     monkeypatch.setenv("S3_BUCKET", "")
