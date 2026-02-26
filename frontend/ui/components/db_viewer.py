@@ -4,7 +4,11 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 from shared.scores import Score
-from st_aggrid import AgGrid, GridOptionsBuilder
+try:
+    from st_aggrid import AgGrid, GridOptionsBuilder
+except ImportError:
+    AgGrid = None
+    GridOptionsBuilder = None
 
 from ui.components import api
 

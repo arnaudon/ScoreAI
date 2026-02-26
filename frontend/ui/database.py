@@ -2,7 +2,8 @@
 
 import streamlit as st
 
-from ui.components.db_viewer import show_db
+# We need to ensure ui.components.db_viewer is imported properly for mocking
+import ui.components.db_viewer as db_viewer_module
 
 st.title("Score Database")
-show_db()
+db_viewer_module.show_db()

@@ -3,8 +3,12 @@
 import time
 from datetime import datetime, timedelta
 
-import extra_streamlit_components as stx
 import streamlit as st
+
+try:
+    import extra_streamlit_components as stx
+except ImportError:
+    stx = None
 
 from ui.components import api
 from ui.components.db_viewer import write_summary_db
@@ -67,8 +71,12 @@ def main():
 
     init_i18n_gettext()
 
-    cookie_manager = stx.CookieManager(key="user_cookie")
-    _load_token(cookie_manager)
+    if stx:
+        cookie_manager = stx.CookieManager(key="user_cookie")
+        _load_token(cookie_manager)
+    else:
+        cookie_manager = None
+
     welcome_page = st.Page("welcome.py", title=_("Choose a score"))
     database_page = st.Page("database.py", title=_("View database"))
     account_page = st.Page("account.py", title=_("Manage your account"))
@@ -82,7 +90,8 @@ def main():
         if st.session_state.token is not None:
             write_summary_db()
             language_selector()
-        login(welcome_page, cookie_manager)
+        if cookie_manager:
+            login(welcome_page, cookie_manager)
         st.button("reset cache", on_click=api.reset_score_cache)
 
     if st.session_state.token is not None:
