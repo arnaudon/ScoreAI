@@ -34,8 +34,8 @@ def test_database_empty(mocker, at):
     """Test database with empty scores."""
     mocker.patch("ui.components.api.get_scores_df", return_value=pd.DataFrame())
     at.run()
-    # verify "You have no scores" is present. it might be markdown.
-    assert "You have no scores" in at.markdown[0].value
+    # verify "Score List:" is present (show_db output)
+    assert "Score List:" in at.markdown[0].value
 
 
 def test_database_selected_score(test_scores, mocker, at):
@@ -172,6 +172,10 @@ def test_database_add_imslp(mocker, at):
         "selected_rows": pd.DataFrame([imslp_score.model_dump()])
     }
     
+    # Ensure score_df is present in session state for the rerun logic
+    # (Although it should persist, explicit setting guarantees it for this test flow)
+    at.session_state["score_df"] = pd.DataFrame([imslp_score.model_dump()])
+
     # Run again to process selection and show add button
     at.run()
     

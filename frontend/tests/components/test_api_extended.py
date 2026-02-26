@@ -43,9 +43,14 @@ def test_run_imslp_agent_success(mocker):
     api.st.session_state.get.return_value = "fake-token"
     
     mock_post = mocker.patch("requests.post")
+    # Message history needs to match Pydantic AI message structure (kind discriminator)
+    mock_message = {
+        "kind": "request",
+        "parts": [{"content": "hi", "part_kind": "user-prompt"}]
+    }
     mock_post.return_value = MockResponse({
         "response": {"response": "Found", "score_ids": [1]},
-        "message_history": [{"role": "user", "content": "hi"}]
+        "message_history": [mock_message]
     })
     
     res = api.run_imslp_agent("query")
