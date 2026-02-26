@@ -143,18 +143,16 @@ def test_database_add_imslp(mocker, at):
 
     at.run()
     
+    # Mock selection BEFORE running the search which triggers AgGrid
+    mock_aggrid.return_value = {
+        "selected_rows": pd.DataFrame([imslp_score.model_dump()])
+    }
+
     # Switch to IMSLP tab - tabs index 1
     at.text_input(key="question").set_value("Beethoven").run()
     
     mock_run_agent.assert_called()
     mock_get_scores.assert_called()
-    
-    # Now mock selection for the next run
-    mock_aggrid.return_value = {
-        "selected_rows": pd.DataFrame([imslp_score.model_dump()])
-    }
-    
-    at.run()
     
     # Verify add button appears
     assert at.button(key="add_imslp").exists

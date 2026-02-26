@@ -20,7 +20,10 @@ class MockResponse:
 
 def test_add_score(mocker):
     """Test add_score."""
-    mocker.patch("streamlit.session_state", {"token": "fake-token"})
+    mock_state = mocker.MagicMock()
+    mock_state.get.return_value = "fake-token"
+    mocker.patch("streamlit.session_state", mock_state)
+    
     mock_post = mocker.patch("requests.post")
     mock_post.return_value = MockResponse({"status": "ok"})
     
@@ -33,7 +36,14 @@ def test_add_score(mocker):
 
 def test_run_imslp_agent_success(mocker):
     """Test run_imslp_agent success."""
-    mocker.patch("streamlit.session_state", {"token": "fake-token", "message_history": []})
+    mock_state = mocker.MagicMock()
+    mock_state.message_history = []
+    mock_state.get.return_value = "fake-token"
+    # Ensure attributes persist
+    mock_state.message_history.extend = lambda x: mock_state.message_history.extend(x)
+    
+    mocker.patch("streamlit.session_state", mock_state)
+    
     mock_post = mocker.patch("requests.post")
     mock_post.return_value = MockResponse({
         "response": {"response": "Found", "score_ids": [1]},
@@ -49,7 +59,11 @@ def test_run_imslp_agent_success(mocker):
 
 def test_run_imslp_agent_error(mocker):
     """Test run_imslp_agent error."""
-    mocker.patch("streamlit.session_state", {"token": "fake-token", "message_history": []})
+    mock_state = mocker.MagicMock()
+    mock_state.message_history = []
+    mock_state.get.return_value = "fake-token"
+    mocker.patch("streamlit.session_state", mock_state)
+    
     mock_post = mocker.patch("requests.post")
     mock_post.return_value = MockResponse({}, status_code=500, text="Error")
     # Mock json() to raise exception to trigger the except block
@@ -61,7 +75,11 @@ def test_run_imslp_agent_error(mocker):
 
 def test_run_agent_error(mocker):
     """Test run_agent error."""
-    mocker.patch("streamlit.session_state", {"token": "fake-token", "message_history": []})
+    mock_state = mocker.MagicMock()
+    mock_state.message_history = []
+    mock_state.get.return_value = "fake-token"
+    mocker.patch("streamlit.session_state", mock_state)
+    
     mocker.patch("ui.components.api.get_scores") # Mock get_scores
     mock_post = mocker.patch("requests.post")
     mock_post.return_value = MockResponse({}, status_code=500, text="Error")
@@ -73,7 +91,10 @@ def test_run_agent_error(mocker):
 
 def test_is_admin(mocker):
     """Test is_admin."""
-    mocker.patch("streamlit.session_state", {"token": "fake-token"})
+    mock_state = mocker.MagicMock()
+    mock_state.get.return_value = "fake-token"
+    mocker.patch("streamlit.session_state", mock_state)
+    
     mock_get = mocker.patch("requests.get")
     mock_get.return_value = MockResponse(True)
     
@@ -82,7 +103,10 @@ def test_is_admin(mocker):
 
 def test_get_all_users(mocker):
     """Test get_all_users."""
-    mocker.patch("streamlit.session_state", {"token": "fake-token"})
+    mock_state = mocker.MagicMock()
+    mock_state.get.return_value = "fake-token"
+    mocker.patch("streamlit.session_state", mock_state)
+    
     mock_get = mocker.patch("requests.get")
     mock_get.return_value = MockResponse([
         {"username": "u1", "password": "h"},
@@ -96,7 +120,10 @@ def test_get_all_users(mocker):
 
 def test_complete_score_data(mocker):
     """Test complete_score_data."""
-    mocker.patch("streamlit.session_state", {"token": "fake-token"})
+    mock_state = mocker.MagicMock()
+    mock_state.get.return_value = "fake-token"
+    mocker.patch("streamlit.session_state", mock_state)
+    
     mock_post = mocker.patch("requests.post")
     score_data = {"title": "T", "composer": "C", "year": 2000, "user_id": 1}
     mock_post.return_value = MockResponse(score_data)
@@ -109,7 +136,10 @@ def test_complete_score_data(mocker):
 
 def test_upload_pdf_success(mocker):
     """Test upload_pdf success."""
-    mocker.patch("streamlit.session_state", {"token": "fake-token"})
+    mock_state = mocker.MagicMock()
+    mock_state.get.return_value = "fake-token"
+    mocker.patch("streamlit.session_state", mock_state)
+    
     mock_post = mocker.patch("requests.post")
     mock_post.return_value = MockResponse({"id": "file1"})
     
@@ -122,7 +152,10 @@ def test_upload_pdf_success(mocker):
 
 def test_upload_pdf_failure(mocker):
     """Test upload_pdf failure."""
-    mocker.patch("streamlit.session_state", {"token": "fake-token"})
+    mock_state = mocker.MagicMock()
+    mock_state.get.return_value = "fake-token"
+    mocker.patch("streamlit.session_state", mock_state)
+    
     mock_post = mocker.patch("requests.post")
     mock_post.return_value = MockResponse({}, status_code=400)
     
@@ -135,18 +168,24 @@ def test_upload_pdf_failure(mocker):
 
 def test_get_pdf_url(mocker):
     """Test get_pdf_url."""
-    mocker.patch("streamlit.session_state", {"token": "fake-token"})
+    mock_state = mocker.MagicMock()
+    mock_state.get.return_value = "fake-token"
+    mocker.patch("streamlit.session_state", mock_state)
+    
     # Mock environment variables if needed, but defaults are set in api.py
     
     url = api.get_pdf_url("file1.pdf")
     assert "viewer.html?file=" in url
     assert "file1.pdf" in url
-    assert "token=fake-token" in url
+    assert "token%3Dfake-token" in url
 
 
 def test_imslp_functions(mocker):
     """Test miscellaneous IMSLP functions."""
-    mocker.patch("streamlit.session_state", {"token": "fake-token"})
+    mock_state = mocker.MagicMock()
+    mock_state.get.return_value = "fake-token"
+    mocker.patch("streamlit.session_state", mock_state)
+    
     mock_post = mocker.patch("requests.post")
     mock_get = mocker.patch("requests.get")
     
