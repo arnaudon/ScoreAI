@@ -15,7 +15,8 @@ st.divider()
 st.subheader("IMSLP database table")
 stats = api.get_imslp_stats()
 st.write(
-    f"IMSLP database contains {stats['total_works']} works and {stats['total_composers']} composers."
+    f"IMSLP database contains {stats['total_works']} works and "
+    f"{stats['total_composers']} composers."
 )
 col1, col2 = st.columns(2)
 with col1:
@@ -27,7 +28,7 @@ with col1:
                 st.session_state.monitoring = True
             else:
                 st.error(f"Failed to start: {response.status_code}")
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             st.error(f"Connection error: {e}")
 with col2:
     with st.popover("Delete all data", use_container_width=True):
@@ -76,7 +77,7 @@ if st.session_state.get("monitoring"):
             time.sleep(2)
             st.rerun()
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught, unused-variable
             st.error("Lost connection to backend.")
             break
 

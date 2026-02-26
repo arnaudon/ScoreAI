@@ -1,8 +1,8 @@
 """DB viewer."""
 
-import numpy as np
 import pandas as pd
 import streamlit as st
+from ui.components import api
 from shared.scores import Score
 
 try:
@@ -10,8 +10,6 @@ try:
 except ImportError:
     AgGrid = None
     GridOptionsBuilder = None
-
-from ui.components import api
 
 
 def write_summary_db():

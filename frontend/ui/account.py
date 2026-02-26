@@ -1,9 +1,8 @@
 """Account module."""
 
 import streamlit as st
-from shared.user import User
-
 from ui.components import api
+from shared.user import User
 
 
 def main():

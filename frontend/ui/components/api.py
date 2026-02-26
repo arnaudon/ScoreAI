@@ -21,6 +21,7 @@ PUBLIC_API_URL = os.getenv("PUBLIC_API_URL", "http://localhost:8000")
 _SCORES = None
 
 password_hash = PasswordHash.recommended()
+TIMEOUT = 30
 
 
 class AgentError(Exception):
@@ -29,19 +30,25 @@ class AgentError(Exception):
 
 def reset_score_cache():
     """Reset the score cache"""
-    global _SCORES
+    global _SCORES  # pylint: disable=global-statement
     _SCORES = None
 
 
 def register_user(new_user: User):
     """Register a new user via API"""
-    response = requests.post(f"{API_URL}/users", json=new_user.model_dump())
+    response = requests.post(
+        f"{API_URL}/users", json=new_user.model_dump(), timeout=TIMEOUT
+    )
     return response
 
 
 def login_user(username, password):
     """Login a user via API"""
-    response = requests.post(f"{API_URL}/token", data={"username": username, "password": password})
+    response = requests.post(
+        f"{API_URL}/token",
+        data={"username": username, "password": password},
+        timeout=TIMEOUT,
+    )
     return response
 
 
@@ -50,6 +57,7 @@ def get_user():
     response = requests.get(
         f"{API_URL}/user",
         headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+        timeout=TIMEOUT,
     ).json()
     return response
 
@@ -60,6 +68,7 @@ def add_score(score_data: Score) -> dict:
         f"{API_URL}/scores",
         headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
         json=score_data.model_dump(),
+        timeout=TIMEOUT,
     ).json()
     reset_score_cache()
     return response
@@ -70,10 +79,12 @@ def delete_score(score_data):
     requests.delete(
         f"{API_URL}/scores/{score_data['id']}",
         headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+        timeout=TIMEOUT,
     )
     requests.delete(
         f"{API_URL}/pdf/{score_data['pdf_path']}",
         headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+        timeout=TIMEOUT,
     )
     reset_score_cache()
 
@@ -83,6 +94,7 @@ def add_play(score_id: int) -> dict:
     res = requests.post(
         f"{API_URL}/scores/{score_id}/play",
         headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+        timeout=TIMEOUT,
     ).json()
     reset_score_cache()
     return res
@@ -90,12 +102,13 @@ def add_play(score_id: int) -> dict:
 
 def get_scores() -> Scores:
     """Get all scores from the db via API"""
-    global _SCORES
+    global _SCORES  # pylint: disable=global-statement
     if _SCORES is None:
         _SCORES = Scores(
             scores=requests.get(
                 f"{API_URL}/scores",
                 headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+                timeout=TIMEOUT,
             ).json()
         )
     return _SCORES
@@ -119,6 +132,7 @@ def run_imslp_agent(question: str) -> ImslpResponse:  # pragma: no cover
             "message_history": st.session_state.message_history,
         },
         headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+        timeout=TIMEOUT,
     )
     try:
         result = result.json()
@@ -138,6 +152,7 @@ def get_imslp_scores(score_ids: List[int]) -> IMSLPScores:
             f"{API_URL}/imslp/scores_by_ids",
             params={"score_ids": json.dumps(score_ids)},
             headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+            timeout=TIMEOUT,
         ).json()
     )
 
@@ -153,6 +168,7 @@ def run_agent(question: str) -> Response:  # pragma: no cover
             "message_history": st.session_state.message_history,
         },
         headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+        timeout=TIMEOUT,
     )
     try:
         result = result.json()
@@ -170,6 +186,7 @@ def is_admin():
     return requests.get(
         f"{API_URL}/is_admin",
         headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+        timeout=TIMEOUT,
     ).json()
 
 
@@ -178,6 +195,7 @@ def valid_token():
     result = requests.get(
         f"{API_URL}/is_admin",
         headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+        timeout=TIMEOUT,
     )
     if result.status_code == 401:
         return False
@@ -189,6 +207,7 @@ def get_all_users():
     users = requests.get(
         f"{API_URL}/users",
         headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+        timeout=TIMEOUT,
     ).json()
     df = pd.DataFrame(users)
     df.drop("password", axis=1, inplace=True)
@@ -202,6 +221,7 @@ def complete_score_data(score: Score):
             f"{API_URL}/complete_score",
             headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
             json=score.model_dump(),
+            timeout=TIMEOUT,
         ).json()
     )
 
@@ -213,6 +233,7 @@ def upload_pdf(file, filename):
         f"{API_URL}/pdf",
         files=files,
         headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+        timeout=TIMEOUT,
     )
 
     if response.status_code == 200:
@@ -236,6 +257,7 @@ def start_imslp_update(max_pages: int = 260):
     return requests.post(
         f"{API_URL}/imslp/start/{max_pages}",
         headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+        timeout=TIMEOUT,
     )
 
 
@@ -244,6 +266,7 @@ def get_imslp_progress():
     return requests.post(
         f"{API_URL}/imslp/progress",
         headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+        timeout=TIMEOUT,
     ).json()
 
 
@@ -252,6 +275,7 @@ def cancel_imslp():
     requests.post(
         f"{API_URL}/imslp/cancel",
         headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+        timeout=TIMEOUT,
     )
 
 
@@ -260,6 +284,7 @@ def get_imslp_stats():
     return requests.get(
         f"{API_URL}/imslp/stats",
         headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+        timeout=TIMEOUT,
     ).json()
 
 
@@ -268,4 +293,5 @@ def empty_imslp_database():
     return requests.post(
         f"{API_URL}/imslp/empty",
         headers={"Authorization": f"Bearer {st.session_state.get('token')}"},
+        timeout=TIMEOUT,
     )
