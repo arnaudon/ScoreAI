@@ -6,7 +6,6 @@ from sqlalchemy import pool
 from alembic import context
 
 from sqlmodel import SQLModel
-from shared import User, Score
 import os
 import dotenv
 

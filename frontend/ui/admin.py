@@ -8,6 +8,15 @@ from ui.components import api
 
 st.title("Admin page")
 
+# Check if a task is already running in the backend
+if "monitoring" not in st.session_state:
+    try:
+        current_status = api.get_imslp_progress()
+        if current_status.get("status") in ["running", "pending"]:
+            st.session_state.monitoring = True
+    except Exception:
+        pass
+
 st.subheader("All users table")
 users = api.get_all_users()
 st.write(users)
@@ -22,7 +31,7 @@ col1, col2 = st.columns(2)
 with col1:
     if st.button("Update IMSLP database"):
         try:
-            response = api.start_imslp_update(max_pages=10)
+            response = api.start_imslp_update(max_pages=300)
             if response.status_code == 200:
                 st.success("Task started successfully!")
                 st.session_state.monitoring = True
