@@ -11,7 +11,7 @@ import requests
 from bs4 import BeautifulSoup
 from fastapi import APIRouter, BackgroundTasks, Depends
 from pydantic_ai import Agent
-from pydantic_ai.exceptions import ModelHTTPError
+from pydantic_ai.exceptions import ModelHTTPError, UnexpectedModelBehavior
 from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
 from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import Session, func, select, text
@@ -108,11 +108,18 @@ async def fix_entry(entry):
             for key, value in res.output.model_dump().items():
                 setattr(entry, key, value)
             break
-        except ModelHTTPError as e:
-            if e.status_code == 503 and attempt < max_retries - 1:
+        except (ModelHTTPError, UnexpectedModelBehavior) as e:
+            if (
+                isinstance(e, ModelHTTPError)
+                and e.status_code == 503
+                and attempt < max_retries - 1
+            ) or (
+                isinstance(e, UnexpectedModelBehavior)
+                and attempt < max_retries - 1
+            ):
                 wait_time = 2**attempt * 5  # Exponential backoff
                 logger.warning(
-                    f"Model 503 error, retrying in {wait_time}s (attempt {attempt+1}/{max_retries})"
+                    f"Model error {e}, retrying in {wait_time}s (attempt {attempt+1}/{max_retries})"
                 )
                 time.sleep(wait_time)
             else:
