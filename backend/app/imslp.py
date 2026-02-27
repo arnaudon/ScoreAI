@@ -137,7 +137,8 @@ async def add_entry(i, item, session):
         key=metadata.get("Key", ""),
         score_metadata=json.dumps(metadata),
     )
-    await fix_entry(entry)
+    if not session.get(IMSLP, int(i)):
+        await fix_entry(entry)
     stmt = insert(IMSLP).values(entry.model_dump())
     update_columns = {
         col.name: stmt.excluded[col.name]
