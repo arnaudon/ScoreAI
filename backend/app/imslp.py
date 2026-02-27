@@ -121,8 +121,11 @@ async def fix_entry(entry):
                 raise e
 
 
-async def add_entry(i, item, session):
+async def add_entry(i, item, session, overwrite=False):
     """Add an entry to the database."""
+    if not overwrite and session.get(IMSLP, int(i)):
+        return
+
     response = requests.get(item["permlink"], timeout=60)
     metadata = get_metadata(response)
     entry = IMSLP(
@@ -137,8 +140,7 @@ async def add_entry(i, item, session):
         key=metadata.get("Key", ""),
         score_metadata=json.dumps(metadata),
     )
-    if not session.get(IMSLP, int(i)):
-        await fix_entry(entry)
+    await fix_entry(entry)
     stmt = insert(IMSLP).values(entry.model_dump())
     update_columns = {
         col.name: stmt.excluded[col.name]
