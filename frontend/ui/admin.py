@@ -31,7 +31,7 @@ col1, col2 = st.columns(2)
 with col1:
     if st.button("Update IMSLP database"):
         try:
-            response = api.start_imslp_update(max_pages=10)
+            response = api.start_imslp_update(max_pages=300)
             if response.status_code == 200:
                 st.success("Task started successfully!")
                 st.session_state.monitoring = True
