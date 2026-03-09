@@ -27,6 +27,7 @@ def test_admin_render(frontend_dir, mocker):
         "ui.components.api.get_imslp_stats",
         return_value={"total_works": 10, "total_composers": 2},
     )
+    mocker.patch("ui.components.api.get_imslp_progress", return_value={})
 
     at.run()
     assert not at.exception
@@ -43,6 +44,7 @@ def test_admin_update_imslp(frontend_dir, mocker):
         "ui.components.api.get_imslp_stats",
         return_value={"total_works": 10, "total_composers": 2},
     )
+    mocker.patch("ui.components.api.get_imslp_progress", return_value={})
     mock_start = mocker.patch("ui.components.api.start_imslp_update", return_value=MockResponse({}))
 
     at.run()
@@ -70,6 +72,7 @@ def test_admin_delete_imslp(frontend_dir, mocker):
         "ui.components.api.get_imslp_stats",
         return_value={"total_works": 10, "total_composers": 2},
     )
+    mocker.patch("ui.components.api.get_imslp_progress", return_value={})
     mock_empty = mocker.patch(
         "ui.components.api.empty_imslp_database", return_value=MockResponse({})
     )
