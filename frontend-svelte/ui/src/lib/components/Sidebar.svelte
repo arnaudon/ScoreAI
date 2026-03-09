@@ -21,13 +21,6 @@
 					<Sidebar.MenuItem>
 						<Sidebar.MenuButton>
 							{#snippet child({ props })}
-								<a href="/login" {...props}>Login</a>
-							{/snippet}
-						</Sidebar.MenuButton>
-					</Sidebar.MenuItem>
-					<Sidebar.MenuItem>
-						<Sidebar.MenuButton>
-							{#snippet child({ props })}
 								<a href="/db-viewer" {...props}>Database Viewer</a>
 							{/snippet}
 						</Sidebar.MenuButton>
