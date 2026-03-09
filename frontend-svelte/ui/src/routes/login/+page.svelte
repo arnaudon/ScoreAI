@@ -7,8 +7,8 @@
 
 <form method="POST">
 	<div>
-		<label for="email">Email</label>
-		<input id="email" name="email" type="email" value={form?.email ?? ''} />
+		<label for="username">Username</label>
+		<input id="username" name="username" type="text" value={form?.username ?? ''} />
 	</div>
 	<div>
 		<label for="password">Password</label>
