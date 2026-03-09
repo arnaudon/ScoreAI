@@ -25,20 +25,22 @@
 							{/snippet}
 						</Sidebar.MenuButton>
 					</Sidebar.MenuItem>
-					<Sidebar.MenuItem>
-						<Sidebar.MenuButton>
-							{#snippet child({ props })}
-								<form method="POST" action="/logout" class="w-full">
-									<button type="submit" {...props} class="w-full text-left">Logout</button>
-								</form>
-							{/snippet}
-						</Sidebar.MenuButton>
-					</Sidebar.MenuItem>
 				</Sidebar.Menu>
 			</Sidebar.GroupContent>
 		</Sidebar.Group>
 	</Sidebar.Content>
-	<Sidebar.Footer class="p-4">
+	<Sidebar.Footer class="p-4 gap-4">
+		<Sidebar.Menu>
+			<Sidebar.MenuItem>
+				<Sidebar.MenuButton>
+					{#snippet child({ props })}
+						<form method="POST" action="/logout" class="w-full">
+							<button type="submit" {...props} class="w-full text-left">Logout</button>
+						</form>
+					{/snippet}
+				</Sidebar.MenuButton>
+			</Sidebar.MenuItem>
+		</Sidebar.Menu>
 		<DarkModeToggle />
 	</Sidebar.Footer>
 </Sidebar.Root>
