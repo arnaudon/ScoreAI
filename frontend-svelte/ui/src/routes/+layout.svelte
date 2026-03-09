@@ -21,7 +21,7 @@
 			</main>
 		</Sidebar.Inset>
 	</Sidebar.Provider>
-{#else}
+{:else}
 	<main class="w-full min-h-screen bg-background text-foreground overflow-y-auto">
 		{@render children()}
 	</main>
