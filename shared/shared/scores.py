@@ -37,7 +37,7 @@ class ScoreBase(SQLModel):
 
     title: str = Field()
     composer: str = Field()
-    year: int = Field(default=1750, gt=500)
+    year: int = Field(default=1750, gt=-1000)
     period: Period = Field(default=Period.Classical)
     genre: str = Field(default="Classical")
     form: str = Field(default="Sonata")

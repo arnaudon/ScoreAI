@@ -157,11 +157,12 @@ async def get_works():
     progress_tracker["status"] = "processing"
     with Session(engine) as session:
         for i in range(0, progress_tracker["total"]):
+            logger.error(f'--------------------- page: {i} ------------------')
             progress_tracker["page"] = i
             start = int(i * 1000)
 
             # random sleep time to avoid being blocked
-            time.sleep(np.random.uniform(1, 10))
+            # time.sleep(np.random.uniform(1, 10))
             data = get_page(start)
 
             # last page, we stop
