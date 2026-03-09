@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch, AsyncMock
 
 import pytest
 from fastapi.testclient import TestClient
+from pydantic_ai.exceptions import ModelHTTPError, UnexpectedModelBehavior
 from sqlmodel import Session, select
 
 from app.imslp import (
@@ -184,6 +185,56 @@ async def test_fix_entry(mock_agent):  # pylint: disable=redefined-outer-name
 
 
 @pytest.mark.asyncio
+async def test_fix_entry_retry_on_http_error(mock_agent):
+    """Test fix_entry retries on ModelHTTPError 503."""
+    mock_agent_instance = mock_agent.return_value
+    mock_run_result = MagicMock()
+    mock_run_result.output = ScoreBase(title="Fixed Title", composer="Fixed Composer")
+    mock_agent_instance.run.side_effect = [
+        ModelHTTPError("Service Unavailable", status_code=503),
+        AsyncMock(return_value=mock_run_result),
+    ]
+
+    entry = IMSLP(title="Old Title", permlink="http://example.com")
+    with patch("app.imslp.time.sleep"):
+        await fix_entry(entry)
+
+    assert entry.title == "Fixed Title"
+    assert mock_agent_instance.run.call_count == 2
+
+
+@pytest.mark.asyncio
+async def test_fix_entry_retry_on_unexpected_behavior(mock_agent):
+    """Test fix_entry retries on UnexpectedModelBehavior."""
+    mock_agent_instance = mock_agent.return_value
+    mock_run_result = MagicMock()
+    mock_run_result.output = ScoreBase(title="Fixed Title", composer="Fixed Composer")
+    mock_agent_instance.run.side_effect = [
+        UnexpectedModelBehavior("Unexpected behavior"),
+        AsyncMock(return_value=mock_run_result),
+    ]
+
+    entry = IMSLP(title="Old Title", permlink="http://example.com")
+    with patch("app.imslp.time.sleep"):
+        await fix_entry(entry)
+
+    assert entry.title == "Fixed Title"
+    assert mock_agent_instance.run.call_count == 2
+
+
+@pytest.mark.asyncio
+async def test_fix_entry_raises_error(mock_agent):
+    """Test fix_entry raises non-retryable error."""
+    mock_agent_instance = mock_agent.return_value
+    mock_agent_instance.run.side_effect = ModelHTTPError("Bad Request", status_code=400)
+
+    entry = IMSLP(title="Old Title", permlink="http://example.com")
+    with pytest.raises(ModelHTTPError):
+        await fix_entry(entry)
+    assert mock_agent_instance.run.call_count == 1
+
+
+@pytest.mark.asyncio
 async def test_add_entry(
     session, mock_httpx_get, mock_agent
 ):  # pylint: disable=redefined-outer-name
@@ -218,6 +269,24 @@ async def test_add_entry(
     result = session.exec(select(IMSLP).where(IMSLP.id == 1)).one()
     assert result.title == "Fixed Title"
     assert result.permlink == "http://imslp.org/wiki/..."
+
+
+@pytest.mark.asyncio
+async def test_add_entry_exists(session, mock_httpx_get):  # pylint: disable=redefined-outer-name
+    """Test add_entry when entry already exists."""
+    # Add an entry to the DB first
+    existing_entry = IMSLP(
+        id=1, title="T", composer="C", score_metadata="{}", permlink="http://example.com/1"
+    )
+    session.add(existing_entry)
+    session.commit()
+
+    item = {
+        "permlink": "http://imslp.org/wiki/...",
+        "intvals": {"worktitle": "Sym 5", "composer": "Beethoven"},
+    }
+    await add_entry(1, item, session)
+    mock_httpx_get.assert_not_called()
 
 
 @pytest.mark.asyncio
