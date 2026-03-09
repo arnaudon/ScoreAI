@@ -46,8 +46,13 @@ export const actions: Actions = {
 
 		try {
 			// 1. Upload PDF
+			let uploadFilename = file.name;
+			if (!uploadFilename.toLowerCase().endsWith('.pdf')) {
+				uploadFilename += '.pdf';
+			}
+
 			const formData = new FormData();
-			formData.append('file', file);
+			formData.append('file', file, uploadFilename);
 			const uploadRes = await fetch(`${BACKEND_URL}/pdf`, {
 				method: 'POST',
 				headers: {
@@ -61,7 +66,7 @@ export const actions: Actions = {
 			}
 
 			const uploadData = await uploadRes.json();
-			const filename = uploadData.file_id || file.name;
+			const filename = uploadData.file_id || uploadFilename;
 
 			// 2. Add Score to DB
 			const scoreData = {
