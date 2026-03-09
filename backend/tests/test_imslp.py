@@ -53,6 +53,13 @@ def mock_requests_get():
 
 
 @pytest.fixture
+def mock_httpx_get():
+    """Mock httpx.AsyncClient.get."""
+    with patch("app.imslp.httpx.AsyncClient.get", new_callable=AsyncMock) as mock:
+        yield mock
+
+
+@pytest.fixture
 def mock_requests_session():
     """Mock requests.Session."""
     with patch("app.imslp.requests.Session") as mock:
@@ -149,13 +156,14 @@ def test_get_pdfs(mock_requests_session):  # pylint: disable=redefined-outer-nam
     assert not pdfs
 
 
-def test_get_page(mock_requests_get):  # pylint: disable=redefined-outer-name
+@pytest.mark.asyncio
+async def test_get_page(mock_httpx_get):  # pylint: disable=redefined-outer-name
     """Test get_page API call."""
     mock_response = MagicMock()
     mock_response.json.return_value = {"metadata": {"some": "meta"}, "1": {"title": "Work 1"}}
-    mock_requests_get.return_value = mock_response
+    mock_httpx_get.return_value = mock_response
 
-    data = get_page(0)
+    data = await get_page(0)
     assert "metadata" not in data
     assert "1" in data
 
@@ -177,7 +185,7 @@ async def test_fix_entry(mock_agent):  # pylint: disable=redefined-outer-name
 
 @pytest.mark.asyncio
 async def test_add_entry(
-    session, mock_requests_get, mock_agent
+    session, mock_httpx_get, mock_agent
 ):  # pylint: disable=redefined-outer-name
     """Test adding entry."""
     # Mock fix_entry dependencies
@@ -197,7 +205,7 @@ async def test_add_entry(
     """
     mock_response = MagicMock()
     mock_response.text = html
-    mock_requests_get.return_value = mock_response
+    mock_httpx_get.return_value = mock_response
 
     item = {
         "permlink": "http://imslp.org/wiki/...",
@@ -214,7 +222,7 @@ async def test_add_entry(
 
 @pytest.mark.asyncio
 async def test_get_works(
-    session, mock_requests_get, mock_agent
+    session, mock_httpx_get, mock_agent
 ):  # pylint: disable=redefined-outer-name
     """Test getting works."""
     # Mock fix_entry dependencies
@@ -245,7 +253,7 @@ async def test_get_works(
             return MagicMock(json=lambda: {"metadata": {}})
         return mock_response_metadata
 
-    mock_requests_get.side_effect = side_effect
+    mock_httpx_get.side_effect = side_effect
 
     progress_tracker["total"] = 2
     progress_tracker["cancel_requested"] = False
@@ -261,7 +269,7 @@ async def test_get_works(
 
 
 @pytest.mark.asyncio
-async def test_get_works_cancel(session, mock_requests_get):  # pylint: disable=redefined-outer-name
+async def test_get_works_cancel(session, mock_httpx_get):  # pylint: disable=redefined-outer-name
     """Test cancelling get_works."""
     progress_tracker["total"] = 10
     progress_tracker["cancel_requested"] = True
@@ -272,7 +280,7 @@ async def test_get_works_cancel(session, mock_requests_get):  # pylint: disable=
         "metadata": {},
         "0": {"permlink": "url1", "intvals": {"worktitle": "T1", "composer": "C1"}},
     }
-    mock_requests_get.return_value = mock_response
+    mock_httpx_get.return_value = mock_response
 
     # Mock add_entry to do nothing or pass
     with patch("app.imslp.add_entry", new_callable=AsyncMock):
@@ -285,7 +293,7 @@ async def test_get_works_cancel(session, mock_requests_get):  # pylint: disable=
 # --- Tests for Endpoints ---
 
 
-def test_start_endpoint(mock_requests_get):  # pylint: disable=redefined-outer-name,unused-argument
+def test_start_endpoint(mock_httpx_get):  # pylint: disable=redefined-outer-name,unused-argument
     """Test start endpoint."""
     response = client.post("/imslp/start/10")
     assert response.status_code == 200
