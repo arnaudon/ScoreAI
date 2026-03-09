@@ -41,6 +41,6 @@ export const actions: Actions = {
 			maxAge: 60 * 60 * 24 // 1 day
 		});
 
-		redirect(303, '/');
+		redirect(303, '/success');
 	}
 };
