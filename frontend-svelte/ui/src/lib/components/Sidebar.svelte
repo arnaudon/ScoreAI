@@ -5,7 +5,7 @@
 
 <Sidebar.Root>
 	<Sidebar.Header class="p-4 border-b">
-		<h2 class="text-xl font-bold text-gray-800">App Menu</h2>
+		<h2 class="text-xl font-bold text-foreground">App Menu</h2>
 	</Sidebar.Header>
 	<Sidebar.Content>
 		<Sidebar.Group>

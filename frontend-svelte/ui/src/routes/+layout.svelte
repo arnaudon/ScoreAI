@@ -12,7 +12,7 @@
 <ModeWatcher />
 <Sidebar.Provider>
 	<AppSidebar />
-	<Sidebar.Inset class="w-full flex-1 bg-gray-50">
+	<Sidebar.Inset class="w-full flex-1 bg-background text-foreground">
 		<main class="w-full h-full overflow-y-auto p-8">
 			<Sidebar.Trigger class="mb-4" />
 			{@render children()}
