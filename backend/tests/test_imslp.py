@@ -188,11 +188,12 @@ async def test_fix_entry(mock_agent):  # pylint: disable=redefined-outer-name
 async def test_fix_entry_retry_on_http_error(mock_agent):
     """Test fix_entry retries on ModelHTTPError 503."""
     mock_agent_instance = mock_agent.return_value
+    mock_agent_instance.run = AsyncMock()
     mock_run_result = MagicMock()
     mock_run_result.output = ScoreBase(title="Fixed Title", composer="Fixed Composer")
     mock_agent_instance.run.side_effect = [
-        ModelHTTPError("Service Unavailable", status_code=503),
-        AsyncMock(return_value=mock_run_result),
+        ModelHTTPError(message="Service Unavailable", status_code=503),
+        mock_run_result,
     ]
 
     entry = IMSLP(title="Old Title", permlink="http://example.com")
@@ -207,11 +208,12 @@ async def test_fix_entry_retry_on_http_error(mock_agent):
 async def test_fix_entry_retry_on_unexpected_behavior(mock_agent):
     """Test fix_entry retries on UnexpectedModelBehavior."""
     mock_agent_instance = mock_agent.return_value
+    mock_agent_instance.run = AsyncMock()
     mock_run_result = MagicMock()
     mock_run_result.output = ScoreBase(title="Fixed Title", composer="Fixed Composer")
     mock_agent_instance.run.side_effect = [
         UnexpectedModelBehavior("Unexpected behavior"),
-        AsyncMock(return_value=mock_run_result),
+        mock_run_result,
     ]
 
     entry = IMSLP(title="Old Title", permlink="http://example.com")
@@ -226,7 +228,9 @@ async def test_fix_entry_retry_on_unexpected_behavior(mock_agent):
 async def test_fix_entry_raises_error(mock_agent):
     """Test fix_entry raises non-retryable error."""
     mock_agent_instance = mock_agent.return_value
-    mock_agent_instance.run.side_effect = ModelHTTPError("Bad Request", status_code=400)
+    mock_agent_instance.run.side_effect = ModelHTTPError(
+        message="Bad Request", status_code=400
+    )
 
     entry = IMSLP(title="Old Title", permlink="http://example.com")
     with pytest.raises(ModelHTTPError):
