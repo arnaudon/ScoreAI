@@ -8,8 +8,8 @@
 	<AppSidebar />
 
 	<!-- Main Content -->
-	<main class="flex-1 overflow-y-auto w-full p-8 bg-gray-50">
-		<h1 class="text-2xl font-bold mb-4">ScoreAI</h1>
+	<main class="w-full flex-1 overflow-y-auto bg-gray-50 p-8">
+		<h1 class="mb-4 text-2xl font-bold">ScoreAI</h1>
 
 		<a href="/login" class="text-blue-500 hover:underline">Login</a>
 	</main>
