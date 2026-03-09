@@ -3,6 +3,9 @@ Extended coverage for imslp.py.
 
 Includes error/empty cases for get_metadata/get_pdfs, and dummy coverage for get_page edge.
 """
+from unittest.mock import AsyncMock, MagicMock
+
+import pytest
 
 from app import imslp
 
@@ -41,26 +44,30 @@ def test_get_pdfs_no_pdf_found():
     assert not result
 
 
-def test_get_page_returns_data(monkeypatch):
+@pytest.mark.asyncio
+async def test_get_page_returns_data(monkeypatch):
     """Test get_page returns data."""
+    mock_response = MagicMock()
+    mock_response.json.return_value = {"a": 1, "metadata": "meta"}
+    async_mock_get = AsyncMock(return_value=mock_response)
     monkeypatch.setattr(
-        imslp.requests,
-        "get",
-        lambda url, **kwargs: type(
-            "Resp", (), {"json": lambda self: {"a": 1, "metadata": "meta"}}
-        )(),
+        "app.imslp.httpx.AsyncClient.get",
+        async_mock_get,
     )
-    d = imslp.get_page(0)
+    d = await imslp.get_page(0)
     assert d == {"a": 1}
 
 
-def test_get_page_no_data(monkeypatch):
+@pytest.mark.asyncio
+async def test_get_page_no_data(monkeypatch):
     """Test get_page returns empty."""
     # .json returns empty dict
+    mock_response = MagicMock()
+    mock_response.json.return_value = {"metadata": "meta"}
+    async_mock_get = AsyncMock(return_value=mock_response)
     monkeypatch.setattr(
-        imslp.requests,
-        "get",
-        lambda url, **kwargs: type("Resp", (), {"json": lambda self: {"metadata": "meta"}})(),
+        "app.imslp.httpx.AsyncClient.get",
+        async_mock_get,
     )
-    d = imslp.get_page(0)
+    d = await imslp.get_page(0)
     assert not d

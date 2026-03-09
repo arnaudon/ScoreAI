@@ -295,6 +295,10 @@ async def test_get_works_cancel(session, mock_httpx_get):  # pylint: disable=red
 
 def test_start_endpoint(mock_httpx_get):  # pylint: disable=redefined-outer-name,unused-argument
     """Test start endpoint."""
+    mock_response = MagicMock()
+    mock_response.json.return_value = {"metadata": {}}  # To stop the loop
+    mock_httpx_get.return_value = mock_response
+
     response = client.post("/imslp/start/10")
     assert response.status_code == 200
     assert response.json() == {"message": "Task started successfully!"}
