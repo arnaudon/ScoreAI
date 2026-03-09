@@ -42,9 +42,10 @@
 				if (result.type === 'success' && result.data) {
 					const data = result.data as any;
 					if (data.success) {
+						let ans = data.answer?.response;
 						history.push({
 							question: data.question,
-							answer: data.answer?.response || 'No response',
+							answer: typeof ans === 'object' ? JSON.stringify(ans, null, 2) : (ans || 'No response'),
 							score_id: data.answer?.score_id
 						});
 					}
