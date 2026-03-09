@@ -7,8 +7,8 @@
 	let filename = $derived(data.score?.filename || data.score?.title || data.score?.id || '');
 	
 	// PDF.js viewer is hosted at /pdfjs/web/viewer.html on the backend
-	// We pass a relative URL to the PDF endpoint to prevent PDF.js from blocking absolute URLs
-	let pdfUrl = $derived(`/pdf/${encodeURIComponent(filename)}?token=${data.token}`);
+	// We pass the absolute URL to ensure PDF.js correctly parses the query parameters instead of URL-encoding them into the filename
+	let pdfUrl = $derived(`${data.backendUrl}/pdf/${encodeURIComponent(filename)}?token=${data.token}`);
 	let viewerUrl = $derived(`${data.backendUrl}/pdfjs/web/viewer.html?file=${encodeURIComponent(pdfUrl)}`);
 </script>
 
