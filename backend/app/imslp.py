@@ -1,11 +1,13 @@
 """Imslp scrapping module."""
 
+import asyncio
 import json
 import logging
 import os
 import time
 from typing import Any
 
+import httpx
 import numpy as np
 import requests
 from bs4 import BeautifulSoup
@@ -78,13 +80,14 @@ def get_pdfs(response):
     return pdf_urls
 
 
-def get_page(start):
+async def get_page(start):
     """Get a page of works from IMSLP."""
     url = (
         "https://imslp.org/imslpscripts/API.ISCR.php?account=worklist/"
         f"disclaimer=accepted/sort=id/type=2/start={start}"
     )
-    response = requests.get(url, timeout=60)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, timeout=60)
     data = response.json()
     data.pop("metadata")
     return data
@@ -123,10 +126,12 @@ async def fix_entry(entry):
 
 async def add_entry(i, item, session, overwrite=False):
     """Add an entry to the database."""
-    if not overwrite and session.get(IMSLP, int(i)):
+    entry_exists = await asyncio.to_thread(session.get, IMSLP, int(i))
+    if not overwrite and entry_exists:
         return
 
-    response = requests.get(item["permlink"], timeout=60)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(item["permlink"], timeout=60)
     metadata = get_metadata(response)
     entry = IMSLP(
         id=int(i),
@@ -148,8 +153,8 @@ async def add_entry(i, item, session, overwrite=False):
         if col.name != "id"
     }
     stmt = stmt.on_conflict_do_update(index_elements=["id"], set_=update_columns)
-    session.exec(stmt)
-    session.commit()
+    await asyncio.to_thread(session.exec, stmt)
+    await asyncio.to_thread(session.commit)
 
 
 async def get_works():
@@ -163,7 +168,7 @@ async def get_works():
 
             # random sleep time to avoid being blocked
             # time.sleep(np.random.uniform(1, 10))
-            data = get_page(start)
+            data = await get_page(start)
 
             # last page, we stop
             if not data:
