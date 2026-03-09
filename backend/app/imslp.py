@@ -8,7 +8,6 @@ import time
 from typing import Any
 
 import httpx
-import numpy as np
 import requests
 from bs4 import BeautifulSoup
 from fastapi import APIRouter, BackgroundTasks, Depends
@@ -117,7 +116,11 @@ async def fix_entry(entry):
             ) or (isinstance(e, UnexpectedModelBehavior) and attempt < max_retries - 1):
                 wait_time = 2**attempt * 5  # Exponential backoff
                 logger.warning(
-                    f"Model error {e}, retrying in {wait_time}s (attempt {attempt + 1}/{max_retries})"
+                    "Model error %s , retrying in %s s (attempt %s / %s)",
+                    e,
+                    wait_time,
+                    attempt + 1,
+                    max_retries,
                 )
                 time.sleep(wait_time)
             else:
@@ -162,12 +165,9 @@ async def get_works():
     progress_tracker["status"] = "processing"
     with Session(engine) as session:
         for i in range(0, progress_tracker["total"]):
-            logger.error(f'--------------------- page: {i} ------------------')
             progress_tracker["page"] = i
             start = int(i * 1000)
 
-            # random sleep time to avoid being blocked
-            # time.sleep(np.random.uniform(1, 10))
             data = await get_page(start)
 
             # last page, we stop

@@ -3,6 +3,7 @@ Extended coverage for imslp.py.
 
 Includes error/empty cases for get_metadata/get_pdfs, and dummy coverage for get_page edge.
 """
+
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest

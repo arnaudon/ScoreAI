@@ -1,24 +1,24 @@
 """Tests for IMSLP integration."""
 
-from unittest.mock import MagicMock, patch, AsyncMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
 from pydantic_ai.exceptions import ModelHTTPError, UnexpectedModelBehavior
 from sqlmodel import Session, select
 
+from app import db
 from app.imslp import (
-    get_pdfs,
-    get_page,
-    fix_entry,
     add_entry,
+    fix_entry,
+    get_metadata,
+    get_page,
+    get_pdfs,
     get_works,
     progress_tracker,
-    get_metadata,
 )
 from app.main import app
 from app.users import get_admin_user
-from app import db
 from shared.scores import IMSLP, ScoreBase
 
 client = TestClient(app)
@@ -161,7 +161,10 @@ def test_get_pdfs(mock_requests_session):  # pylint: disable=redefined-outer-nam
 async def test_get_page(mock_httpx_get):  # pylint: disable=redefined-outer-name
     """Test get_page API call."""
     mock_response = MagicMock()
-    mock_response.json.return_value = {"metadata": {"some": "meta"}, "1": {"title": "Work 1"}}
+    mock_response.json.return_value = {
+        "metadata": {"some": "meta"},
+        "1": {"title": "Work 1"},
+    }
     mock_httpx_get.return_value = mock_response
 
     data = await get_page(0)
@@ -192,7 +195,7 @@ async def test_fix_entry_retry_on_http_error(mock_agent):
     mock_run_result = MagicMock()
     mock_run_result.output = ScoreBase(title="Fixed Title", composer="Fixed Composer")
     mock_agent_instance.run.side_effect = [
-        ModelHTTPError("Service Unavailable", status_code=503),
+        ModelHTTPError(model_name="test", status_code=503),
         mock_run_result,
     ]
 
@@ -228,7 +231,7 @@ async def test_fix_entry_retry_on_unexpected_behavior(mock_agent):
 async def test_fix_entry_raises_error(mock_agent):
     """Test fix_entry raises non-retryable error."""
     mock_agent_instance = mock_agent.return_value
-    mock_agent_instance.run.side_effect = ModelHTTPError("Bad Request", status_code=400)
+    mock_agent_instance.run.side_effect = ModelHTTPError(model_name="test", status_code=400)
 
     entry = IMSLP(title="Old Title", permlink="http://example.com")
     with pytest.raises(ModelHTTPError):
@@ -278,7 +281,11 @@ async def test_add_entry_exists(session, mock_httpx_get):  # pylint: disable=red
     """Test add_entry when entry already exists."""
     # Add an entry to the DB first
     existing_entry = IMSLP(
-        id=1, title="T", composer="C", score_metadata="{}", permlink="http://example.com/1"
+        id=1,
+        title="T",
+        composer="C",
+        score_metadata="{}",
+        permlink="http://example.com/1",
     )
     session.add(existing_entry)
     session.commit()
@@ -395,7 +402,11 @@ def test_stats_endpoint(session):
     """Test stats endpoint."""
     # Add dummy data
     entry = IMSLP(
-        id=1, title="T", composer="C", score_metadata="{}", permlink="http://example.com/1"
+        id=1,
+        title="T",
+        composer="C",
+        score_metadata="{}",
+        permlink="http://example.com/1",
     )
     session.add(entry)
     session.commit()
@@ -408,7 +419,11 @@ def test_stats_endpoint(session):
 def test_empty_endpoint(session):
     """Test empty endpoint."""
     entry = IMSLP(
-        id=1, title="T", composer="C", score_metadata="{}", permlink="http://example.com/1"
+        id=1,
+        title="T",
+        composer="C",
+        score_metadata="{}",
+        permlink="http://example.com/1",
     )
     session.add(entry)
     session.commit()
@@ -424,10 +439,18 @@ def test_empty_endpoint(session):
 def test_get_by_ids(session):
     """Test get_by_ids endpoint."""
     entry1 = IMSLP(
-        id=1, title="T1", composer="C1", score_metadata="{}", permlink="http://example.com/1"
+        id=1,
+        title="T1",
+        composer="C1",
+        score_metadata="{}",
+        permlink="http://example.com/1",
     )
     entry2 = IMSLP(
-        id=2, title="T2", composer="C2", score_metadata="{}", permlink="http://example.com/2"
+        id=2,
+        title="T2",
+        composer="C2",
+        score_metadata="{}",
+        permlink="http://example.com/2",
     )
     session.add(entry1)
     session.add(entry2)

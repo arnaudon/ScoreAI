@@ -71,7 +71,9 @@ if st.session_state.get("monitoring"):
             p_status = res.get("status", "idle")
 
             progress_bar.progress(p_page / p_total)
-            status_container.info(f"Current Status: **{p_status.upper()} PAGE** ({p_page}/{p_total})")
+            status_container.info(
+                f"Current Status: **{p_status.upper()} PAGE** ({p_page}/{p_total})"
+            )
 
             if p_status in ["completed", "cancelled", "idle"]:
                 if p_status == "completed":
