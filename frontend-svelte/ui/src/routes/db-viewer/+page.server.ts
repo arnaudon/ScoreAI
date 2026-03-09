@@ -1,5 +1,5 @@
-import { redirect } from '@sveltejs/kit';
-import type { PageServerLoad } from './$types';
+import { fail, redirect } from '@sveltejs/kit';
+import type { Actions, PageServerLoad } from './$types';
 
 const BACKEND_URL = 'http://localhost:8000';
 
@@ -26,4 +26,67 @@ export const load: PageServerLoad = async ({ cookies, fetch }) => {
 	}
 
 	return { scores: [] };
+};
+
+export const actions: Actions = {
+	upload: async ({ request, cookies, fetch }) => {
+		const token = cookies.get('access_token');
+		if (!token) {
+			return fail(401, { error: 'Unauthorized' });
+		}
+
+		const data = await request.formData();
+		const title = data.get('title');
+		const composer = data.get('composer');
+		const file = data.get('file') as File;
+
+		if (!title || !composer || !file || file.size === 0) {
+			return fail(400, { error: 'Missing required fields' });
+		}
+
+		try {
+			// 1. Upload PDF
+			const formData = new FormData();
+			formData.append('file', file);
+			const uploadRes = await fetch(`${BACKEND_URL}/pdf`, {
+				method: 'POST',
+				headers: {
+					Authorization: `Bearer ${token}`
+				},
+				body: formData
+			});
+
+			if (!uploadRes.ok) {
+				return fail(uploadRes.status, { error: 'Failed to upload PDF' });
+			}
+
+			const uploadData = await uploadRes.json();
+			const filename = uploadData.file_id || file.name;
+
+			// 2. Add Score to DB
+			const scoreData = {
+				title: title.toString(),
+				composer: composer.toString(),
+				filename: filename
+			};
+
+			const scoreRes = await fetch(`${BACKEND_URL}/scores`, {
+				method: 'POST',
+				headers: {
+					Authorization: `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(scoreData)
+			});
+
+			if (!scoreRes.ok) {
+				return fail(scoreRes.status, { error: 'Failed to save score' });
+			}
+
+			return { success: true };
+		} catch (error) {
+			console.error('Upload error:', error);
+			return fail(500, { error: 'Server error when contacting backend' });
+		}
+	}
 };
