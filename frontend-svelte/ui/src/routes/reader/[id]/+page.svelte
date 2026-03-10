@@ -25,6 +25,7 @@
 					src={viewerUrl} 
 					class="w-full h-full border-0 rounded-md" 
 					title="PDF Viewer"
+					allowfullscreen
 				></iframe>
 			{:else}
 				<div class="flex h-full items-center justify-center text-muted-foreground">
