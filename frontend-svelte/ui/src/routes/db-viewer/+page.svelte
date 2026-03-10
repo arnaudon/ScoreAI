@@ -5,12 +5,30 @@
 	import * as Sheet from '$lib/components/ui/sheet/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import { type ColumnDef, getCoreRowModel } from '@tanstack/table-core';
+	import { FlexRender, createSvelteTable } from '$lib/components/ui/data-table/index.js';
 
 	let { data, form }: PageProps = $props();
 	let selectedScoreId = $state<number | null>(null);
 	let uploading = $state(false);
 	let sheetOpen = $state(false);
 	let selectedScore = $derived(data.scores.find((s: any) => s.id === selectedScoreId));
+
+	const columns: ColumnDef<any>[] = [
+		{ accessorKey: 'title', header: 'Title' },
+		{ accessorKey: 'composer', header: 'Composer' },
+		{ accessorKey: 'year', header: 'Year' },
+		{ accessorKey: 'period', header: 'Period' },
+		{ accessorKey: 'genre', header: 'Genre' }
+	];
+
+	const table = createSvelteTable({
+		get data() {
+			return data.scores;
+		},
+		columns,
+		getCoreRowModel: getCoreRowModel()
+	});
 </script>
 
 <div class="p-8">
@@ -70,29 +88,39 @@
 	<div class="rounded-md border bg-card text-card-foreground">
 		<Table.Root>
 			<Table.Header>
-				<Table.Row>
-					<Table.Head>Title</Table.Head>
-					<Table.Head>Composer</Table.Head>
-					<Table.Head>Year</Table.Head>
-					<Table.Head>Period</Table.Head>
-					<Table.Head>Genre</Table.Head>
-				</Table.Row>
+				{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
+					<Table.Row>
+						{#each headerGroup.headers as header (header.id)}
+							<Table.Head>
+								{#if !header.isPlaceholder}
+									<FlexRender
+										content={header.column.columnDef.header}
+										context={header.getContext()}
+									/>
+								{/if}
+							</Table.Head>
+						{/each}
+					</Table.Row>
+				{/each}
 			</Table.Header>
 			<Table.Body>
-				{#each data.scores as score}
+				{#each table.getRowModel().rows as row (row.id)}
 					<Table.Row 
-						class="cursor-pointer transition-colors hover:bg-muted/50 {selectedScoreId === score.id ? 'bg-muted' : ''}"
-						onclick={() => { selectedScoreId = score.id; sheetOpen = true; }}
+						class="cursor-pointer transition-colors hover:bg-muted/50 {selectedScoreId === row.original.id ? 'bg-muted' : ''}"
+						onclick={() => { selectedScoreId = row.original.id; sheetOpen = true; }}
 					>
-						<Table.Cell>{score.title}</Table.Cell>
-						<Table.Cell>{score.composer}</Table.Cell>
-						<Table.Cell>{score.year}</Table.Cell>
-						<Table.Cell>{score.period}</Table.Cell>
-						<Table.Cell>{score.genre}</Table.Cell>
+						{#each row.getVisibleCells() as cell (cell.id)}
+							<Table.Cell>
+								<FlexRender
+									content={cell.column.columnDef.cell}
+									context={cell.getContext()}
+								/>
+							</Table.Cell>
+						{/each}
 					</Table.Row>
 				{:else}
 					<Table.Row>
-						<Table.Cell colspan={5} class="text-center text-muted-foreground py-4">
+						<Table.Cell colspan={columns.length} class="text-center text-muted-foreground py-4">
 							No scores found.
 						</Table.Cell>
 					</Table.Row>
