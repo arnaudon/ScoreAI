@@ -33,6 +33,13 @@
 							{/snippet}
 						</Sidebar.MenuButton>
 					</Sidebar.MenuItem>
+					<Sidebar.MenuItem>
+						<Sidebar.MenuButton>
+							{#snippet child({ props })}
+								<a href="/account" {...props}>Account</a>
+							{/snippet}
+						</Sidebar.MenuButton>
+					</Sidebar.MenuItem>
 					{#if page.data.isAdmin}
 						<Sidebar.MenuItem>
 							<Sidebar.MenuButton>
