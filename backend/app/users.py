@@ -32,6 +32,13 @@ class Token(BaseModel):
     token_type: str
 
 
+class PasswordChangeRequest(BaseModel):
+    """Password change request model."""
+
+    current_password: str
+    new_password: str
+
+
 password_hash = PasswordHash.recommended()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -159,3 +166,32 @@ async def is_admin(current_user: Annotated[User | None, Depends(get_admin_user)]
     if current_user is not None:
         return True
     return False
+
+
+@router.put("/user/password")
+async def update_password(
+    req: PasswordChangeRequest,
+    current_user: Annotated[User, Depends(get_current_user)],
+    session: Session = Depends(get_session),
+):
+    """Update user password."""
+    if not verify_password(req.current_password, current_user.password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Incorrect current password",
+        )
+    current_user.password = get_password_hash(req.new_password)
+    session.add(current_user)
+    session.commit()
+    return {"message": "Password updated successfully"}
+
+
+@router.delete("/user")
+async def delete_account(
+    current_user: Annotated[User, Depends(get_current_user)],
+    session: Session = Depends(get_session),
+):
+    """Delete current user."""
+    session.delete(current_user)
+    session.commit()
+    return {"message": "Account deleted successfully"}
