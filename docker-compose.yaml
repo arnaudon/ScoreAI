@@ -53,8 +53,8 @@ services:
   frontend-svelte:
     container_name: frontend-svelte
     build:
-      context: ./frontend-svelte/ui
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Dockerfile.frontend-svelte
     ports:
       - "3000:3000"
     environment:
