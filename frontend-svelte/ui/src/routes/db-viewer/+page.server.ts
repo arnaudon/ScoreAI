@@ -72,7 +72,7 @@ export const actions: Actions = {
 			const scoreData = {
 				title: title.toString(),
 				composer: composer.toString(),
-				filename: filename
+				pdf_path: filename
 			};
 
 			const scoreRes = await fetch(`${BACKEND_URL}/scores`, {
@@ -91,6 +91,37 @@ export const actions: Actions = {
 			return { success: true };
 		} catch (error) {
 			console.error('Upload error:', error);
+			return fail(500, { error: 'Server error when contacting backend' });
+		}
+	},
+	delete: async ({ request, cookies, fetch }) => {
+		const token = cookies.get('access_token');
+		if (!token) {
+			return fail(401, { error: 'Unauthorized' });
+		}
+
+		const data = await request.formData();
+		const id = data.get('id');
+
+		if (!id) {
+			return fail(400, { error: 'Missing score ID' });
+		}
+
+		try {
+			const res = await fetch(`${BACKEND_URL}/scores/${id}`, {
+				method: 'DELETE',
+				headers: {
+					Authorization: `Bearer ${token}`
+				}
+			});
+
+			if (!res.ok) {
+				return fail(res.status, { error: 'Failed to delete score' });
+			}
+
+			return { success: true };
+		} catch (error) {
+			console.error('Delete error:', error);
 			return fail(500, { error: 'Server error when contacting backend' });
 		}
 	}

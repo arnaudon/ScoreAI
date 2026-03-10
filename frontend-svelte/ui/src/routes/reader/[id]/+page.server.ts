@@ -20,6 +20,10 @@ export const load: PageServerLoad = async ({ cookies, params, fetch }) => {
 			const scores = await response.json();
 			const score = scores.find((s: any) => s.id === Number(params.id));
 			
+			if (score) {
+				cookies.set('last_score_id', params.id, { path: '/' });
+			}
+
 			return { 
 				score, 
 				token, 

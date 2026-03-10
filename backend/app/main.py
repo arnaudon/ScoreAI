@@ -129,7 +129,11 @@ def get_pdf_user(token: str = ""):  # pragma: no cover
 def get_pdf(filename: str, _user=Depends(get_pdf_user)):
     """Get the url of a pdf file."""
     obj = file_helper.download_pdf(filename)
-    return StreamingResponse(obj["Body"], media_type="application/pdf")
+    return StreamingResponse(
+        obj["Body"],
+        media_type="application/pdf",
+        headers={"Cache-Control": "public, max-age=86400, immutable"}
+    )
 
 
 @app.post("/pdf", dependencies=[Depends(get_current_user)])

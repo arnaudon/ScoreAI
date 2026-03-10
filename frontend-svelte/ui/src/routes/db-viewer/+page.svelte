@@ -47,7 +47,20 @@
 	<div class="mb-4 flex items-center justify-between">
 		<h1 class="text-2xl font-bold text-foreground">Database Viewer</h1>
 		{#if selectedScoreId}
-			<Button href="/reader/{selectedScoreId}">View PDF</Button>
+			<div class="flex gap-2">
+				<form method="POST" action="?/delete" use:enhance={() => {
+					return async ({ update, result }) => {
+						if (result.type === 'success') {
+							selectedScoreId = null;
+						}
+						update();
+					};
+				}}>
+					<input type="hidden" name="id" value={selectedScoreId} />
+					<Button type="submit" variant="destructive">Delete</Button>
+				</form>
+				<Button href="/reader/{selectedScoreId}">View PDF</Button>
+			</div>
 		{/if}
 	</div>
 	
@@ -55,9 +68,11 @@
 		<Table.Root>
 			<Table.Header>
 				<Table.Row>
-					<Table.Head>ID</Table.Head>
 					<Table.Head>Title</Table.Head>
 					<Table.Head>Composer</Table.Head>
+					<Table.Head>Year</Table.Head>
+					<Table.Head>Period</Table.Head>
+					<Table.Head>Genre</Table.Head>
 				</Table.Row>
 			</Table.Header>
 			<Table.Body>
@@ -66,13 +81,15 @@
 						class="cursor-pointer transition-colors hover:bg-muted/50 {selectedScoreId === score.id ? 'bg-muted' : ''}"
 						onclick={() => selectedScoreId = score.id}
 					>
-						<Table.Cell>{score.id}</Table.Cell>
 						<Table.Cell>{score.title}</Table.Cell>
 						<Table.Cell>{score.composer}</Table.Cell>
+						<Table.Cell>{score.year}</Table.Cell>
+						<Table.Cell>{score.period}</Table.Cell>
+						<Table.Cell>{score.genre}</Table.Cell>
 					</Table.Row>
 				{:else}
 					<Table.Row>
-						<Table.Cell colspan={3} class="text-center text-muted-foreground py-4">
+						<Table.Cell colspan={5} class="text-center text-muted-foreground py-4">
 							No scores found.
 						</Table.Cell>
 					</Table.Row>

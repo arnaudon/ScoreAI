@@ -4,7 +4,7 @@
 	let { data }: PageProps = $props();
 
 	// Fallback to title or ID if filename isn't directly on the score model
-	let filename = $derived(data.score?.filename || data.score?.title || data.score?.id || '');
+	let filename = $derived(data.score?.pdf_path || data.score?.title || data.score?.id || '');
 	
 	// PDF.js viewer is hosted at /pdfjs/web/viewer.html on the backend
 	// We pass the absolute URL to ensure PDF.js correctly parses the query parameters instead of URL-encoding them into the filename
