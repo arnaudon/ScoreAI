@@ -28,23 +28,24 @@
 	function toggleFullscreen() {
 		if (!document.fullscreenElement) {
 			try {
-				// Try to enter PDF.js presentation mode (hides toolbar, fits page to screen)
-				// Note: this will only work if the iframe and host are same-origin.
-				const pdfApp = (iframeEl?.contentWindow as any)?.PDFViewerApplication;
-				if (pdfApp && typeof pdfApp.requestPresentationMode === 'function') {
-					pdfApp.requestPresentationMode();
-					return;
+				const win = iframeEl?.contentWindow as any;
+				const doc = iframeEl?.contentDocument || win?.document;
+				
+				// Prefer clicking the built-in button so PDF.js handles all internal state & esc key natively
+				const btn = doc?.getElementById('presentationMode');
+				if (btn) {
+					btn.click();
+				} else if (win?.PDFViewerApplication?.requestPresentationMode) {
+					win.PDFViewerApplication.requestPresentationMode();
+				} else {
+					iframeEl?.requestFullscreen();
 				}
-			} catch (e) {
-				// Ignore CORS errors and fall back to standard iframe fullscreen
-				console.warn('Cross-origin frame: falling back to standard fullscreen');
+			} catch (err) {
+				console.error("Fullscreen error:", err);
+				iframeEl?.requestFullscreen();
 			}
-
-			iframeEl?.requestFullscreen().catch((err) => {
-				console.error(`Error attempting to enable fullscreen: ${err.message}`);
-			});
 		} else {
-			document.exitFullscreen();
+			document.exitFullscreen().catch(err => console.error(`Error exiting fullscreen: ${err.message}`));
 		}
 	}
 </script>
