@@ -1,40 +1,20 @@
-# ScoreAI
+# 🎵 ScoreAI
 
-ScoreAI is an AI‑assisted music score library and practice companion.
+**ScoreAI** is your personal, AI‑powered music score library and practice companion. 
 
-It lets you build a personal database of PDF scores, browse and filter them, track what you play, and get suggestions and context from an AI assistant – all through a web UI.
+Build a digital database of your PDF scores, track your practice sessions, and chat with a smart AI assistant that helps you choose what to play, auto-completes missing score info, and even searches the massive IMSLP database for you!
 
 ---
 
-## Features
+## ✨ Features
 
-- **Score library**
-  - Add PDF scores with metadata (title, composer, year, period, genre, etc.).
-  - Store everything in a database tied to your user account.
-  - Track how often each score is played.
-
-- **Rich PDF experience**
-  - View scores in a Streamlit-based PDF reader.
-  - Navigate pages comfortably for practice sessions.
-  - Keep multiple scores open with cached viewers.
-
-- **AI assistant for musicians**
-  - Ask for help choosing what to play.
-  - Get random suggestions filtered by composer.
-  - Receive contextual information about your repertoire.
-  - Conversations are powered by `pydantic-ai` and related tools.
-
-- **User accounts & authentication**
-  - Create user accounts stored in the database.
-  - Secure passwords using Argon2 hashing.
-  - JWT-based authentication for the API.
-  - Per-user score libraries (you only see your own scores).
-
-- **Modern Python stack**
-  - **Backend**: FastAPI, SQLModel, SQLite (by default).
-  - **Frontend**: Streamlit UI.
-  - **Shared**: Pydantic/SQLModel models shared across services.
-  - **Tooling**: `uv` workspace, pytest, black, pylint, mypy.
+- 📚 **Smart Score Library**: Upload PDFs, manage metadata (composer, genre, period), and track your play counts per score. Every library is safely tied to your personal user account.
+- 🎹 **Built-in Practice Reader**: A comfortable, Streamlit-powered PDF reader optimized for practice sessions.
+- 🤖 **Advanced AI Assistant**: Powered by `pydantic-ai`.
+  - Chat to find the perfect piece in your library (e.g., "Find me an easy piece by Bach").
+  - **Auto-enrich** missing score metadata using automated web search tools.
+  - **IMSLP Integration**: Query the public domain IMSLP database using natural language (powered by MCP).
+- 🛠️ **Modern Stack**: Built with FastAPI, SQLModel, Streamlit, and blazing-fast tooling with `uv`.
 
 ---
 
