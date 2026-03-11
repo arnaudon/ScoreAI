@@ -133,6 +133,55 @@ export const actions: Actions = {
 			return fail(500, { error: 'Server error when contacting backend' });
 		}
 	},
+	ask_agent: async ({ request, cookies, fetch }) => {
+		const token = cookies.get('access_token');
+		if (!token) {
+			return fail(401, { error: 'Unauthorized' });
+		}
+
+		const data = await request.formData();
+		const prompt = data.get('prompt');
+
+		if (!prompt) {
+			return fail(400, { error: 'Missing prompt' });
+		}
+
+		try {
+			const res = await fetch(`${BACKEND_URL}/agent/imslp`, {
+				method: 'POST',
+				headers: {
+					Authorization: `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ prompt: prompt.toString() })
+			});
+
+			if (!res.ok) {
+				return fail(res.status, { error: 'Failed to query agent' });
+			}
+
+			const agent_results = await res.json();
+			let scores = agent_results.scores || [];
+			
+			// If the agent returned score_ids but no detailed score objects, fetch the details
+			if (agent_results.score_ids && agent_results.score_ids.length > 0 && scores.length === 0) {
+				const idsParam = encodeURIComponent(JSON.stringify(agent_results.score_ids));
+				const scoresRes = await fetch(`${BACKEND_URL}/imslp/scores_by_ids?score_ids=${idsParam}`, {
+					headers: { Authorization: `Bearer ${token}` }
+				});
+				if (scoresRes.ok) {
+					scores = await scoresRes.json();
+				}
+			}
+			
+			agent_results.scores = scores;
+
+			return { success: true, agent_results };
+		} catch (error) {
+			console.error('Ask agent error:', error);
+			return fail(500, { error: 'Server error when contacting backend' });
+		}
+	},
 	add_imslp: async ({ request, cookies, fetch }) => {
 		const token = cookies.get('access_token');
 		if (!token) {

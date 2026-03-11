@@ -104,6 +104,7 @@
 			<Tabs.List class="mb-4">
 				<Tabs.Trigger value="manual">Manual Upload</Tabs.Trigger>
 				<Tabs.Trigger value="imslp">From IMSLP</Tabs.Trigger>
+				<Tabs.Trigger value="agent">Ask Agent</Tabs.Trigger>
 			</Tabs.List>
 			<Tabs.Content value="manual">
 				<form method="POST" action="?/upload" enctype="multipart/form-data" use:enhance={() => {
@@ -146,6 +147,54 @@
 						{uploading ? 'Adding...' : 'Add from IMSLP'}
 					</Button>
 				</form>
+			</Tabs.Content>
+			<Tabs.Content value="agent">
+				<form method="POST" action="?/ask_agent" use:enhance={() => {
+					uploading = true;
+					return async ({ update }) => {
+						uploading = false;
+						update();
+					};
+				}} class="flex flex-col gap-4">
+					<div class="flex-1 space-y-2">
+						<label for="prompt" class="text-sm font-medium leading-none">What are you looking for?</label>
+						<Input id="prompt" name="prompt" placeholder="e.g. Find me piano sonatas by Beethoven" required />
+					</div>
+					<Button type="submit" disabled={uploading}>
+						{uploading ? 'Thinking...' : 'Ask Agent'}
+					</Button>
+				</form>
+				{#if form?.agent_results}
+					<div class="mt-4 p-4 border rounded-md bg-muted/50">
+						{#if form.agent_results.response}
+							<p class="mb-4 text-sm whitespace-pre-wrap">{form.agent_results.response}</p>
+						{/if}
+						{#if form.agent_results.scores && form.agent_results.scores.length > 0}
+							<ul class="space-y-2">
+								{#each form.agent_results.scores as score}
+									<li class="flex items-center justify-between bg-background p-3 rounded-md border shadow-sm">
+										<div class="flex flex-col">
+											<span class="text-sm font-bold">{score.composer} - {score.title}</span>
+											<span class="text-xs text-muted-foreground">ID: {score.id} {#if score.instrumentation} • {score.instrumentation}{/if}</span>
+										</div>
+										<form method="POST" action="?/add_imslp" use:enhance={() => {
+											uploading = true;
+											return async ({ update }) => {
+												uploading = false;
+												update();
+											};
+										}}>
+											<input type="hidden" name="imslp_id" value={score.id} />
+											<Button type="submit" size="sm" variant="secondary" disabled={uploading}>Add</Button>
+										</form>
+									</li>
+								{/each}
+							</ul>
+						{:else if form.agent_results.response}
+							<p class="text-sm text-muted-foreground mt-2 text-center">No matching scores found.</p>
+						{/if}
+					</div>
+				{/if}
 			</Tabs.Content>
 		</Tabs.Root>
 		{#if form?.error}
