@@ -3,6 +3,7 @@ import type { PageServerLoad } from './$types';
 import { env } from '$env/dynamic/private';
 
 const BACKEND_URL = env.BACKEND_URL || 'http://localhost:8000';
+const PUBLIC_BACKEND_URL = env.PUBLIC_BACKEND_URL || 'http://localhost:8000';
 
 export const load: PageServerLoad = async ({ cookies, params, fetch }) => {
 	const token = cookies.get('access_token');
@@ -28,12 +29,12 @@ export const load: PageServerLoad = async ({ cookies, params, fetch }) => {
 			return { 
 				score, 
 				token, 
-				backendUrl: BACKEND_URL 
+				publicBackendUrl: PUBLIC_BACKEND_URL 
 			};
 		}
 	} catch (error) {
 		console.error('Failed to fetch score:', error);
 	}
 
-	return { score: null, token, backendUrl: BACKEND_URL };
+	return { score: null, token, publicBackendUrl: PUBLIC_BACKEND_URL };
 };
