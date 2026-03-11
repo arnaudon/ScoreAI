@@ -1,6 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
-import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
 
 const BACKEND_URL = env.BACKEND_URL || 'http://localhost:8000';
@@ -37,7 +36,7 @@ export const actions: Actions = {
 		cookies.set('access_token', tokenData.access_token, {
 			path: '/',
 			httpOnly: true,
-			secure: !dev,
+			secure: false,
 			sameSite: 'strict',
 			maxAge: 60 * 60 * 24 // 1 day
 		});
@@ -92,7 +91,7 @@ export const actions: Actions = {
 			cookies.set('access_token', tokenData.access_token, {
 				path: '/',
 				httpOnly: true,
-				secure: !dev,
+				secure: false,
 				sameSite: 'strict',
 				maxAge: 60 * 60 * 24 // 1 day
 			});

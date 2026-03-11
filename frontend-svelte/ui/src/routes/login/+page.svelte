@@ -2,6 +2,7 @@
 	import type { PageProps } from './$types';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import { enhance } from '$app/forms';
 
 	let { form }: PageProps = $props();
 	let isRegister = $state(false);
@@ -11,7 +12,7 @@
 	<div class="w-full max-w-sm rounded-lg border bg-card p-8 text-card-foreground shadow-sm">
 		<h1 class="mb-6 text-center text-2xl font-bold">{isRegister ? 'Sign Up' : 'Login'}</h1>
 
-		<form method="POST" action={isRegister ? '?/register' : '?/login'} class="space-y-4">
+		<form method="POST" action={isRegister ? '?/register' : '?/login'} class="space-y-4" use:enhance>
 			<div class="space-y-2">
 				<label for="username" class="text-sm font-medium leading-none">Username</label>
 				<Input id="username" name="username" type="text" value={form?.username ?? ''} />
