@@ -9,7 +9,7 @@ Build a digital database of your PDF scores, track your practice sessions, and c
 ## ✨ Features
 
 - 📚 **Smart Score Library**: Upload PDFs, manage metadata (composer, genre, period), and track your play counts per score. Every library is safely tied to your personal user account.
-- 🎹 **Built-in Practice Reader**: A comfortable, Streamlit-powered PDF reader optimized for practice sessions.
+- 🎹 **Built-in Practice Reader**: A comfortable, Svelte-powered PDF reader optimized for practice sessions.
 - 🤖 **Advanced AI Assistant**: Powered by `pydantic-ai`.
   - Chat to find the perfect piece in your library (e.g., "Find me an easy piece by Bach").
   - **Auto-enrich** missing score metadata using automated web search tools.
