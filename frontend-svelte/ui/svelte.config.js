@@ -7,7 +7,7 @@ const config = {
 	kit: {
 		adapter: adapter(),
 		csrf: {
-			trustedOrigins: ['localhost', '127.0.0.1']
+			trustedOrigins: ['localhost', '127.0.0.1', '188.213.128.236', 'http://188.213.128.236', 'https://188.213.128.236']
 		}
 	}
 };
