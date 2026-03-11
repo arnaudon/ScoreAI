@@ -13,18 +13,8 @@ from shared.user import User
 
 
 @pytest.fixture(name="user_in_db")
-def user_in_db_fixture(test_user, session: Session, mocker) -> User:
-    """Create a user in the same DB that app.users.get_user will use.
-
-    We patch app.users.get_session to return the test session so helpers that
-    call next(get_session()) see the in-memory test database.
-    """
-
-    def get_session_override():
-        yield session
-
-    mocker.patch("app.users.get_session", get_session_override)
-
+def user_in_db_fixture(test_user, session: Session) -> User:
+    """Create a user in the same DB."""
     test_user.password = users.get_password_hash("secret")
     session.add(test_user)
     session.commit()
@@ -101,15 +91,8 @@ async def test_get_current_user_valid_invalid_and_missing_sub(user_in_db: User, 
 
 
 @pytest.mark.asyncio
-async def test_get_current_user_missing_user_raises(session: Session, mocker):
+async def test_get_current_user_missing_user_raises(session: Session):
     """If the token refers to a non-existing user, get_current_user raises 401."""
-
-    def empty_session_override():
-        # Provide an empty DB to ensure user lookup fails
-        yield session
-
-    mocker.patch("app.users.get_session", empty_session_override)
-
     # token with username that does not exist
     token = users.create_access_token(data={"sub": "does-not-exist"})
     with pytest.raises(HTTPException) as exc:
@@ -212,6 +195,9 @@ def test_update_password(user_in_db: User, client: TestClient):
 
 def test_delete_account(user_in_db: User, client: TestClient):
     """DELETE /user deletes the account."""
+    from app.main import app
+    app.dependency_overrides.pop(users.get_current_user, None)
+
     token = users.create_access_token(data={"sub": user_in_db.username})
     headers = {"Authorization": f"Bearer {token}"}
 
