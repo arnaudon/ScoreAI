@@ -4,12 +4,11 @@ import json
 import uuid
 from contextlib import asynccontextmanager
 from logging import getLogger
-from pathlib import Path
 from typing import Annotated, AsyncGenerator
 
-from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi import Body, Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from fastapi.staticfiles import StaticFiles
 from sqlmodel import Session, select
 
 from app import imslp, users
@@ -31,9 +30,13 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:  # pragma: no cove
 
 
 app = FastAPI(lifespan=lifespan)
-# mount PDF.js for pdf rendering
-current_file = Path(__file__).resolve()
-app.mount("/pdfjs", StaticFiles(directory=current_file.parent / "pdfjs"), name="pdfjs")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(users.router, tags=["users"])
 app.include_router(imslp.router, tags=["imslp"])
@@ -108,10 +111,10 @@ async def run_imslp_agent_api(prompt: str, message_history=None):  # pragma: no 
 
 @app.post("/agent")
 async def run_main_agent(
-    prompt: str,
-    deps: str,
     current_user: Annotated[User, Depends(get_current_user)],
-    message_history=None,
+    prompt: str = Body(...),
+    deps: str = Body(...),
+    message_history: list | None = Body(None),
 ):  # pragma: no cover
     """Run the agent."""
     return await run_agent(

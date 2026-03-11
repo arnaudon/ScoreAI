@@ -5,11 +5,12 @@ import random
 from typing import Any
 
 from dotenv import load_dotenv
-from pydantic import BaseModel
+from pydantic import BaseModel, TypeAdapter
 from pydantic_ai import Agent, RunContext
 from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
 from pydantic_ai.exceptions import ModelHTTPError
 from pydantic_ai.mcp import MCPServerSSE
+from pydantic_ai.messages import ModelMessage
 
 from shared.responses import FullResponse, ImslpFullResponse, ImslpResponse, Response
 from shared.scores import Difficulty, Score, Scores
@@ -145,6 +146,13 @@ async def run_imslp_agent(prompt: str, message_history=None):
         retries=3,
     )
 
+    if message_history:
+        try:
+            adapter = TypeAdapter(list[ModelMessage])
+            message_history = adapter.validate_python(message_history)
+        except Exception:  # pylint: disable=broad-exception-caught
+            message_history = None
+
     try:
         res = await agent.run(
             prompt,
@@ -180,6 +188,14 @@ async def run_agent(prompt: str, deps: Deps, message_history=None):
         A FullResponse object containing the agent's response and message history.
     """
     agent = get_main_agent()
+
+    if message_history:
+        try:
+            adapter = TypeAdapter(list[ModelMessage])
+            message_history = adapter.validate_python(message_history)
+        except Exception:  # pylint: disable=broad-exception-caught
+            message_history = None
+
     try:
         res = await agent.run(
             prompt,

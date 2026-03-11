@@ -11,11 +11,11 @@
 </script>
 
 <div class="max-w-3xl py-4">
-	<h1 class="mb-8 text-3xl font-bold text-foreground">Account Management</h1>
+	<h1 class="text-fancy-title mb-8 text-3xl font-bold text-foreground">Account Management</h1>
 
 	<div class="space-y-8">
-		<section class="rounded-md border bg-card p-6 text-card-foreground shadow-sm">
-			<h2 class="mb-4 text-xl font-semibold">Profile Information</h2>
+		<section class="rounded-md border bg-card p-6 text-card-foreground shadow-card">
+			<h2 class="text-fancy-title mb-4 text-xl font-semibold">Profile Information</h2>
 			<p class="mb-6 text-sm text-muted-foreground">View your account's profile information.</p>
 			
 			<div class="space-y-4">
@@ -30,8 +30,8 @@
 			</div>
 		</section>
 
-		<section class="rounded-md border bg-card p-6 text-card-foreground shadow-sm">
-			<h2 class="mb-4 text-xl font-semibold">Change Password</h2>
+		<section class="rounded-md border bg-card p-6 text-card-foreground shadow-card">
+			<h2 class="text-fancy-title mb-4 text-xl font-semibold">Change Password</h2>
 			<p class="mb-6 text-sm text-muted-foreground">Ensure your account is using a long, random password to stay secure.</p>
 			
 			<form method="POST" action="?/update_password" class="space-y-4" use:enhance={() => {
@@ -67,8 +67,8 @@
 			</form>
 		</section>
 		
-		<section class="rounded-md border border-destructive/20 bg-card p-6 text-card-foreground shadow-sm">
-			<h2 class="mb-4 text-xl font-semibold text-destructive">Danger Zone</h2>
+		<section class="rounded-md border border-destructive/20 bg-card p-6 text-card-foreground shadow-card">
+			<h2 class="text-fancy-title mb-4 text-xl font-semibold text-destructive">Danger Zone</h2>
 			<p class="mb-6 text-sm text-muted-foreground">Once you delete your account, there is no going back. Please be certain.</p>
 			
 			<form method="POST" action="?/delete_account" use:enhance={() => {

@@ -17,9 +17,19 @@ export const actions: Actions = {
 		const token = cookies.get('access_token');
 		const data = await request.formData();
 		const question = data.get('question');
+		const messageHistoryRaw = data.get('message_history');
 
 		if (!question) {
 			return fail(400, { error: 'Missing question' });
+		}
+
+		let messageHistory = null;
+		if (messageHistoryRaw) {
+			try {
+				messageHistory = JSON.parse(messageHistoryRaw.toString());
+			} catch (e) {
+				console.error('Failed to parse message_history', e);
+			}
 		}
 
 		try {
@@ -31,11 +41,17 @@ export const actions: Actions = {
 			const scores = scoresRes.ok ? await scoresRes.json() : [];
 			const deps = JSON.stringify({ scores });
 
-			const response = await fetch(`${BACKEND_URL}/agent?prompt=${encodeURIComponent(question.toString())}&deps=${encodeURIComponent(deps)}`, {
+			const response = await fetch(`${BACKEND_URL}/agent`, {
 				method: 'POST',
 				headers: {
-					Authorization: `Bearer ${token}`
-				}
+					Authorization: `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					prompt: question.toString(),
+					deps: deps,
+					message_history: messageHistory
+				})
 			});
 
 			if (response.ok) {

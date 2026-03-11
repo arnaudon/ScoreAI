@@ -14,6 +14,9 @@ const config = {
 			},
 		},
 		extend: {
+			boxShadow: {
+				card: 'var(--card-shadow)'
+			},
 			colors: {
 				border: "hsl(var(--border) / <alpha-value>)",
 				input: "hsl(var(--input) / <alpha-value>)",
@@ -69,7 +72,7 @@ const config = {
 				sm: "calc(var(--radius) - 4px)",
 			},
 			fontFamily: {
-				sans: [...fontFamily.sans],
+				sans: ["EB Garamond", ...fontFamily.sans],
 			},
 		},
 	},

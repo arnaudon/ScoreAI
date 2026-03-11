@@ -8,6 +8,8 @@ from pydantic_ai.models.test import TestModel
 
 from app import agent
 from shared.responses import FullResponse
+from shared.responses import ImslpResponse
+from shared.responses import Response
 from shared.scores import Difficulty, Score, Scores
 from shared.user import User
 
@@ -211,3 +213,55 @@ async def test_run_complete_agent_exception(monkeypatch):
     score = Score(title="test", composer="test")
     result = await agent.run_complete_agent(score)
     assert result == score
+
+
+@pytest.mark.asyncio
+async def test_run_imslp_agent_success(monkeypatch):
+    """Test run_imslp_agent success path."""
+
+    mock_result = MagicMock()
+    mock_result.output = ImslpResponse(response="success", score_ids=[1])
+    mock_result.all_messages.return_value = []
+    mock_agent_run = AsyncMock(return_value=mock_result)
+    mock_agent_instance = MagicMock()
+    mock_agent_instance.run = mock_agent_run
+    monkeypatch.setattr("app.agent.Agent", MagicMock(return_value=mock_agent_instance))
+
+    result = await agent.run_imslp_agent("prompt")
+    assert result.response.response == "success"
+    assert result.response.score_ids == [1]
+
+
+@pytest.mark.asyncio
+async def test_run_imslp_agent_history_parsing(monkeypatch):
+    """Test message history parsing in run_imslp_agent."""
+
+    mock_result = MagicMock()
+    mock_result.output = ImslpResponse(response="success", score_ids=[])
+    mock_result.all_messages.return_value = []
+    mock_agent_run = AsyncMock(return_value=mock_result)
+    mock_agent_instance = MagicMock()
+    mock_agent_instance.run = mock_agent_run
+    monkeypatch.setattr("app.agent.Agent", MagicMock(return_value=mock_agent_instance))
+
+    # Invalid history triggers except block and defaults to None
+    await agent.run_imslp_agent("prompt", message_history="invalid_history")
+    mock_agent_run.assert_called_with("prompt", message_history=None)
+
+
+@pytest.mark.asyncio
+async def test_run_agent_history_parsing(monkeypatch):
+    """Test message history parsing in run_agent."""
+
+    mock_result = MagicMock()
+    mock_result.output = Response(response="success")
+    mock_result.all_messages.return_value = []
+    mock_agent_run = AsyncMock(return_value=mock_result)
+    mock_agent = MagicMock()
+    mock_agent.run = mock_agent_run
+    monkeypatch.setattr("app.agent.get_main_agent", lambda: mock_agent)
+
+    deps = agent.Deps(user=User(username="test"), scores=Scores(scores=[]))
+    # Invalid history triggers except block and defaults to None
+    await agent.run_agent("prompt", deps, message_history="invalid_history")
+    mock_agent_run.assert_called_with("prompt", message_history=None, deps=deps)

@@ -10,6 +10,11 @@ export default defineConfig({
 		sveltekit(),
 		paraglideVitePlugin({ project: './project.inlang', outdir: './src/lib/paraglide' })
 	],
+	server: {
+		watch: {
+			usePolling: true
+		}
+	},
 	test: {
 		expect: { requireAssertions: true },
 		projects: [

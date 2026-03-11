@@ -3,6 +3,7 @@
 	import { enhance } from '$app/forms';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Sheet from '$lib/components/ui/sheet/index.js';
+	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import {
@@ -20,6 +21,8 @@
 
 	let { data, form }: PageProps = $props();
 	let selectedScoreId = $state<number | null>(null);
+	let agentSelectedScore = $state<any>(null);
+	let imslpSheetOpen = $state(false);
 	let uploading = $state(false);
 	let sheetOpen = $state(false);
 	let selectedScore = $derived(data.scores.find((s: any) => s.id === selectedScoreId));
@@ -36,6 +39,11 @@
 		{ 
 			accessorKey: 'composer', 
 			header: ({ column }) => renderComponent(DataTableSortButton, { title: 'Composer', onclick: column.getToggleSortingHandler() }) 
+		},
+		{ 
+			accessorKey: 'instrumentation', 
+			header: ({ column }) => renderComponent(DataTableSortButton, { title: 'Instrumentation', onclick: column.getToggleSortingHandler() }),
+			cell: ({ row }) => row.original.instrumentation || '-'
 		},
 		{ 
 			accessorKey: 'year', 
@@ -94,44 +102,204 @@
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel()
 	});
+
+	let imslpPagination = $state<PaginationState>({ pageIndex: 0, pageSize: 5 });
+	let imslpSorting = $state<SortingState>([]);
+	let imslpColumnFilters = $state<ColumnFiltersState>([]);
+
+	const imslpColumns: ColumnDef<any>[] = [
+		{ 
+			accessorKey: 'composer', 
+			header: ({ column }) => renderComponent(DataTableSortButton, { title: 'Composer', onclick: column.getToggleSortingHandler() }) 
+		},
+		{ 
+			accessorKey: 'title', 
+			header: ({ column }) => renderComponent(DataTableSortButton, { title: 'Title', onclick: column.getToggleSortingHandler() }) 
+		},
+		{ 
+			accessorKey: 'instrumentation', 
+			header: ({ column }) => renderComponent(DataTableSortButton, { title: 'Instrumentation', onclick: column.getToggleSortingHandler() }),
+			cell: ({ row }) => row.original.instrumentation || '-'
+		},
+		{ 
+			accessorKey: 'year', 
+			header: ({ column }) => renderComponent(DataTableSortButton, { title: 'Year', onclick: column.getToggleSortingHandler() }),
+			cell: ({ row }) => row.original.year || '-'
+		}
+	];
+
+	const imslpTable = createSvelteTable({
+		get data() {
+			return form?.agent_results?.scores || [];
+		},
+		columns: imslpColumns,
+		state: {
+			get pagination() { return imslpPagination; },
+			get sorting() { return imslpSorting; },
+			get columnFilters() { return imslpColumnFilters; }
+		},
+		onPaginationChange: (updater) => {
+			if (typeof updater === 'function') {
+				imslpPagination = updater(imslpPagination);
+			} else {
+				imslpPagination = updater;
+			}
+		},
+		onSortingChange: (updater) => {
+			if (typeof updater === 'function') {
+				imslpSorting = updater(imslpSorting);
+			} else {
+				imslpSorting = updater;
+			}
+		},
+		onColumnFiltersChange: (updater) => {
+			if (typeof updater === 'function') {
+				imslpColumnFilters = updater(imslpColumnFilters);
+			} else {
+				imslpColumnFilters = updater;
+			}
+		},
+		getCoreRowModel: getCoreRowModel(),
+		getPaginationRowModel: getPaginationRowModel(),
+		getSortedRowModel: getSortedRowModel(),
+		getFilteredRowModel: getFilteredRowModel()
+	});
 </script>
 
 <div class="p-8">
-	<div class="mb-8 rounded-md border bg-card p-4 shadow-sm text-card-foreground">
-		<h2 class="mb-4 text-lg font-semibold">Add New Score</h2>
-		<form method="POST" action="?/upload" enctype="multipart/form-data" use:enhance={() => {
-			uploading = true;
-			return async ({ update }) => {
-				uploading = false;
-				update();
-			};
-		}} class="flex flex-col gap-4 md:flex-row md:items-end">
-			<div class="flex-1 space-y-2">
-				<label for="title" class="text-sm font-medium leading-none">Title</label>
-				<Input id="title" name="title" required />
-			</div>
-			<div class="flex-1 space-y-2">
-				<label for="composer" class="text-sm font-medium leading-none">Composer</label>
-				<Input id="composer" name="composer" required />
-			</div>
-			<div class="flex-1 space-y-2">
-				<label for="file" class="text-sm font-medium leading-none">PDF File</label>
-				<Input id="file" name="file" type="file" accept="application/pdf" required />
-			</div>
-			<Button type="submit" disabled={uploading}>
-				{uploading ? 'Uploading...' : 'Upload & Save'}
-			</Button>
-		</form>
+	<div class="mb-8 rounded-md border bg-card p-4 text-card-foreground shadow-card">
+		<h2 class="text-fancy-title mb-4 text-lg font-semibold">Add New Score</h2>
+		<Tabs.Root value="manual" class="w-full">
+			<Tabs.List class="mb-4">
+				<Tabs.Trigger value="manual">Manual Upload</Tabs.Trigger>
+				<Tabs.Trigger value="imslp">From IMSLP</Tabs.Trigger>
+			</Tabs.List>
+			<Tabs.Content value="manual">
+				<form method="POST" action="?/upload" enctype="multipart/form-data" use:enhance={() => {
+					uploading = true;
+					return async ({ update }) => {
+						uploading = false;
+						update();
+					};
+				}} class="flex flex-col gap-4 md:flex-row md:items-end">
+					<div class="flex-1 space-y-2">
+						<label for="title" class="text-sm font-medium leading-none">Title</label>
+						<Input id="title" name="title" required />
+					</div>
+					<div class="flex-1 space-y-2">
+						<label for="composer" class="text-sm font-medium leading-none">Composer</label>
+						<Input id="composer" name="composer" required />
+					</div>
+					<div class="flex-1 space-y-2">
+						<label for="file" class="text-sm font-medium leading-none">PDF File</label>
+						<Input id="file" name="file" type="file" accept="application/pdf" required />
+					</div>
+					<Button type="submit" disabled={uploading}>
+						{uploading ? 'Adding...' : 'Add'}
+					</Button>
+				</form>
+			</Tabs.Content>
+			<Tabs.Content value="imslp">
+				<form method="POST" action="?/ask_agent" use:enhance={() => {
+					uploading = true;
+					return async ({ update }) => {
+						uploading = false;
+						update();
+					};
+				}} class="flex flex-col gap-4">
+					<div class="flex-1 space-y-2">
+						<label for="prompt" class="text-sm font-medium leading-none">What are you looking for?</label>
+						<Input id="prompt" name="prompt" placeholder="e.g. Find me piano sonatas by Beethoven" required />
+					</div>
+					<Button type="submit" disabled={uploading}>
+						{uploading ? 'Thinking...' : 'Ask Agent'}
+					</Button>
+				</form>
+				{#if form?.agent_results}
+					<div class="mt-4 p-4 border rounded-md bg-muted/50">
+						{#if form.agent_results.response}
+							<p class="mb-4 text-sm whitespace-pre-wrap">{form.agent_results.response}</p>
+						{/if}
+						{#if form.agent_results.scores && form.agent_results.scores.length > 0}
+							<div class="mb-4 overflow-hidden rounded-md border bg-card text-card-foreground shadow-card">
+								<Table.Root>
+									<Table.Header>
+										{#each imslpTable.getHeaderGroups() as headerGroup (headerGroup.id)}
+											<Table.Row>
+												{#each headerGroup.headers as header (header.id)}
+													<Table.Head>
+														{#if !header.isPlaceholder}
+															<FlexRender
+																content={header.column.columnDef.header}
+																context={header.getContext()}
+															/>
+														{/if}
+													</Table.Head>
+												{/each}
+											</Table.Row>
+										{/each}
+									</Table.Header>
+									<Table.Body>
+										{#each imslpTable.getRowModel().rows as row (row.id)}
+											<Table.Row class="cursor-pointer transition-colors hover:bg-muted/50 {agentSelectedScore?.id === row.original.id ? 'bg-muted' : ''}" onclick={() => {
+												if (!uploading) {
+													agentSelectedScore = row.original;
+													imslpSheetOpen = true;
+												}
+											}}>
+												{#each row.getVisibleCells() as cell (cell.id)}
+													<Table.Cell class="max-w-[120px] truncate sm:max-w-[150px] md:max-w-[200px]">
+														<FlexRender
+															content={cell.column.columnDef.cell}
+															context={cell.getContext()}
+														/>
+													</Table.Cell>
+												{/each}
+											</Table.Row>
+										{/each}
+									</Table.Body>
+								</Table.Root>
+								
+								<div class="flex items-center justify-end space-x-2 py-4 px-4 border-t">
+									<div class="flex-1 text-sm text-muted-foreground">
+										Showing min({imslpTable.getRowModel().rows.length}, {imslpTable.getFilteredRowModel().rows.length}) results.
+									</div>
+									<Button
+										variant="outline"
+										size="sm"
+										onclick={() => imslpTable.previousPage()}
+										disabled={!imslpTable.getCanPreviousPage()}
+									>
+										Previous
+									</Button>
+									<Button
+										variant="outline"
+										size="sm"
+										onclick={() => imslpTable.nextPage()}
+										disabled={!imslpTable.getCanNextPage()}
+									>
+										Next
+									</Button>
+								</div>
+							</div>
+
+						{:else if form.agent_results.response}
+							<p class="text-sm text-muted-foreground mt-2 text-center">No matching scores found.</p>
+						{/if}
+					</div>
+				{/if}
+			</Tabs.Content>
+		</Tabs.Root>
 		{#if form?.error}
 			<p class="mt-4 text-sm font-medium text-destructive">{form.error}</p>
 		{/if}
-		{#if form?.success}
+		{#if form?.scoreAdded}
 			<p class="mt-4 text-sm font-medium text-green-600 dark:text-green-400">Score added successfully!</p>
 		{/if}
 	</div>
 
 	<div class="mb-4 flex items-center justify-between">
-		<h1 class="text-2xl font-bold text-foreground">Database Viewer</h1>
+		<h1 class="text-fancy-title text-2xl font-bold text-foreground">Database Viewer</h1>
 		{#if selectedScoreId}
 			<div class="flex gap-2">
 				<form method="POST" action="?/delete" use:enhance={() => {
@@ -163,6 +331,12 @@
 			oninput={(e) => table.getColumn("composer")?.setFilterValue(e.currentTarget.value)}
 			class="max-w-xs"
 		/>
+		<Input
+			placeholder="Filter instrumentation..."
+			value={(table.getColumn("instrumentation")?.getFilterValue() as string) ?? ""}
+			oninput={(e) => table.getColumn("instrumentation")?.setFilterValue(e.currentTarget.value)}
+			class="max-w-xs"
+		/>
 		<div class="flex items-center gap-2">
 			<span class="text-sm font-medium">Year:</span>
 			<Input
@@ -191,7 +365,7 @@
 		</div>
 	</div>
 
-	<div class="rounded-md border bg-card text-card-foreground">
+	<div class="rounded-md border bg-card text-card-foreground shadow-card">
 		<Table.Root>
 			<Table.Header>
 				{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
@@ -216,7 +390,7 @@
 						onclick={() => { selectedScoreId = row.original.id; sheetOpen = true; }}
 					>
 						{#each row.getVisibleCells() as cell (cell.id)}
-							<Table.Cell>
+							<Table.Cell class="max-w-[120px] truncate sm:max-w-[150px] md:max-w-[200px]">
 								<FlexRender
 									content={cell.column.columnDef.cell}
 									context={cell.getContext()}
@@ -297,6 +471,66 @@
 				}}>
 					<input type="hidden" name="id" value={selectedScore.id} />
 					<Button type="submit" variant="destructive" class="w-full">Delete Score</Button>
+				</form>
+			</div>
+		{/if}
+	</Sheet.Content>
+</Sheet.Root>
+
+<Sheet.Root bind:open={imslpSheetOpen}>
+	<Sheet.Content class="w-full overflow-y-auto sm:max-w-md">
+		<Sheet.Header>
+			<Sheet.Title>IMSLP Score Details</Sheet.Title>
+			<Sheet.Description>Full metadata for the selected IMSLP score.</Sheet.Description>
+		</Sheet.Header>
+		{#if agentSelectedScore}
+			<div class="mt-6 flex flex-col gap-3">
+				{#each Object.entries(agentSelectedScore) as [key, value]}
+					{#if key !== 'score_metadata'}
+						<div class="grid grid-cols-3 gap-2 border-b border-border pb-2 last:border-0">
+							<span class="text-sm font-semibold capitalize text-foreground">
+								{key.replace(/_/g, ' ')}
+							</span>
+							<span class="col-span-2 text-sm text-muted-foreground break-words">
+								{#if key === 'permlink' && value}
+									<a href={value as string} target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline">
+										View on IMSLP
+									</a>
+								{:else}
+									{value !== null && value !== '' ? value : '-'}
+								{/if}
+							</span>
+						</div>
+					{/if}
+				{/each}
+			</div>
+			
+			<div class="mt-8 flex flex-col gap-4 border-t border-border pt-4">
+				<h3 class="font-semibold text-foreground">Add this Score</h3>
+				<p class="text-sm text-muted-foreground">
+					1. Download PDF from IMSLP: <br/>
+					<a href={agentSelectedScore.permlink} target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline break-all">{agentSelectedScore.permlink}</a>
+				</p>
+				<p class="text-sm text-muted-foreground">
+					2. Upload the downloaded PDF below:
+				</p>
+				<form method="POST" action="?/add_imslp" enctype="multipart/form-data" use:enhance={() => {
+					uploading = true;
+					return async ({ update }) => {
+						uploading = false;
+						agentSelectedScore = null;
+						imslpSheetOpen = false;
+						update();
+					};
+				}} class="flex flex-col gap-4">
+					<input type="hidden" name="imslp_id" value={agentSelectedScore.id} />
+					<div class="space-y-2">
+						<label for="agent_file_sheet" class="text-sm font-medium leading-none">PDF File</label>
+						<Input id="agent_file_sheet" name="file" type="file" accept="application/pdf" required />
+					</div>
+					<Button type="submit" disabled={uploading} class="w-full">
+						{uploading ? 'Adding...' : 'Add Score'}
+					</Button>
 				</form>
 			</div>
 		{/if}

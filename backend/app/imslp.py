@@ -175,9 +175,9 @@ async def get_works():
                 break
 
             # add entries
-            for i, item in data.items():
-                i = int(i) + start
-                await add_entry(i, item, session)
+            for item_id, item in data.items():
+                item_id = int(item_id) + start
+                await add_entry(item_id, item, session)
 
                 # cancelled by user
                 if progress_tracker["cancel_requested"]:
@@ -190,6 +190,7 @@ async def get_works():
 @router.post("/start/{max_pages}", dependencies=[Depends(get_admin_user)])
 def update_imslp_database(max_pages: int, background_tasks: BackgroundTasks):
     """Update the Imslp database."""
+    progress_tracker["cancel_requested"] = False
     background_tasks.add_task(get_works)
     progress_tracker["page"] = 0
     progress_tracker["status"] = "starting"

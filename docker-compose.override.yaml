@@ -22,9 +22,10 @@ services:
 
   frontend:
     ports:
-      - '5173:5173'
+      - '3000:3000'
     volumes:
-      - ./frontend-svelte:/app/frontend-svelte
+      - ./frontend-svelte/ui:/app
+      - /app/node_modules
       - ./shared:/app/shared
     environment:
       - BACKEND_URL=http://backend:8000

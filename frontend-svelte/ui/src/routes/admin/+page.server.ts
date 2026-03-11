@@ -24,13 +24,58 @@ export const load: PageServerLoad = async ({ cookies, fetch }) => {
 			}
 		});
 
+		let users = [];
 		if (response.ok) {
-			const users = await response.json();
-			return { users };
+			users = await response.json();
 		}
+
+		let stats = { total_works: 0, total_composers: 0 };
+		const statsResponse = await fetch(`${BACKEND_URL}/imslp/stats`, {
+			headers: { Authorization: `Bearer ${token}` }
+		});
+		if (statsResponse.ok) {
+			stats = await statsResponse.json();
+		}
+
+		let progress = { status: 'idle', page: 0, total: 0 };
+		const progressResponse = await fetch(`${BACKEND_URL}/imslp/progress`, {
+			method: 'POST',
+			headers: { Authorization: `Bearer ${token}` }
+		});
+		if (progressResponse.ok) {
+			progress = await progressResponse.json();
+		}
+
+		return { users, stats, progress };
 	} catch (error) {
-		console.error('Failed to fetch users:', error);
+		console.error('Failed to fetch admin data:', error);
 	}
 
-	return { users: [] };
+	return { users: [], stats: { total_works: 0, total_composers: 0 }, progress: { status: 'idle', page: 0, total: 0 } };
+};
+
+export const actions = {
+	update: async ({ request, cookies, fetch }) => {
+		const data = await request.formData();
+		const maxPages = data.get('max_pages') || '300';
+		const token = cookies.get('access_token');
+		await fetch(`${BACKEND_URL}/imslp/start/${maxPages}`, {
+			method: 'POST',
+			headers: { Authorization: `Bearer ${token}` }
+		});
+	},
+	empty: async ({ cookies, fetch }) => {
+		const token = cookies.get('access_token');
+		await fetch(`${BACKEND_URL}/imslp/empty`, {
+			method: 'POST',
+			headers: { Authorization: `Bearer ${token}` }
+		});
+	},
+	cancel: async ({ cookies, fetch }) => {
+		const token = cookies.get('access_token');
+		await fetch(`${BACKEND_URL}/imslp/cancel`, {
+			method: 'POST',
+			headers: { Authorization: `Bearer ${token}` }
+		});
+	}
 };

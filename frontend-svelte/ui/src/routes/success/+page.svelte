@@ -3,20 +3,35 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
+	import * as Sheet from '$lib/components/ui/sheet/index.js';
 
 	let { form } = $props();
 	let history = $state<{question: string, answer: string, score_id?: number, scoreDetails?: any}[]>([]);
+	let rawHistory = $state<any[]>([]);
 	let loading = $state(false);
+	let scrollContainer: HTMLElement | undefined = $state();
+	let sheetOpen = $state(false);
+	let selectedScoreDetails = $state<any>(null);
+
+	$effect(() => {
+		// Watch these variables to trigger scroll after DOM updates
+		history;
+		loading;
+		if (scrollContainer) {
+			scrollContainer.scrollTop = scrollContainer.scrollHeight;
+		}
+	});
 
 	function clearHistory() {
 		history = [];
+		rawHistory = [];
 	}
 </script>
 
-<div class="flex flex-col h-full max-w-4xl mx-auto py-8 px-4">
+<div class="flex flex-col h-[calc(100vh-8rem)] max-w-4xl mx-auto w-full">
 	<h1 class="text-2xl font-bold mb-4 text-foreground">Agent</h1>
 
-	<div class="flex-1 overflow-y-auto mb-4 space-y-4 min-h-[50vh]">
+	<div class="flex-1 overflow-y-auto mb-4 space-y-4 pr-2" bind:this={scrollContainer}>
 		{#each history as msg}
 			<div class="bg-muted p-4 rounded-lg">
 				<p class="font-bold text-foreground">Q: {msg.question}</p>
@@ -32,7 +47,10 @@
 								</Table.Row>
 							</Table.Header>
 							<Table.Body>
-								<Table.Row>
+								<Table.Row class="cursor-pointer transition-colors hover:bg-muted/50" onclick={() => {
+									selectedScoreDetails = msg.scoreDetails;
+									sheetOpen = true;
+								}}>
 									<Table.Cell>{msg.scoreDetails.id}</Table.Cell>
 									<Table.Cell>{msg.scoreDetails.title}</Table.Cell>
 									<Table.Cell>{msg.scoreDetails.composer}</Table.Cell>
@@ -72,6 +90,10 @@
 						
 						let scoreId = data.answer?.score_id || data.answer?.response?.score_id;
 
+						if (data.answer?.message_history) {
+							rawHistory = data.answer.message_history;
+						}
+
 						history.push({
 							question: data.question,
 							answer: typeof textAns === 'string' ? textAns : JSON.stringify(textAns, null, 2),
@@ -83,6 +105,7 @@
 				update({ reset: true });
 			};
 		}} class="flex gap-2">
+			<input type="hidden" name="message_history" value={JSON.stringify(rawHistory)} />
 			<Input name="question" placeholder="Question" required />
 			<Button type="submit" disabled={loading}>Ask</Button>
 		</form>
@@ -104,3 +127,36 @@
 		</div>
 	</div>
 </div>
+
+<Sheet.Root bind:open={sheetOpen}>
+	<Sheet.Content class="w-full overflow-y-auto sm:max-w-md">
+		<Sheet.Header>
+			<Sheet.Title>Score Details</Sheet.Title>
+			<Sheet.Description>Full metadata for the selected score.</Sheet.Description>
+		</Sheet.Header>
+		{#if selectedScoreDetails}
+			<div class="mt-6 flex flex-col gap-3">
+				{#each Object.entries(selectedScoreDetails) as [key, value]}
+					<div class="grid grid-cols-3 gap-2 border-b border-border pb-2 last:border-0">
+						<span class="text-sm font-semibold capitalize text-foreground">
+							{key.replace(/_/g, ' ')}
+						</span>
+						<span class="col-span-2 text-sm text-muted-foreground break-words">
+							{#if key === 'youtube_url' && value}
+								<a href={value as string} target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline">
+									Watch on YouTube
+								</a>
+							{:else}
+								{value !== null && value !== '' ? value : '-'}
+							{/if}
+						</span>
+					</div>
+				{/each}
+			</div>
+			
+			<div class="mt-8 flex flex-col gap-2">
+				<Button href="/reader/{selectedScoreDetails.id}" class="w-full">View PDF</Button>
+			</div>
+		{/if}
+	</Sheet.Content>
+</Sheet.Root>

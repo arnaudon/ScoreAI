@@ -127,9 +127,139 @@ export const actions: Actions = {
 				return fail(scoreRes.status, { error: 'Failed to save score' });
 			}
 
-			return { success: true };
+			return { success: true, scoreAdded: true };
 		} catch (error) {
 			console.error('Upload error:', error);
+			return fail(500, { error: 'Server error when contacting backend' });
+		}
+	},
+	ask_agent: async ({ request, cookies, fetch }) => {
+		const token = cookies.get('access_token');
+		if (!token) {
+			return fail(401, { error: 'Unauthorized' });
+		}
+
+		const data = await request.formData();
+		const prompt = data.get('prompt');
+
+		if (!prompt) {
+			return fail(400, { error: 'Missing prompt' });
+		}
+
+		try {
+			const promptParam = encodeURIComponent(prompt.toString());
+			const res = await fetch(`${BACKEND_URL}/imslp_agent?prompt=${promptParam}`, {
+				method: 'POST',
+				headers: { Authorization: `Bearer ${token}` }
+			});
+
+			if (!res.ok) {
+				return fail(res.status, { error: 'Failed to query agent' });
+			}
+
+			const json = await res.json();
+			let scores = [];
+			const score_ids = json.response?.score_ids || [];
+			const agent_response_text = json.response?.response || '';
+			
+			if (score_ids.length > 0) {
+				const idsParam = encodeURIComponent(JSON.stringify(score_ids));
+				const scoresRes = await fetch(`${BACKEND_URL}/imslp/scores_by_ids?score_ids=${idsParam}`, {
+					headers: { Authorization: `Bearer ${token}` }
+				});
+				if (scoresRes.ok) {
+					scores = await scoresRes.json();
+				}
+			}
+
+			return { success: true, agent_results: { response: agent_response_text, scores } };
+		} catch (error) {
+			console.error('Ask agent error:', error);
+			return fail(500, { error: 'Server error when contacting backend' });
+		}
+	},
+	add_imslp: async ({ request, cookies, fetch }) => {
+		const token = cookies.get('access_token');
+		if (!token) {
+			return fail(401, { error: 'Unauthorized' });
+		}
+
+		const data = await request.formData();
+		const imslp_id = data.get('imslp_id');
+		const file = data.get('file') as File;
+
+		if (!imslp_id || !file || file.size === 0) {
+			return fail(400, { error: 'Missing IMSLP ID or PDF File' });
+		}
+
+		try {
+			// 1. Upload PDF
+			let uploadFilename = file.name;
+			if (!uploadFilename.toLowerCase().endsWith('.pdf')) {
+				uploadFilename += '.pdf';
+			}
+
+			const formData = new FormData();
+			formData.append('file', file, uploadFilename);
+			const uploadRes = await fetch(`${BACKEND_URL}/pdf`, {
+				method: 'POST',
+				headers: {
+					Authorization: `Bearer ${token}`
+				},
+				body: formData
+			});
+
+			if (!uploadRes.ok) {
+				return fail(uploadRes.status, { error: 'Failed to upload PDF' });
+			}
+
+			const uploadData = await uploadRes.json();
+			const filename = uploadData.file_id || uploadFilename;
+
+			// 2. Fetch IMSLP Score Details
+			const idsParam = encodeURIComponent(JSON.stringify([Number(imslp_id)]));
+			const imslpRes = await fetch(`${BACKEND_URL}/imslp/scores_by_ids?score_ids=${idsParam}`, {
+				headers: { Authorization: `Bearer ${token}` }
+			});
+
+			if (!imslpRes.ok) {
+				return fail(imslpRes.status, { error: 'Failed to fetch IMSLP score' });
+			}
+
+			const imslpScores = await imslpRes.json();
+			if (!imslpScores || imslpScores.length === 0) {
+				return fail(404, { error: 'IMSLP score not found' });
+			}
+
+			const imslpScore = imslpScores[0];
+
+			const newScore = {
+				title: imslpScore.title,
+				composer: imslpScore.composer,
+				pdf_path: filename,
+				instrumentation: imslpScore.instrumentation || '',
+				style: imslpScore.style || '',
+				period: imslpScore.period || '',
+				year: imslpScore.year && !isNaN(Number(imslpScore.year)) ? Number(imslpScore.year) : null,
+				key: imslpScore.key || ''
+			};
+
+			const scoreRes = await fetch(`${BACKEND_URL}/scores`, {
+				method: 'POST',
+				headers: {
+					Authorization: `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(newScore)
+			});
+
+			if (!scoreRes.ok) {
+				return fail(scoreRes.status, { error: 'Failed to add score to database' });
+			}
+
+			return { success: true, scoreAdded: true };
+		} catch (error) {
+			console.error('Add IMSLP error:', error);
 			return fail(500, { error: 'Server error when contacting backend' });
 		}
 	},

@@ -27,6 +27,7 @@ services:
     environment:
       - BACKEND_URL=http://backend:8000
       - PUBLIC_BACKEND_URL=http://188.213.128.236:8000
+      - BODY_SIZE_LIMIT=Infinity
     env_file: .env
 
 
