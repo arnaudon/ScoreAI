@@ -21,6 +21,7 @@
 
 	let { data, form }: PageProps = $props();
 	let selectedScoreId = $state<number | null>(null);
+	let agentSelectedScore = $state<any>(null);
 	let uploading = $state(false);
 	let sheetOpen = $state(false);
 	let selectedScore = $derived(data.scores.find((s: any) => s.id === selectedScoreId));
@@ -132,7 +133,7 @@
 				</form>
 			</Tabs.Content>
 			<Tabs.Content value="imslp">
-				<form method="POST" action="?/add_imslp" use:enhance={() => {
+				<form method="POST" action="?/add_imslp" enctype="multipart/form-data" use:enhance={() => {
 					uploading = true;
 					return async ({ update }) => {
 						uploading = false;
@@ -142,6 +143,10 @@
 					<div class="flex-1 space-y-2">
 						<label for="imslp_id" class="text-sm font-medium leading-none">IMSLP ID</label>
 						<Input id="imslp_id" name="imslp_id" type="number" placeholder="e.g. 12345" required />
+					</div>
+					<div class="flex-1 space-y-2">
+						<label for="imslp_file" class="text-sm font-medium leading-none">PDF File</label>
+						<Input id="imslp_file" name="file" type="file" accept="application/pdf" required />
 					</div>
 					<Button type="submit" disabled={uploading}>
 						{uploading ? 'Adding...' : 'Add from IMSLP'}
@@ -164,22 +169,13 @@
 						{uploading ? 'Thinking...' : 'Ask Agent'}
 					</Button>
 				</form>
-				<form id="agentAddForm" method="POST" action="?/add_imslp" use:enhance={() => {
-					uploading = true;
-					return async ({ update }) => {
-						uploading = false;
-						update();
-					};
-				}}>
-					<input type="hidden" name="imslp_id" id="agentAddImslpId" />
-				</form>
 				{#if form?.agent_results}
 					<div class="mt-4 p-4 border rounded-md bg-muted/50">
 						{#if form.agent_results.response}
 							<p class="mb-4 text-sm whitespace-pre-wrap">{form.agent_results.response}</p>
 						{/if}
 						{#if form.agent_results.scores && form.agent_results.scores.length > 0}
-							<div class="rounded-md border bg-card text-card-foreground overflow-hidden">
+							<div class="rounded-md border bg-card text-card-foreground overflow-hidden mb-4">
 								<Table.Root>
 									<Table.Header>
 										<Table.Row>
@@ -191,14 +187,9 @@
 									</Table.Header>
 									<Table.Body>
 										{#each form.agent_results.scores as score}
-											<Table.Row class="cursor-pointer hover:bg-muted/50" onclick={() => {
+											<Table.Row class="cursor-pointer transition-colors hover:bg-muted/50 {agentSelectedScore?.id === score.id ? 'bg-muted' : ''}" onclick={() => {
 												if (!uploading) {
-													const input = document.getElementById('agentAddImslpId');
-													const formEl = document.getElementById('agentAddForm');
-													if (input && formEl) {
-														(input as HTMLInputElement).value = score.id.toString();
-														(formEl as HTMLFormElement).requestSubmit();
-													}
+													agentSelectedScore = score;
 												}
 											}}>
 												<Table.Cell class="font-medium">{score.composer}</Table.Cell>
@@ -210,6 +201,35 @@
 									</Table.Body>
 								</Table.Root>
 							</div>
+
+							{#if agentSelectedScore}
+								<div class="p-4 border rounded-md bg-card text-card-foreground shadow-sm">
+									<h3 class="font-semibold mb-2">Add Score: {agentSelectedScore.composer} - {agentSelectedScore.title}</h3>
+									<p class="text-sm mb-4">
+										1. Download PDF from IMSLP: <a href={agentSelectedScore.permlink} target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline break-all">{agentSelectedScore.permlink}</a>
+									</p>
+									<p class="text-sm mb-4">
+										2. Upload the downloaded PDF below:
+									</p>
+									<form method="POST" action="?/add_imslp" enctype="multipart/form-data" use:enhance={() => {
+										uploading = true;
+										return async ({ update }) => {
+											uploading = false;
+											agentSelectedScore = null;
+											update();
+										};
+									}} class="flex flex-col gap-4 md:flex-row md:items-end">
+										<input type="hidden" name="imslp_id" value={agentSelectedScore.id} />
+										<div class="flex-1 space-y-2">
+											<label for="agent_file" class="text-sm font-medium leading-none">PDF File</label>
+											<Input id="agent_file" name="file" type="file" accept="application/pdf" required />
+										</div>
+										<Button type="submit" disabled={uploading}>
+											{uploading ? 'Adding...' : 'Submit Score'}
+										</Button>
+									</form>
+								</div>
+							{/if}
 						{:else if form.agent_results.response}
 							<p class="text-sm text-muted-foreground mt-2 text-center">No matching scores found.</p>
 						{/if}

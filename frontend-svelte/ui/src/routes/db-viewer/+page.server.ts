@@ -186,12 +186,37 @@ export const actions: Actions = {
 
 		const data = await request.formData();
 		const imslp_id = data.get('imslp_id');
+		const file = data.get('file') as File;
 
-		if (!imslp_id) {
-			return fail(400, { error: 'Missing IMSLP ID' });
+		if (!imslp_id || !file || file.size === 0) {
+			return fail(400, { error: 'Missing IMSLP ID or PDF File' });
 		}
 
 		try {
+			// 1. Upload PDF
+			let uploadFilename = file.name;
+			if (!uploadFilename.toLowerCase().endsWith('.pdf')) {
+				uploadFilename += '.pdf';
+			}
+
+			const formData = new FormData();
+			formData.append('file', file, uploadFilename);
+			const uploadRes = await fetch(`${BACKEND_URL}/pdf`, {
+				method: 'POST',
+				headers: {
+					Authorization: `Bearer ${token}`
+				},
+				body: formData
+			});
+
+			if (!uploadRes.ok) {
+				return fail(uploadRes.status, { error: 'Failed to upload PDF' });
+			}
+
+			const uploadData = await uploadRes.json();
+			const filename = uploadData.file_id || uploadFilename;
+
+			// 2. Fetch IMSLP Score Details
 			const idsParam = encodeURIComponent(JSON.stringify([Number(imslp_id)]));
 			const imslpRes = await fetch(`${BACKEND_URL}/imslp/scores_by_ids?score_ids=${idsParam}`, {
 				headers: { Authorization: `Bearer ${token}` }
@@ -211,7 +236,7 @@ export const actions: Actions = {
 			const newScore = {
 				title: imslpScore.title,
 				composer: imslpScore.composer,
-				pdf_path: imslpScore.permlink,
+				pdf_path: filename,
 				instrumentation: imslpScore.instrumentation || '',
 				style: imslpScore.style || '',
 				period: imslpScore.period || '',
