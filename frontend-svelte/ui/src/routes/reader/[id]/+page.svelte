@@ -1,7 +1,20 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Sheet from '$lib/components/ui/sheet/index.js';
 
 	let { data }: PageProps = $props();
+	let sheetOpen = $state(false);
+	let iframeElement: HTMLIFrameElement | undefined = $state();
+
+	function enterPresentationMode() {
+		const viewerWindow = iframeElement?.contentWindow as any;
+		if (viewerWindow && viewerWindow.PDFViewerApplication) {
+			viewerWindow.PDFViewerApplication.eventBus.dispatch('presentationmode');
+		} else {
+			console.error('PDF.js application not found or not yet loaded.');
+		}
+	}
 
 	// Use the saved pdf_path from the database
 	let filename = $derived(data.score?.pdf_path || '');
@@ -19,14 +32,18 @@
 				<h1 class="text-2xl font-bold text-foreground">{data.score.title}</h1>
 				<p class="text-muted-foreground">{data.score.composer}</p>
 			</div>
-			<Button variant="outline" onclick={() => sheetOpen = true}>View Details</Button>
+			<div class="flex gap-2">
+				<Button variant="outline" onclick={enterPresentationMode}>Presentation Mode</Button>
+				<Button variant="outline" onclick={() => sheetOpen = true}>View Details</Button>
+			</div>
 		</div>
 		
 		<div class="rounded-md border bg-card shadow-sm h-[calc(100vh-8rem)]">
 			{#if viewerUrl}
-				<iframe 
-					src={viewerUrl} 
-					class="w-full h-full border-0 rounded-md" 
+				<iframe
+					bind:this={iframeElement}
+					src={viewerUrl}
+					class="w-full h-full border-0 rounded-md"
 					title="PDF Viewer"
 					allowfullscreen
 				></iframe>
@@ -43,3 +60,32 @@
 		</div>
 	{/if}
 </div>
+
+<Sheet.Root bind:open={sheetOpen}>
+	<Sheet.Content class="w-full overflow-y-auto sm:max-w-md">
+		<Sheet.Header>
+			<Sheet.Title>Score Details</Sheet.Title>
+			<Sheet.Description>Full metadata for the selected score.</Sheet.Description>
+		</Sheet.Header>
+		{#if data.score}
+			<div class="mt-6 flex flex-col gap-3">
+				{#each Object.entries(data.score) as [key, value]}
+					<div class="grid grid-cols-3 gap-2 border-b border-border pb-2 last:border-0">
+						<span class="text-sm font-semibold capitalize text-foreground">
+							{key.replace(/_/g, ' ')}
+						</span>
+						<span class="col-span-2 text-sm text-muted-foreground break-words">
+							{#if key === 'youtube_url' && value}
+								<a href={value as string} target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline">
+									Watch on YouTube
+								</a>
+							{:else}
+								{value !== null && value !== '' ? value : '-'}
+							{/if}
+						</span>
+					</div>
+				{/each}
+			</div>
+		{/if}
+	</Sheet.Content>
+</Sheet.Root>
