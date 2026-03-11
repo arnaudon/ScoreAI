@@ -167,8 +167,8 @@
 </script>
 
 <div class="p-8">
-	<div class="mb-8 rounded-md border bg-card p-4 shadow-sm text-card-foreground">
-		<h2 class="mb-4 text-lg font-semibold">Add New Score</h2>
+	<div class="mb-8 rounded-md border bg-card p-4 text-card-foreground shadow-card">
+		<h2 class="text-fancy-title mb-4 text-lg font-semibold">Add New Score</h2>
 		<Tabs.Root value="manual" class="w-full">
 			<Tabs.List class="mb-4">
 				<Tabs.Trigger value="manual">Manual Upload</Tabs.Trigger>
@@ -221,7 +221,7 @@
 							<p class="mb-4 text-sm whitespace-pre-wrap">{form.agent_results.response}</p>
 						{/if}
 						{#if form.agent_results.scores && form.agent_results.scores.length > 0}
-							<div class="rounded-md border bg-card text-card-foreground overflow-hidden mb-4">
+							<div class="mb-4 overflow-hidden rounded-md border bg-card text-card-foreground shadow-card">
 								<Table.Root>
 									<Table.Header>
 										{#each imslpTable.getHeaderGroups() as headerGroup (headerGroup.id)}
@@ -299,7 +299,7 @@
 	</div>
 
 	<div class="mb-4 flex items-center justify-between">
-		<h1 class="text-2xl font-bold text-foreground">Database Viewer</h1>
+		<h1 class="text-fancy-title text-2xl font-bold text-foreground">Database Viewer</h1>
 		{#if selectedScoreId}
 			<div class="flex gap-2">
 				<form method="POST" action="?/delete" use:enhance={() => {
@@ -365,7 +365,7 @@
 		</div>
 	</div>
 
-	<div class="rounded-md border bg-card text-card-foreground">
+	<div class="rounded-md border bg-card text-card-foreground shadow-card">
 		<Table.Root>
 			<Table.Header>
 				{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}

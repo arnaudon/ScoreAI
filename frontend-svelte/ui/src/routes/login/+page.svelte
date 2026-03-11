@@ -10,17 +10,19 @@
 </script>
 
 <div class="flex h-full items-center justify-center py-20">
-	<div class="bg-card text-card-foreground w-full max-w-sm rounded-lg border p-8 shadow-sm">
+	<div class="bg-card text-card-foreground w-full max-w-sm rounded-lg border p-8 shadow-card">
 		<div class="mb-6 text-center">
-			<h1 class="text-3xl font-bold">ScoreAI</h1>
+			<h1 class="text-fancy-title text-3xl font-bold">ScoreAI</h1>
 			<p class="mt-2 text-muted-foreground">
 				Your intelligent music score library. Upload, manage, and discover scores with AI-powered
 				assistance.
 			</p>
 		</div>
 
-		<div class="my-4 h-px bg-border"></div>
-		<h2 class="mb-6 text-center text-xl font-semibold">{isRegister ? 'Sign Up' : 'Login'}</h2>
+		<div class="separator-ornate"></div>
+		<h2 class="text-fancy-title mb-6 text-center text-xl font-semibold">
+			{isRegister ? 'Sign Up' : 'Login'}
+		</h2>
 
 		<form
 			method="POST"

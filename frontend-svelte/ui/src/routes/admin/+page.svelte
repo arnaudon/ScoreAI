@@ -17,12 +17,12 @@
 </script>
 
 <div class="mb-4 flex items-center justify-between">
-	<h1 class="text-2xl font-bold text-foreground">Admin Dashboard</h1>
+	<h1 class="text-fancy-title text-2xl font-bold text-foreground">Admin Dashboard</h1>
 </div>
 
 <div class="grid gap-6 md:grid-cols-2 mb-8">
-	<div class="rounded-md border bg-card p-6 text-card-foreground shadow-sm">
-		<h2 class="text-xl font-semibold mb-2">IMSLP Database</h2>
+	<div class="rounded-md border bg-card p-6 text-card-foreground shadow-card">
+		<h2 class="text-fancy-title mb-2 text-xl font-semibold">IMSLP Database</h2>
 		<p class="mb-4 text-muted-foreground">
 			The database contains {data.stats?.total_works || 0} works and {data.stats?.total_composers || 0} composers.
 		</p>
@@ -65,10 +65,10 @@
 </div>
 
 <div class="mb-4 flex items-center justify-between">
-	<h2 class="text-xl font-semibold text-foreground">Users</h2>
+	<h2 class="text-fancy-title text-xl font-semibold text-foreground">Users</h2>
 </div>
 
-<div class="rounded-md border bg-card text-card-foreground">
+<div class="rounded-md border bg-card text-card-foreground shadow-card">
 	<Table.Root>
 		<Table.Header>
 			<Table.Row>

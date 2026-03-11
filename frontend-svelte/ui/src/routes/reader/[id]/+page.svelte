@@ -27,7 +27,7 @@
 	{#if data.score}
 		<div class="mb-4 flex items-center justify-between">
 			<div>
-				<h1 class="text-2xl font-bold text-foreground">{data.score.title}</h1>
+				<h1 class="text-fancy-title text-2xl font-bold text-foreground">{data.score.title}</h1>
 				<p class="text-muted-foreground">{data.score.composer}</p>
 			</div>
 			<div class="flex gap-2">
@@ -36,7 +36,7 @@
 			</div>
 		</div>
 		
-		<div class="rounded-md border bg-card shadow-sm h-[calc(100vh-8rem)]">
+		<div class="h-[calc(100vh-8rem)] rounded-md border bg-card shadow-card">
 			{#if viewerUrl}
 				<iframe
 					bind:this={iframeEl}
