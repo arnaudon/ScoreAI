@@ -70,6 +70,7 @@ def main():
     """Render the main navigation app."""
 
     init_i18n_gettext()
+    # pylint: disable=line-too-long
 
     st.warning(
         "⚠️ **DEPRECATED**: This Streamlit frontend was used for the initial draft and is now deprecated. Please use the new Svelte frontend."

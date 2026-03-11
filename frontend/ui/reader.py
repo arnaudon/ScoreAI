@@ -37,6 +37,7 @@ def render_pdf(file_path):
 
 cookie_manager = stx.CookieManager(key="pdf_cookie")
 
+# pylint: disable=line-too-long
 st.warning(
     "⚠️ **DEPRECATED**: This Streamlit frontend is deprecated. Please use the Svelte frontend instead."
 )
