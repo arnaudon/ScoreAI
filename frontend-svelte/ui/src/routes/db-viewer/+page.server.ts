@@ -127,7 +127,7 @@ export const actions: Actions = {
 				return fail(scoreRes.status, { error: 'Failed to save score' });
 			}
 
-			return { success: true };
+			return { success: true, scoreAdded: true };
 		} catch (error) {
 			console.error('Upload error:', error);
 			return fail(500, { error: 'Server error when contacting backend' });
@@ -257,7 +257,7 @@ export const actions: Actions = {
 				return fail(scoreRes.status, { error: 'Failed to add score to database' });
 			}
 
-			return { success: true };
+			return { success: true, scoreAdded: true };
 		} catch (error) {
 			console.error('Add IMSLP error:', error);
 			return fail(500, { error: 'Server error when contacting backend' });

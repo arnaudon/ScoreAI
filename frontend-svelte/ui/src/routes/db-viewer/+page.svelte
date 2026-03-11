@@ -189,7 +189,7 @@
 						<Input id="file" name="file" type="file" accept="application/pdf" required />
 					</div>
 					<Button type="submit" disabled={uploading}>
-						{uploading ? 'Uploading...' : 'Upload & Save'}
+						{uploading ? 'Adding...' : 'Add'}
 					</Button>
 				</form>
 			</Tabs.Content>
@@ -299,7 +299,7 @@
 											<Input id="agent_file" name="file" type="file" accept="application/pdf" required />
 										</div>
 										<Button type="submit" disabled={uploading}>
-											{uploading ? 'Adding...' : 'Submit Score'}
+											{uploading ? 'Adding...' : 'Add'}
 										</Button>
 									</form>
 								</div>
@@ -314,7 +314,7 @@
 		{#if form?.error}
 			<p class="mt-4 text-sm font-medium text-destructive">{form.error}</p>
 		{/if}
-		{#if form?.success}
+		{#if form?.scoreAdded}
 			<p class="mt-4 text-sm font-medium text-green-600 dark:text-green-400">Score added successfully!</p>
 		{/if}
 	</div>
