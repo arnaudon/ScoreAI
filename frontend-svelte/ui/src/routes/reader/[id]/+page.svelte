@@ -5,6 +5,14 @@
 
 	let { data }: PageProps = $props();
 	let sheetOpen = $state(false);
+	let iframeEl: HTMLIFrameElement | undefined = $state();
+
+	function enterPresentationMode() {
+		if (iframeEl?.contentWindow?.document) {
+			const button = iframeEl.contentWindow.document.getElementById('presentationMode');
+			button?.click();
+		}
+	}
 
 	// Use the saved pdf_path from the database
 	let filename = $derived(data.score?.pdf_path || '');
@@ -22,12 +30,16 @@
 				<h1 class="text-2xl font-bold text-foreground">{data.score.title}</h1>
 				<p class="text-muted-foreground">{data.score.composer}</p>
 			</div>
-			<Button variant="outline" onclick={() => sheetOpen = true}>View Details</Button>
+			<div class="flex gap-2">
+				<Button variant="outline" onclick={enterPresentationMode}>Presentation Mode</Button>
+				<Button variant="outline" onclick={() => sheetOpen = true}>View Details</Button>
+			</div>
 		</div>
 		
 		<div class="rounded-md border bg-card shadow-sm h-[calc(100vh-8rem)]">
 			{#if viewerUrl}
 				<iframe
+					bind:this={iframeEl}
 					src={viewerUrl}
 					class="w-full h-full border-0 rounded-md"
 					title="PDF Viewer"
