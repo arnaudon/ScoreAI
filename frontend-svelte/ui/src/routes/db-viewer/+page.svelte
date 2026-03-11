@@ -22,6 +22,7 @@
 	let { data, form }: PageProps = $props();
 	let selectedScoreId = $state<number | null>(null);
 	let agentSelectedScore = $state<any>(null);
+	let imslpSheetOpen = $state(false);
 	let uploading = $state(false);
 	let sheetOpen = $state(false);
 	let selectedScore = $derived(data.scores.find((s: any) => s.id === selectedScoreId));
@@ -243,10 +244,11 @@
 											<Table.Row class="cursor-pointer transition-colors hover:bg-muted/50 {agentSelectedScore?.id === row.original.id ? 'bg-muted' : ''}" onclick={() => {
 												if (!uploading) {
 													agentSelectedScore = row.original;
+													imslpSheetOpen = true;
 												}
 											}}>
 												{#each row.getVisibleCells() as cell (cell.id)}
-													<Table.Cell>
+													<Table.Cell class="max-w-[120px] truncate sm:max-w-[150px] md:max-w-[200px]">
 														<FlexRender
 															content={cell.column.columnDef.cell}
 															context={cell.getContext()}
@@ -281,34 +283,6 @@
 								</div>
 							</div>
 
-							{#if agentSelectedScore}
-								<div class="p-4 border rounded-md bg-card text-card-foreground shadow-sm">
-									<h3 class="font-semibold mb-2">Add Score: {agentSelectedScore.composer} - {agentSelectedScore.title}</h3>
-									<p class="text-sm mb-4">
-										1. Download PDF from IMSLP: <a href={agentSelectedScore.permlink} target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline break-all">{agentSelectedScore.permlink}</a>
-									</p>
-									<p class="text-sm mb-4">
-										2. Upload the downloaded PDF below:
-									</p>
-									<form method="POST" action="?/add_imslp" enctype="multipart/form-data" use:enhance={() => {
-										uploading = true;
-										return async ({ update }) => {
-											uploading = false;
-											agentSelectedScore = null;
-											update();
-										};
-									}} class="flex flex-col gap-4 md:flex-row md:items-end">
-										<input type="hidden" name="imslp_id" value={agentSelectedScore.id} />
-										<div class="flex-1 space-y-2">
-											<label for="agent_file" class="text-sm font-medium leading-none">PDF File</label>
-											<Input id="agent_file" name="file" type="file" accept="application/pdf" required />
-										</div>
-										<Button type="submit" disabled={uploading}>
-											{uploading ? 'Adding...' : 'Add'}
-										</Button>
-									</form>
-								</div>
-							{/if}
 						{:else if form.agent_results.response}
 							<p class="text-sm text-muted-foreground mt-2 text-center">No matching scores found.</p>
 						{/if}
@@ -416,7 +390,7 @@
 						onclick={() => { selectedScoreId = row.original.id; sheetOpen = true; }}
 					>
 						{#each row.getVisibleCells() as cell (cell.id)}
-							<Table.Cell>
+							<Table.Cell class="max-w-[120px] truncate sm:max-w-[150px] md:max-w-[200px]">
 								<FlexRender
 									content={cell.column.columnDef.cell}
 									context={cell.getContext()}
@@ -497,6 +471,66 @@
 				}}>
 					<input type="hidden" name="id" value={selectedScore.id} />
 					<Button type="submit" variant="destructive" class="w-full">Delete Score</Button>
+				</form>
+			</div>
+		{/if}
+	</Sheet.Content>
+</Sheet.Root>
+
+<Sheet.Root bind:open={imslpSheetOpen}>
+	<Sheet.Content class="w-full overflow-y-auto sm:max-w-md">
+		<Sheet.Header>
+			<Sheet.Title>IMSLP Score Details</Sheet.Title>
+			<Sheet.Description>Full metadata for the selected IMSLP score.</Sheet.Description>
+		</Sheet.Header>
+		{#if agentSelectedScore}
+			<div class="mt-6 flex flex-col gap-3">
+				{#each Object.entries(agentSelectedScore) as [key, value]}
+					{#if key !== 'score_metadata'}
+						<div class="grid grid-cols-3 gap-2 border-b border-border pb-2 last:border-0">
+							<span class="text-sm font-semibold capitalize text-foreground">
+								{key.replace(/_/g, ' ')}
+							</span>
+							<span class="col-span-2 text-sm text-muted-foreground break-words">
+								{#if key === 'permlink' && value}
+									<a href={value as string} target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline">
+										View on IMSLP
+									</a>
+								{:else}
+									{value !== null && value !== '' ? value : '-'}
+								{/if}
+							</span>
+						</div>
+					{/if}
+				{/each}
+			</div>
+			
+			<div class="mt-8 flex flex-col gap-4 border-t border-border pt-4">
+				<h3 class="font-semibold text-foreground">Add this Score</h3>
+				<p class="text-sm text-muted-foreground">
+					1. Download PDF from IMSLP: <br/>
+					<a href={agentSelectedScore.permlink} target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline break-all">{agentSelectedScore.permlink}</a>
+				</p>
+				<p class="text-sm text-muted-foreground">
+					2. Upload the downloaded PDF below:
+				</p>
+				<form method="POST" action="?/add_imslp" enctype="multipart/form-data" use:enhance={() => {
+					uploading = true;
+					return async ({ update }) => {
+						uploading = false;
+						agentSelectedScore = null;
+						imslpSheetOpen = false;
+						update();
+					};
+				}} class="flex flex-col gap-4">
+					<input type="hidden" name="imslp_id" value={agentSelectedScore.id} />
+					<div class="space-y-2">
+						<label for="agent_file_sheet" class="text-sm font-medium leading-none">PDF File</label>
+						<Input id="agent_file_sheet" name="file" type="file" accept="application/pdf" required />
+					</div>
+					<Button type="submit" disabled={uploading} class="w-full">
+						{uploading ? 'Adding...' : 'Add Score'}
+					</Button>
 				</form>
 			</div>
 		{/if}
