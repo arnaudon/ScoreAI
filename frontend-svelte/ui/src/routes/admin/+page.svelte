@@ -26,8 +26,9 @@
 		<p class="mb-4 text-muted-foreground">
 			The database contains {data.stats?.total_works || 0} works and {data.stats?.total_composers || 0} composers.
 		</p>
-		<div class="flex gap-4">
-			<form method="POST" action="?/update" use:enhance>
+		<div class="flex gap-4 items-center">
+			<form method="POST" action="?/update" use:enhance class="flex gap-2">
+				<input type="number" name="max_pages" value="300" min="1" class="flex h-10 w-24 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" disabled={data.progress?.status === 'processing'} />
 				<button class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2" disabled={data.progress?.status === 'processing'}>
 					Update Database
 				</button>

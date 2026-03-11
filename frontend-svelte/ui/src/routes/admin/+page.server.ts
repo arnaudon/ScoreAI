@@ -54,9 +54,11 @@ export const load: PageServerLoad = async ({ cookies, fetch }) => {
 };
 
 export const actions = {
-	update: async ({ cookies, fetch }) => {
+	update: async ({ request, cookies, fetch }) => {
+		const data = await request.formData();
+		const maxPages = data.get('max_pages') || '300';
 		const token = cookies.get('access_token');
-		await fetch(`${BACKEND_URL}/imslp/update?max_pages=300`, {
+		await fetch(`${BACKEND_URL}/imslp/start/${maxPages}`, {
 			method: 'POST',
 			headers: { Authorization: `Bearer ${token}` }
 		});
