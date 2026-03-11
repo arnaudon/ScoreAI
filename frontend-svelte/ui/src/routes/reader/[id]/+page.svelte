@@ -9,9 +9,9 @@
 	// Use the saved pdf_path from the database
 	let filename = $derived(data.score?.pdf_path || '');
 	
-	// PDF.js viewer is hosted at /pdfjs/web/viewer.html on the backend
-	// We pass the absolute URL to ensure PDF.js correctly parses the query parameters instead of URL-encoding them into the filename
-	let pdfUrl = $derived(filename ? `${data.publicBackendUrl}/pdf/${encodeURIComponent(filename)}?token=${data.token}` : '');
+	// PDF.js viewer is hosted at /pdfjs/web/viewer.html.
+	// We pass a relative URL to our own PDF proxy endpoint to avoid cross-origin issues.
+	let pdfUrl = $derived(filename ? `/api/pdf/${encodeURIComponent(filename)}?token=${data.token}` : '');
 	let viewerUrl = $derived(pdfUrl ? `/pdfjs/web/viewer.html?file=${encodeURIComponent(pdfUrl)}` : '');
 </script>
 
