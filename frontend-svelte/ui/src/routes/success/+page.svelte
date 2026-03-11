@@ -13,10 +13,10 @@
 	}
 </script>
 
-<div class="flex flex-col h-full max-w-4xl mx-auto py-8 px-4">
+<div class="flex flex-col h-[calc(100vh-8rem)] max-w-4xl mx-auto w-full">
 	<h1 class="text-2xl font-bold mb-4 text-foreground">Agent</h1>
 
-	<div class="flex-1 overflow-y-auto mb-4 space-y-4 min-h-[50vh]">
+	<div class="flex-1 overflow-y-auto mb-4 space-y-4 pr-2">
 		{#each history as msg}
 			<div class="bg-muted p-4 rounded-lg">
 				<p class="font-bold text-foreground">Q: {msg.question}</p>
