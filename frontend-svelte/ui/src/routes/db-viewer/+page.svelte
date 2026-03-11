@@ -96,6 +96,68 @@
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel()
 	});
+
+	let imslpPagination = $state<PaginationState>({ pageIndex: 0, pageSize: 5 });
+	let imslpSorting = $state<SortingState>([]);
+	let imslpColumnFilters = $state<ColumnFiltersState>([]);
+
+	const imslpColumns: ColumnDef<any>[] = [
+		{ 
+			accessorKey: 'composer', 
+			header: ({ column }) => renderComponent(DataTableSortButton, { title: 'Composer', onclick: column.getToggleSortingHandler() }) 
+		},
+		{ 
+			accessorKey: 'title', 
+			header: ({ column }) => renderComponent(DataTableSortButton, { title: 'Title', onclick: column.getToggleSortingHandler() }) 
+		},
+		{ 
+			accessorKey: 'instrumentation', 
+			header: ({ column }) => renderComponent(DataTableSortButton, { title: 'Instrumentation', onclick: column.getToggleSortingHandler() }),
+			cell: ({ row }) => row.original.instrumentation || '-'
+		},
+		{ 
+			accessorKey: 'year', 
+			header: ({ column }) => renderComponent(DataTableSortButton, { title: 'Year', onclick: column.getToggleSortingHandler() }),
+			cell: ({ row }) => row.original.year || '-'
+		}
+	];
+
+	const imslpTable = createSvelteTable({
+		get data() {
+			return form?.agent_results?.scores || [];
+		},
+		columns: imslpColumns,
+		state: {
+			get pagination() { return imslpPagination; },
+			get sorting() { return imslpSorting; },
+			get columnFilters() { return imslpColumnFilters; }
+		},
+		onPaginationChange: (updater) => {
+			if (typeof updater === 'function') {
+				imslpPagination = updater(imslpPagination);
+			} else {
+				imslpPagination = updater;
+			}
+		},
+		onSortingChange: (updater) => {
+			if (typeof updater === 'function') {
+				imslpSorting = updater(imslpSorting);
+			} else {
+				imslpSorting = updater;
+			}
+		},
+		onColumnFiltersChange: (updater) => {
+			if (typeof updater === 'function') {
+				imslpColumnFilters = updater(imslpColumnFilters);
+			} else {
+				imslpColumnFilters = updater;
+			}
+		},
+		getCoreRowModel: getCoreRowModel(),
+		getPaginationRowModel: getPaginationRowModel(),
+		getSortedRowModel: getSortedRowModel(),
+		getFilteredRowModel: getFilteredRowModel()
+	});
 </script>
 
 <div class="p-8">
@@ -156,28 +218,62 @@
 							<div class="rounded-md border bg-card text-card-foreground overflow-hidden mb-4">
 								<Table.Root>
 									<Table.Header>
-										<Table.Row>
-											<Table.Head>Composer</Table.Head>
-											<Table.Head>Title</Table.Head>
-											<Table.Head>Instrumentation</Table.Head>
-											<Table.Head>Year</Table.Head>
-										</Table.Row>
+										{#each imslpTable.getHeaderGroups() as headerGroup (headerGroup.id)}
+											<Table.Row>
+												{#each headerGroup.headers as header (header.id)}
+													<Table.Head>
+														{#if !header.isPlaceholder}
+															<FlexRender
+																content={header.column.columnDef.header}
+																context={header.getContext()}
+															/>
+														{/if}
+													</Table.Head>
+												{/each}
+											</Table.Row>
+										{/each}
 									</Table.Header>
 									<Table.Body>
-										{#each form.agent_results.scores as score}
-											<Table.Row class="cursor-pointer transition-colors hover:bg-muted/50 {agentSelectedScore?.id === score.id ? 'bg-muted' : ''}" onclick={() => {
+										{#each imslpTable.getRowModel().rows as row (row.id)}
+											<Table.Row class="cursor-pointer transition-colors hover:bg-muted/50 {agentSelectedScore?.id === row.original.id ? 'bg-muted' : ''}" onclick={() => {
 												if (!uploading) {
-													agentSelectedScore = score;
+													agentSelectedScore = row.original;
 												}
 											}}>
-												<Table.Cell class="font-medium">{score.composer}</Table.Cell>
-												<Table.Cell>{score.title}</Table.Cell>
-												<Table.Cell>{score.instrumentation || '-'}</Table.Cell>
-												<Table.Cell>{score.year || '-'}</Table.Cell>
+												{#each row.getVisibleCells() as cell (cell.id)}
+													<Table.Cell>
+														<FlexRender
+															content={cell.column.columnDef.cell}
+															context={cell.getContext()}
+														/>
+													</Table.Cell>
+												{/each}
 											</Table.Row>
 										{/each}
 									</Table.Body>
 								</Table.Root>
+								
+								<div class="flex items-center justify-end space-x-2 py-4 px-4 border-t">
+									<div class="flex-1 text-sm text-muted-foreground">
+										Showing min({imslpTable.getRowModel().rows.length}, {imslpTable.getFilteredRowModel().rows.length}) results.
+									</div>
+									<Button
+										variant="outline"
+										size="sm"
+										onclick={() => imslpTable.previousPage()}
+										disabled={!imslpTable.getCanPreviousPage()}
+									>
+										Previous
+									</Button>
+									<Button
+										variant="outline"
+										size="sm"
+										onclick={() => imslpTable.nextPage()}
+										disabled={!imslpTable.getCanNextPage()}
+									>
+										Next
+									</Button>
+								</div>
 							</div>
 
 							{#if agentSelectedScore}
