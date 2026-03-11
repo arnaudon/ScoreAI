@@ -4,7 +4,6 @@ import json
 import uuid
 from contextlib import asynccontextmanager
 from logging import getLogger
-from pathlib import Path
 from typing import Annotated, AsyncGenerator
 
 from fastapi import Body, Depends, FastAPI, File, HTTPException, UploadFile
@@ -125,7 +124,9 @@ async def run_main_agent(
     )
 
 
-def get_pdf_user(token: str = "", session: Session = Depends(get_session)):  # pragma: no cover
+def get_pdf_user(
+    token: str = "", session: Session = Depends(get_session)
+):  # pragma: no cover
     """Dependency for PDF endpoints - accepts token as query param."""
     return get_current_user_from_token(token, session)
 

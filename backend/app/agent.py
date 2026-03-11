@@ -60,7 +60,9 @@ async def get_user_name(ctx: RunContext[Deps]) -> str:
     return ctx.deps.user.username
 
 
-async def get_random_score_by_composer(ctx: RunContext[Deps], filter_params: Filter) -> str:
+async def get_random_score_by_composer(
+    ctx: RunContext[Deps], filter_params: Filter
+) -> str:
     """Selects and returns a random score by a specific composer."""
     scores = []
     for score in ctx.deps.scores.scores:
@@ -71,7 +73,9 @@ async def get_random_score_by_composer(ctx: RunContext[Deps], filter_params: Fil
     return "Not found"
 
 
-async def get_easiest_score_by_composer(ctx: RunContext[Deps], filter_params: Filter) -> str:
+async def get_easiest_score_by_composer(
+    ctx: RunContext[Deps], filter_params: Filter
+) -> str:
     """
     Finds the easiest score by a given composer.
 
@@ -83,7 +87,9 @@ async def get_easiest_score_by_composer(ctx: RunContext[Deps], filter_params: Fi
             scores.append(score)
     if scores:
         difficulties = [_difficulty_map[score.difficulty] for score in scores]
-        easy_scores = [s for d, s in zip(difficulties, scores) if d == min(difficulties)]
+        easy_scores = [
+            s for d, s in zip(difficulties, scores) if d == min(difficulties)
+        ]
         return random.choice(easy_scores).model_dump_json()
     return "Not found"
 
@@ -150,7 +156,7 @@ async def run_imslp_agent(prompt: str, message_history=None):
         try:
             adapter = TypeAdapter(list[ModelMessage])
             message_history = adapter.validate_python(message_history)
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             message_history = None
 
     try:
@@ -163,7 +169,9 @@ async def run_imslp_agent(prompt: str, message_history=None):
     except ModelHTTPError as e:
         history = []
         if e.status_code == 429:
-            response = ImslpResponse(response="Rate limit exceeded (Quota hit)", score_ids=[])
+            response = ImslpResponse(
+                response="Rate limit exceeded (Quota hit)", score_ids=[]
+            )
         else:
             response = ImslpResponse(response="An HTTP error occurred", score_ids=[])
     except Exception:  # pylint: disable=broad-exception-caught
@@ -193,7 +201,7 @@ async def run_agent(prompt: str, deps: Deps, message_history=None):
         try:
             adapter = TypeAdapter(list[ModelMessage])
             message_history = adapter.validate_python(message_history)
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             message_history = None
 
     try:
