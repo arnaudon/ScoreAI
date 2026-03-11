@@ -42,16 +42,12 @@ async def test_run_agent_model_http_error(monkeypatch, test_scores, test_user):
     dummy_agent = mock.Mock()
     dummy_agent.run = raise_429
     monkeypatch.setattr(agent, "get_main_agent", lambda: dummy_agent)
-    result = await agent.run_agent(
-        "prompt", agent.Deps(user=test_user, scores=test_scores)
-    )
+    result = await agent.run_agent("prompt", agent.Deps(user=test_user, scores=test_scores))
     assert isinstance(result, FullResponse)
     assert "Rate limit" in result.response.response
     # Repeat for other error
     dummy_agent.run = raise_500
-    result2 = await agent.run_agent(
-        "prompt", agent.Deps(user=test_user, scores=test_scores)
-    )
+    result2 = await agent.run_agent("prompt", agent.Deps(user=test_user, scores=test_scores))
     assert isinstance(result2, FullResponse)
     assert "HTTP error" in result2.response.response
 
@@ -68,9 +64,7 @@ async def test_run_agent_exception(monkeypatch, test_scores, test_user):
     dummy_agent = mock.Mock()
     dummy_agent.run = fail
     monkeypatch.setattr(agent, "get_main_agent", lambda: dummy_agent)
-    result = await agent.run_agent(
-        "prompt", agent.Deps(user=test_user, scores=test_scores)
-    )
+    result = await agent.run_agent("prompt", agent.Deps(user=test_user, scores=test_scores))
     assert isinstance(result, FullResponse)
     assert "unexpected error" in result.response.response.lower()
 

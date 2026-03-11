@@ -57,9 +57,7 @@ def test_create_access_token_default_expiry():
 
 
 @pytest.mark.asyncio
-async def test_create_access_token_and_get_current_user(
-    user_in_db: User, session: Session
-):
+async def test_create_access_token_and_get_current_user(user_in_db: User, session: Session):
     """create_access_token embeds username and get_current_user resolves it."""
 
     # shorter expiry to exercise explicit expiry branch
@@ -73,9 +71,7 @@ async def test_create_access_token_and_get_current_user(
 
 
 @pytest.mark.asyncio
-async def test_get_current_user_valid_invalid_and_missing_sub(
-    user_in_db: User, session: Session
-):
+async def test_get_current_user_valid_invalid_and_missing_sub(user_in_db: User, session: Session):
     """get_current_user returns user for valid token and raises for bad tokens."""
 
     # valid token
