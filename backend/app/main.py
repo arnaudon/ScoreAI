@@ -7,7 +7,7 @@ from logging import getLogger
 from pathlib import Path
 from typing import Annotated, AsyncGenerator
 
-from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi import Body, Depends, FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from sqlmodel import Session, select
@@ -108,10 +108,10 @@ async def run_imslp_agent_api(prompt: str, message_history=None):  # pragma: no 
 
 @app.post("/agent")
 async def run_main_agent(
-    prompt: str,
-    deps: str,
     current_user: Annotated[User, Depends(get_current_user)],
-    message_history=None,
+    prompt: str = Body(...),
+    deps: str = Body(...),
+    message_history: list | None = Body(None),
 ):  # pragma: no cover
     """Run the agent."""
     return await run_agent(

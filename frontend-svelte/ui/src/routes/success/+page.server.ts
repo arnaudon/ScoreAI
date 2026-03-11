@@ -31,11 +31,16 @@ export const actions: Actions = {
 			const scores = scoresRes.ok ? await scoresRes.json() : [];
 			const deps = JSON.stringify({ scores });
 
-			const response = await fetch(`${BACKEND_URL}/agent?prompt=${encodeURIComponent(question.toString())}&deps=${encodeURIComponent(deps)}`, {
+			const response = await fetch(`${BACKEND_URL}/agent`, {
 				method: 'POST',
 				headers: {
-					Authorization: `Bearer ${token}`
-				}
+					Authorization: `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					prompt: question.toString(),
+					deps: deps
+				})
 			});
 
 			if (response.ok) {
