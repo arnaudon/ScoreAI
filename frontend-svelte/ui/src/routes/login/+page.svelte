@@ -18,7 +18,8 @@
 			</p>
 		</div>
 
-		<h2 class="mb-6 text-center text-2xl font-bold">{isRegister ? 'Sign Up' : 'Login'}</h2>
+		<div class="my-4 h-px bg-border"></div>
+		<h2 class="mb-6 text-center text-xl font-semibold">{isRegister ? 'Sign Up' : 'Login'}</h2>
 
 		<form
 			method="POST"
