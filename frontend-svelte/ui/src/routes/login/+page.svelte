@@ -10,7 +10,15 @@
 
 <div class="flex h-full items-center justify-center py-20">
 	<div class="bg-card text-card-foreground w-full max-w-sm rounded-lg border p-8 shadow-sm">
-		<h1 class="mb-6 text-center text-2xl font-bold">{isRegister ? 'Sign Up' : 'Login'}</h1>
+		<div class="mb-6 text-center">
+			<h1 class="text-3xl font-bold">ScoreAI</h1>
+			<p class="mt-2 text-muted-foreground">
+				Your intelligent music score library. Upload, manage, and discover scores with AI-powered
+				assistance.
+			</p>
+		</div>
+
+		<h2 class="mb-6 text-center text-2xl font-bold">{isRegister ? 'Sign Up' : 'Login'}</h2>
 
 		<form
 			method="POST"
