@@ -37,7 +37,10 @@ def render_pdf(file_path):
 
 cookie_manager = stx.CookieManager(key="pdf_cookie")
 
-st.warning("⚠️ **DEPRECATED**: This Streamlit frontend is deprecated. Please use the Svelte frontend instead.")
+# pylint: disable=line-too-long
+st.warning(
+    "⚠️ **DEPRECATED**: This Streamlit frontend is deprecated. Please use the Svelte frontend instead."
+)
 
 pdf_path = cookie_manager.get(cookie="pdf_path")
 if hasattr(st.session_state, "selected_row"):

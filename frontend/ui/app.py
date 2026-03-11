@@ -70,8 +70,11 @@ def main():
     """Render the main navigation app."""
 
     init_i18n_gettext()
-    
-    st.warning("⚠️ **DEPRECATED**: This Streamlit frontend was used for the initial draft and is now deprecated. Please use the new Svelte frontend.")
+    # pylint: disable=line-too-long
+
+    st.warning(
+        "⚠️ **DEPRECATED**: This Streamlit frontend was used for the initial draft and is now deprecated. Please use the new Svelte frontend."
+    )
 
     if stx:
         cookie_manager = stx.CookieManager(key="user_cookie")
