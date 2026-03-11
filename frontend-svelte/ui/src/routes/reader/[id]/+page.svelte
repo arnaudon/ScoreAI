@@ -15,8 +15,11 @@
 <div class="h-full w-full p-4">
 	{#if data.score}
 		<div class="mb-4 flex items-center justify-between">
-			<h1 class="text-2xl font-bold text-foreground">{data.score.title}</h1>
-			<p class="text-muted-foreground">{data.score.composer}</p>
+			<div>
+				<h1 class="text-2xl font-bold text-foreground">{data.score.title}</h1>
+				<p class="text-muted-foreground">{data.score.composer}</p>
+			</div>
+			<Button variant="outline" onclick={() => sheetOpen = true}>View Details</Button>
 		</div>
 		
 		<div class="rounded-md border bg-card shadow-sm h-[calc(100vh-8rem)]">
