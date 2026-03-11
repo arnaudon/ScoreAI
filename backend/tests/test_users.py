@@ -41,24 +41,24 @@ def test_password_hash_and_verify():
     assert users.verify_password(password, hashed)
 
 
-def test_get_user_and_authenticate_user(user_in_db: User):
+def test_get_user_and_authenticate_user(user_in_db: User, session: Session):
     """get_user and authenticate_user return the correct user or False."""
 
     # get_user finds the user by username
-    fetched = users.get_user(user_in_db.username)
+    fetched = users.get_user(user_in_db.username, session)
     assert fetched is not None
     assert fetched.id == user_in_db.id
 
     # authenticate_user succeeds with correct password
-    assert users.authenticate_user(user_in_db.username, "secret")
+    assert users.authenticate_user(user_in_db.username, "secret", session)
 
     # and fails with wrong password or unknown user
-    assert users.authenticate_user(user_in_db.username, "wrong") is False
-    assert users.authenticate_user("unknown", "secret") is False
+    assert users.authenticate_user(user_in_db.username, "wrong", session) is False
+    assert users.authenticate_user("unknown", "secret", session) is False
 
 
 @pytest.mark.asyncio
-async def test_create_access_token_and_get_current_user(user_in_db: User):
+async def test_create_access_token_and_get_current_user(user_in_db: User, session: Session):
     """create_access_token embeds username and get_current_user resolves it."""
 
     # shorter expiry to exercise explicit expiry branch
@@ -67,28 +67,28 @@ async def test_create_access_token_and_get_current_user(user_in_db: User):
         expires_delta=timedelta(minutes=5),
     )
 
-    user = await users.get_current_user(token)
+    user = await users.get_current_user(token, session=session)
     assert user.id == user_in_db.id
 
 
 @pytest.mark.asyncio
-async def test_get_current_user_valid_invalid_and_missing_sub(user_in_db: User):
+async def test_get_current_user_valid_invalid_and_missing_sub(user_in_db: User, session: Session):
     """get_current_user returns user for valid token and raises for bad tokens."""
 
     # valid token
     token = users.create_access_token(data={"sub": user_in_db.username})
-    user = await users.get_current_user(token)
+    user = await users.get_current_user(token, session=session)
     assert user.id == user_in_db.id
 
     # invalid token string
     with pytest.raises(HTTPException) as exc:
-        await users.get_current_user("not-a-valid-token")
+        await users.get_current_user("not-a-valid-token", session=session)
     assert exc.value.status_code == status.HTTP_401_UNAUTHORIZED
 
     # token without sub should also raise (exercises username is None branch)
     no_sub_token = users.create_access_token(data={})
     with pytest.raises(HTTPException) as exc2:
-        await users.get_current_user(no_sub_token)
+        await users.get_current_user(no_sub_token, session=session)
     assert exc2.value.status_code == status.HTTP_401_UNAUTHORIZED
 
 
@@ -105,7 +105,7 @@ async def test_get_current_user_missing_user_raises(session: Session, mocker):
     # token with username that does not exist
     token = users.create_access_token(data={"sub": "does-not-exist"})
     with pytest.raises(HTTPException) as exc:
-        await users.get_current_user(token)
+        await users.get_current_user(token, session=session)
     assert exc.value.status_code == status.HTTP_401_UNAUTHORIZED
 
 
