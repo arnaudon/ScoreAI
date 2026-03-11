@@ -14,17 +14,31 @@
 {#if data.loggedIn}
 	<Sidebar.Provider style="--sidebar-width: 10rem;">
 		<AppSidebar />
-		<Sidebar.Inset class="w-full flex-1 bg-background text-foreground">
-			<main class="w-full h-full overflow-y-auto p-8">
+		<Sidebar.Inset class="flex w-full flex-1 flex-col bg-background text-foreground">
+			<main class="w-full flex-1 overflow-y-auto p-8">
 				<Sidebar.Trigger class="mb-4" />
 				{@render children()}
 			</main>
+			<footer class="p-4 text-center text-sm text-muted-foreground">
+				© 2026 Alexis Arnaudon. Contact:
+				<a href="mailto:alexis.arnaudon@gmail.com" class="hover:underline">
+					alexis.arnaudon@gmail.com
+				</a>
+			</footer>
 		</Sidebar.Inset>
 	</Sidebar.Provider>
 {:else}
-	<main class="w-full min-h-screen bg-background text-foreground overflow-y-auto">
-		{@render children()}
-	</main>
+	<div class="flex min-h-screen flex-col bg-background text-foreground">
+		<main class="w-full flex-1">
+			{@render children()}
+		</main>
+		<footer class="p-4 text-center text-sm text-muted-foreground">
+			© 2026 Alexis Arnaudon. Contact:
+			<a href="mailto:alexis.arnaudon@gmail.com" class="hover:underline">
+				alexis.arnaudon@gmail.com
+			</a>
+		</footer>
+	</div>
 {/if}
 
 <div style="display:none">
