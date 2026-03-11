@@ -12,7 +12,7 @@
 	// PDF.js viewer is hosted at /pdfjs/web/viewer.html on the backend
 	// We pass the absolute URL to ensure PDF.js correctly parses the query parameters instead of URL-encoding them into the filename
 	let pdfUrl = $derived(filename ? `${data.publicBackendUrl}/pdf/${encodeURIComponent(filename)}?token=${data.token}` : '');
-	let viewerUrl = $derived(pdfUrl ? `${data.publicBackendUrl}/pdfjs/web/viewer.html?file=${encodeURIComponent(pdfUrl)}` : '');
+	let viewerUrl = $derived(pdfUrl ? `/pdfjs/web/viewer.html?file=${encodeURIComponent(pdfUrl)}` : '');
 </script>
 
 <div class="h-full w-full p-4">

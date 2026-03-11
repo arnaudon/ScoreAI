@@ -8,8 +8,8 @@ from pathlib import Path
 from typing import Annotated, AsyncGenerator
 
 from fastapi import Body, Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from fastapi.staticfiles import StaticFiles
 from sqlmodel import Session, select
 
 from app import imslp, users
@@ -31,9 +31,13 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:  # pragma: no cove
 
 
 app = FastAPI(lifespan=lifespan)
-# mount PDF.js for pdf rendering
-current_file = Path(__file__).resolve()
-app.mount("/pdfjs", StaticFiles(directory=current_file.parent / "pdfjs"), name="pdfjs")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(users.router, tags=["users"])
 app.include_router(imslp.router, tags=["imslp"])
