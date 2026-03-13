@@ -179,7 +179,8 @@ export const actions: Actions = {
 			});
 
 			if (!res.ok) {
-				return fail(res.status, { error: 'Failed to query agent' });
+				const result = await res.json().catch(() => ({}));
+				return fail(res.status, { error: result.detail || 'Failed to query agent' });
 			}
 
 			const json = await res.json();

@@ -1,4 +1,4 @@
-import { redirect } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { env } from '$env/dynamic/private';
 
@@ -64,6 +64,30 @@ export const load: PageServerLoad = async ({ cookies, fetch }) => {
 };
 
 export const actions = {
+	set_credits: async ({ request, cookies, fetch }) => {
+		const token = cookies.get('access_token');
+		const data = await request.formData();
+		const userId = data.get('user_id');
+		const credits = data.get('credits');
+
+		if (!userId || credits === null) {
+			return fail(400, { error: 'User ID and credits are required.' });
+		}
+
+		const res = await fetch(`${BACKEND_URL}/users/${userId}/credits`, {
+			method: 'PUT',
+			headers: {
+				Authorization: `Bearer ${token}`,
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ credits: Number(credits) })
+		});
+
+		if (!res.ok) {
+			const result = await res.json().catch(() => ({}));
+			return fail(res.status, { error: result.detail || 'Failed to update credits.' });
+		}
+	},
 	set_models: async ({ request, cookies, fetch }) => {
 		const token = cookies.get('access_token');
 		const data = await request.formData();

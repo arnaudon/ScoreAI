@@ -109,16 +109,26 @@ def get_scores(
     return session.exec(select(Score).where(Score.user_id == current_user.id)).all()
 
 
-@app.post("/imslp_agent", dependencies=[Depends(get_current_user)])
+@app.post("/imslp_agent")
 async def run_imslp_agent_api(
+    current_user: Annotated[User, Depends(get_current_user)],
     prompt: str = Body(...),
     message_history: list | None = Body(None),
     session: Session = Depends(get_session),
 ):  # pragma: no cover
     """Run the imslp agent."""
+    if current_user.credits <= 0:
+        raise HTTPException(status_code=403, detail="You have run out of agent credits.")
+
     setting = session.get(Setting, "model_imslp")
     model = setting.value if setting else os.getenv("MODEL", "test")
-    return await run_imslp_agent(prompt, message_history=message_history, model=model)
+    result = await run_imslp_agent(prompt, message_history=message_history, model=model)
+
+    current_user.credits -= 1
+    session.add(current_user)
+    session.commit()
+
+    return result
 
 
 @app.post("/agent")
@@ -130,14 +140,22 @@ async def run_main_agent(
     session: Session = Depends(get_session),
 ):  # pragma: no cover
     """Run the agent."""
+    if current_user.credits <= 0:
+        raise HTTPException(status_code=403, detail="You have run out of agent credits.")
+
     setting = session.get(Setting, "model_main")
     model = setting.value if setting else os.getenv("MODEL", "test")
-    return await run_agent(
+    result = await run_agent(
         prompt,
         message_history=message_history,
         deps=Deps(user=current_user, scores=Scores(**json.loads(deps))),
         model=model,
     )
+
+    current_user.credits -= 1
+    session.add(current_user)
+    session.commit()
+    return result
 
 
 @app.get("/admin/model", dependencies=[Depends(get_admin_user)])

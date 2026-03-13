@@ -3,8 +3,21 @@
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
 
 	let { data }: PageProps = $props();
+
+	let selectedUser = $state<any>(null);
+	let credits = $state(0);
+	let editDialogOpen = $state(false);
+
+	function openEditDialog(user: any) {
+		selectedUser = user;
+		credits = user.credits ?? 0;
+		editDialogOpen = true;
+	}
 
 	$effect(() => {
 		if (data.progress?.status === 'processing' || data.progress?.status === 'cancelling') {
@@ -113,6 +126,8 @@
 				<Table.Head>ID</Table.Head>
 				<Table.Head>Username</Table.Head>
 				<Table.Head>Role</Table.Head>
+				<Table.Head>Credits</Table.Head>
+				<Table.Head class="text-right">Actions</Table.Head>
 			</Table.Row>
 		</Table.Header>
 		<Table.Body>
@@ -121,10 +136,14 @@
 					<Table.Cell>{user.id || '-'}</Table.Cell>
 					<Table.Cell>{user.username}</Table.Cell>
 					<Table.Cell class="capitalize">{user.role || (user.is_admin ? 'Admin' : 'User')}</Table.Cell>
+					<Table.Cell>{user.credits ?? '-'}</Table.Cell>
+					<Table.Cell class="text-right">
+						<Button variant="outline" size="sm" onclick={() => openEditDialog(user)}>Edit</Button>
+					</Table.Cell>
 				</Table.Row>
 			{:else}
 				<Table.Row>
-					<Table.Cell colspan={3} class="text-center text-muted-foreground py-4">
+					<Table.Cell colspan={5} class="text-center text-muted-foreground py-4">
 						No users found.
 					</Table.Cell>
 				</Table.Row>
@@ -132,3 +151,36 @@
 		</Table.Body>
 	</Table.Root>
 </div>
+
+<Dialog.Root bind:open={editDialogOpen}>
+	<Dialog.Content>
+		<Dialog.Header>
+			<Dialog.Title>Edit Credits for {selectedUser?.username}</Dialog.Title>
+			<Dialog.Description>
+				Set a new credit balance for the user. This will take effect immediately.
+			</Dialog.Description>
+		</Dialog.Header>
+		{#if selectedUser}
+			<form
+				method="POST"
+				action="?/set_credits"
+				use:enhance={() => {
+					return async ({ update }) => {
+						editDialogOpen = false;
+						await update();
+					};
+				}}
+				class="space-y-4"
+			>
+				<input type="hidden" name="user_id" value={selectedUser.id} />
+				<div class="space-y-2">
+					<label for="credits" class="text-sm font-medium">Credits</label>
+					<Input id="credits" name="credits" type="number" bind:value={credits} />
+				</div>
+				<Dialog.Footer>
+					<Button type="submit">Save Changes</Button>
+				</Dialog.Footer>
+			</form>
+		{/if}
+	</Dialog.Content>
+</Dialog.Root>

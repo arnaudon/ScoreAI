@@ -27,6 +27,10 @@
 					<label for="role" class="text-sm font-medium">Role</label>
 					<Input id="role" value={data.user?.role || (data.user?.is_admin ? 'admin' : 'user')} disabled class="max-w-md capitalize" />
 				</div>
+				<div class="space-y-2">
+					<label for="credits" class="text-sm font-medium">Credits</label>
+					<Input id="credits" value={data.user?.credits} disabled class="max-w-md" />
+				</div>
 			</div>
 		</section>
 

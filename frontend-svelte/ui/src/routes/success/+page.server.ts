@@ -63,7 +63,8 @@ export const actions: Actions = {
 				}
 				return { success: true, answer: result, question: question.toString(), scoreDetails };
 			} else {
-				return fail(response.status, { error: `Failed to get response (${response.status})` });
+				const result = await response.json().catch(() => ({}));
+				return fail(response.status, { error: result.detail || `Failed to get response (${response.status})` });
 			}
 		} catch (error) {
 			console.error('Agent error:', error);

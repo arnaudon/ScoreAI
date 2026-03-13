@@ -39,6 +39,12 @@ class PasswordChangeRequest(BaseModel):
     new_password: str
 
 
+class CreditUpdateRequest(BaseModel):
+    """Credit update request model."""
+
+    credits: int
+
+
 password_hash = PasswordHash.recommended()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -187,6 +193,31 @@ async def update_password(
     session.add(current_user)
     session.commit()
     return {"message": "Password updated successfully"}
+
+
+@router.put("/users/{user_id}/credits")
+async def set_user_credits(
+    user_id: int,
+    request: CreditUpdateRequest,
+    current_user: Annotated[User | None, Depends(get_admin_user)],
+    session: Session = Depends(get_session),
+):
+    """Set credits for a user (admin only)."""
+    if current_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to perform this action.",
+        )
+
+    user_to_update = session.get(User, user_id)
+    if not user_to_update:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user_to_update.credits = request.credits
+    session.add(user_to_update)
+    session.commit()
+    session.refresh(user_to_update)
+    return user_to_update
 
 
 @router.delete("/user")
