@@ -19,7 +19,6 @@
 			</p>
 		</div>
 
-		<div class="separator-ornate"></div>
 		<h2 class="text-fancy-title mb-6 text-center text-xl font-semibold">
 			{isRegister ? m.sign_up() : m.login()}
 		</h2>
