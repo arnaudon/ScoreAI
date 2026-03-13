@@ -88,10 +88,10 @@ async def get_easiest_score_by_composer(ctx: RunContext[Deps], filter_params: Fi
     return "Not found"
 
 
-def get_main_agent():
+def get_main_agent(model: str | None = None):
     """Initializes and returns the main agent for handling user queries about scores."""
     agent = Agent(
-        MODEL,
+        model or MODEL,
         output_type=Response,
         deps_type=Deps,
         system_prompt="""Your task it to find a score to play.
@@ -112,7 +112,7 @@ def get_main_agent():
     return agent
 
 
-async def run_imslp_agent(prompt: str, message_history=None):
+async def run_imslp_agent(prompt: str, message_history=None, model: str | None = None):
     """
     Run an agent specialized for querying the IMSLP database.
 
@@ -127,7 +127,7 @@ async def run_imslp_agent(prompt: str, message_history=None):
         A FullResponse object containing the agent's response and message history.
     """
     agent = Agent(
-        MODEL,
+        model or MODEL,
         system_prompt="""
         You are a database assistant. 
         Your ONLY source of data is the table: public.imslp.
@@ -175,7 +175,7 @@ async def run_imslp_agent(prompt: str, message_history=None):
     return ImslpFullResponse(response=response, message_history=history)
 
 
-async def run_agent(prompt: str, deps: Deps, message_history=None):
+async def run_agent(prompt: str, deps: Deps, message_history=None, model: str | None = None):
     """
     Run the main conversational agent to find musical scores.
 
@@ -187,7 +187,7 @@ async def run_agent(prompt: str, deps: Deps, message_history=None):
     Returns:
         A FullResponse object containing the agent's response and message history.
     """
-    agent = get_main_agent()
+    agent = get_main_agent(model)
 
     if message_history:
         try:
@@ -217,7 +217,7 @@ async def run_agent(prompt: str, deps: Deps, message_history=None):
     return FullResponse(response=response, message_history=history)
 
 
-async def run_complete_agent(score: Score):
+async def run_complete_agent(score: Score, model: str | None = None):
     """
     Run an agent to find and add missing information to a score.
 
@@ -231,7 +231,7 @@ async def run_complete_agent(score: Score):
         The updated Score object.
     """
     agent = Agent(
-        MODEL,
+        model or MODEL,
         output_type=Score,
         system_prompt="""You are a music expert, and your task it to provide accurate
         informations about a music piece. Use the search tool to find current information

@@ -93,6 +93,12 @@
 	<div class="bg-card border rounded-lg p-4 shadow-sm">
 		<form method="POST" {action} use:enhance={handleEnhance} class="flex gap-2">
 			<input type="hidden" name="message_history" value={JSON.stringify(rawHistory)} />
+			<select name="model" class="flex h-10 w-48 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+				<option value="">Default Model</option>
+				<option value="openai:gpt-4o">GPT-4o</option>
+				<option value="openai:gpt-4o-mini">GPT-4o-Mini</option>
+				<option value="anthropic:claude-3-5-sonnet-latest">Claude 3.5 Sonnet</option>
+			</select>
 			<Input name="question" {placeholder} required />
 			<Button type="submit" disabled={loading}>Ask</Button>
 		</form>

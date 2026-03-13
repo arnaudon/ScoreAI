@@ -40,6 +40,7 @@ export const actions: Actions = {
 		const title = data.get('title');
 		const composer = data.get('composer');
 		const file = data.get('file') as File;
+		const model = data.get('model')?.toString();
 
 		if (!title || !composer || !file || file.size === 0) {
 			return fail(400, { error: 'Missing required fields' });
@@ -76,7 +77,8 @@ export const actions: Actions = {
 				pdf_path: filename
 			};
 
-			const completeRes = await fetch(`${BACKEND_URL}/complete_score`, {
+			const completeUrl = `${BACKEND_URL}/complete_score${model ? `?model=${encodeURIComponent(model)}` : ''}`;
+			const completeRes = await fetch(completeUrl, {
 				method: 'POST',
 				headers: {
 					Authorization: `Bearer ${token}`,
@@ -142,6 +144,7 @@ export const actions: Actions = {
 		const data = await request.formData();
 		const question = data.get('question');
 		const messageHistoryRaw = data.get('message_history');
+		const model = data.get('model')?.toString();
 
 		if (!question) {
 			return fail(400, { error: 'Missing prompt' });
@@ -174,7 +177,8 @@ export const actions: Actions = {
 				body: JSON.stringify({
 					prompt: question.toString(),
 					deps: deps,
-					message_history: messageHistory
+					message_history: messageHistory,
+					model: model
 				})
 			});
 

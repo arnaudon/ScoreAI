@@ -57,9 +57,9 @@ def add_score(
 
 
 @app.post("/complete_score", dependencies=[Depends(get_current_user)])
-async def complete_score(score: Score):  # pragma: no cover
+async def complete_score(score: Score, model: str | None = None):  # pragma: no cover
     """Complete a score."""
-    return await run_complete_agent(score)
+    return await run_complete_agent(score, model)
 
 
 @app.delete("/scores/{score_id}")
@@ -105,10 +105,10 @@ def get_scores(
 
 @app.post("/imslp_agent", dependencies=[Depends(get_current_user)])
 async def run_imslp_agent_api(
-    prompt: str = Body(...), message_history: list | None = Body(None)
+    prompt: str = Body(...), message_history: list | None = Body(None), model: str | None = Body(None)
 ):  # pragma: no cover
     """Run the imslp agent."""
-    return await run_imslp_agent(prompt, message_history=message_history)
+    return await run_imslp_agent(prompt, message_history=message_history, model=model)
 
 
 @app.post("/agent")
@@ -117,12 +117,14 @@ async def run_main_agent(
     prompt: str = Body(...),
     deps: str = Body(...),
     message_history: list | None = Body(None),
+    model: str | None = Body(None),
 ):  # pragma: no cover
     """Run the agent."""
     return await run_agent(
         prompt,
         message_history=message_history,
         deps=Deps(user=current_user, scores=Scores(**json.loads(deps))),
+        model=model,
     )
 
 
