@@ -194,6 +194,34 @@ def test_update_password(user_in_db: User, client: TestClient):
     assert login_resp.status_code == 200
 
 
+def test_update_user_endpoint(user_in_db: User, client: TestClient):
+    """PUT /user updates the current user (covers update_user)."""
+    token = users.create_access_token(data={"sub": user_in_db.username})
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Test full update
+    resp = client.put(
+        "/user",
+        json={"instrument": "piano", "email": "new@example.com"},
+        headers=headers,
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["instrument"] == "piano"
+    assert data["email"] == "new@example.com"
+
+    # Test partial/no update (no changes)
+    resp_none = client.put(
+        "/user",
+        json={},
+        headers=headers,
+    )
+    assert resp_none.status_code == 200
+    data_none = resp_none.json()
+    assert data_none["instrument"] == "piano"
+    assert data_none["email"] == "new@example.com"
+
+
 def test_delete_account(user_in_db: User, client: TestClient):
     """DELETE /user deletes the account."""
 
