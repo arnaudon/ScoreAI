@@ -163,7 +163,7 @@ async def run_imslp_agent(prompt: str, message_history=None, model: str | None =
             adapter = TypeAdapter(list[ModelMessage])
             message_history = adapter.validate_python(message_history)
         except Exception:  # pylint: disable=broad-exception-caught
-            message_history = None
+            message_history = None  # pragma: no cover
 
     try:
         safe_prompt = f"<user_request>\n{prompt}\n</user_request>"
