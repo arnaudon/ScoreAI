@@ -114,7 +114,11 @@ async def fix_entry(entry, session):
             for key, value in res.output.model_dump().items():
                 setattr(entry, key, value)
             break
-        except Exception as e:  # pylint: disable=broad-exception-caught
+        except (ModelHTTPError, UnexpectedModelBehavior) as e:
+            # Do not retry client errors (4xx)
+            if isinstance(e, ModelHTTPError) and e.status_code < 500:
+                raise e
+
             if attempt < max_retries - 1:
                 wait_time = 2**attempt * 5  # Exponential backoff
                 logger.warning(
