@@ -164,6 +164,11 @@ async def run_imslp_agent(prompt: str, message_history=None, model: str | None =
         history = []
         if e.status_code == 429:
             response = ImslpResponse(response="Rate limit exceeded (Quota hit)", score_ids=[])
+        elif e.status_code == 503:
+            response = ImslpResponse(
+                response="The model is currently experiencing high demand. Please try again in a few moments.",
+                score_ids=[],
+            )
         else:
             response = ImslpResponse(response="An HTTP error occurred", score_ids=[])
     except Exception:  # pylint: disable=broad-exception-caught
@@ -208,6 +213,10 @@ async def run_agent(prompt: str, deps: Deps, message_history=None, model: str | 
         history = []
         if e.status_code == 429:
             response = Response(response="Rate limit exceeded (Quota hit)")
+        elif e.status_code == 503:
+            response = Response(
+                response="The model is currently experiencing high demand. Please try again in a few moments."
+            )
         else:
             response = Response(response="An HTTP error occurred")
     except Exception:  # pylint: disable=broad-exception-caught
