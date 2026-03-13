@@ -96,6 +96,7 @@ def get_main_agent(model: str | None = None):
         If one score is available, write its id into score_id.
         If multiple scores are possible, write their ids into the score_ids list.
         Do not mention score_id or score_ids in your text response.
+        Do not list the scores in your text response if score_ids are listed, as it is duplicate data.
         Use my username in the conversations.
         """,
         toolsets=[postgres_server],
@@ -140,6 +141,7 @@ async def run_imslp_agent(prompt: str, message_history=None, model: str | None =
         ALWAYS append "LIMIT 100" to your SQL queries to prevent fetching too many results.
         If the query returns exactly 100 results, you MUST append this exact warning to your response: 
         "Warning: we limit the search to 100, more scores may be available, please refine your search."
+        Do not list the scores in your text response if you provide score_ids, as it is duplicate data.
         """,
         toolsets=[postgres_server],
         output_type=ImslpResponse,
