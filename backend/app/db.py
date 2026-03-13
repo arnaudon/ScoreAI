@@ -14,12 +14,6 @@ class Setting(SQLModel, table=True):
     value: str
 
 
-def init_db():
-    """Initialize database."""
-    init_engine = create_engine(DATABASE_URL, echo=True)
-    SQLModel.metadata.create_all(init_engine)
-
-
 engine = create_engine(
     DATABASE_URL,
     echo=False,

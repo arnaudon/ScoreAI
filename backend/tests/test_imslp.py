@@ -173,7 +173,7 @@ async def test_get_page(mock_httpx_get):  # pylint: disable=redefined-outer-name
 
 
 @pytest.mark.asyncio
-async def test_fix_entry(mock_agent):  # pylint: disable=redefined-outer-name
+async def test_fix_entry(mock_agent, session):  # pylint: disable=redefined-outer-name
     """Test fixing entry with agent."""
     mock_agent_instance = mock_agent.return_value
     mock_run_result = MagicMock()
@@ -181,14 +181,14 @@ async def test_fix_entry(mock_agent):  # pylint: disable=redefined-outer-name
     mock_agent_instance.run = AsyncMock(return_value=mock_run_result)
 
     entry = IMSLP(title="Old Title", permlink="http://example.com", composer="Old Composer")
-    await fix_entry(entry)
+    await fix_entry(entry, session)
 
     assert entry.title == "Fixed Title"
     assert entry.composer == "Fixed Composer"
 
 
 @pytest.mark.asyncio
-async def test_fix_entry_retry_on_http_error(mock_agent):
+async def test_fix_entry_retry_on_http_error(mock_agent, session):
     """Test fix_entry retries on ModelHTTPError 503."""
     mock_agent_instance = mock_agent.return_value
     mock_agent_instance.run = AsyncMock()
@@ -201,14 +201,14 @@ async def test_fix_entry_retry_on_http_error(mock_agent):
 
     entry = IMSLP(title="Old Title", permlink="http://example.com", composer="Old Composer")
     with patch("app.imslp.time.sleep"):
-        await fix_entry(entry)
+        await fix_entry(entry, session)
 
     assert entry.title == "Fixed Title"
     assert mock_agent_instance.run.call_count == 2
 
 
 @pytest.mark.asyncio
-async def test_fix_entry_retry_on_unexpected_behavior(mock_agent):
+async def test_fix_entry_retry_on_unexpected_behavior(mock_agent, session):
     """Test fix_entry retries on UnexpectedModelBehavior."""
     mock_agent_instance = mock_agent.return_value
     mock_agent_instance.run = AsyncMock()
@@ -221,21 +221,21 @@ async def test_fix_entry_retry_on_unexpected_behavior(mock_agent):
 
     entry = IMSLP(title="Old Title", permlink="http://example.com", composer="Old Composer")
     with patch("app.imslp.time.sleep"):
-        await fix_entry(entry)
+        await fix_entry(entry, session)
 
     assert entry.title == "Fixed Title"
     assert mock_agent_instance.run.call_count == 2
 
 
 @pytest.mark.asyncio
-async def test_fix_entry_raises_error(mock_agent):
+async def test_fix_entry_raises_error(mock_agent, session):
     """Test fix_entry raises non-retryable error."""
     mock_agent_instance = mock_agent.return_value
     mock_agent_instance.run.side_effect = ModelHTTPError(model_name="test", status_code=400)
 
     entry = IMSLP(title="Old Title", permlink="http://example.com", composer="Old Composer")
     with pytest.raises(ModelHTTPError):
-        await fix_entry(entry)
+        await fix_entry(entry, session)
     assert mock_agent_instance.run.call_count == 1
 
 
