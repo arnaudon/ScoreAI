@@ -102,6 +102,7 @@ def get_main_agent(model: str | None = None):
         Use my username in the conversations.
         """,
         toolsets=[postgres_server],
+        retries=3,
     )
     agent.tool(get_score_info)
     agent.tool(get_user_name)
