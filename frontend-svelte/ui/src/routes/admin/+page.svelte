@@ -140,17 +140,6 @@
 					<Table.Cell class="text-right">
 						<div class="flex items-center justify-end gap-2">
 							<Button variant="outline" size="sm" onclick={() => openEditDialog(user)}>Edit</Button>
-							<form method="POST" action="?/refill_credits" use:enhance>
-								<input type="hidden" name="user_id" value={user.id} />
-								<Button
-									variant="outline"
-									size="sm"
-									type="submit"
-									disabled={user.credits === user.max_credits}
-								>
-									Refill
-								</Button>
-							</form>
 						</div>
 					</Table.Cell>
 				</Table.Row>
@@ -174,26 +163,45 @@
 			</Sheet.Description>
 		</Sheet.Header>
 		{#if selectedUser}
-			<form
-				method="POST"
-				action="?/set_credits"
-				use:enhance={() => {
+			<div class="mt-4 space-y-6">
+				<form
+					method="POST"
+					action="?/set_credits"
+					use:enhance={() => {
+						return async ({ update }) => {
+							editDialogOpen = false;
+							await update();
+						};
+					}}
+					class="space-y-4"
+				>
+					<input type="hidden" name="user_id" value={selectedUser.id} />
+					<div class="space-y-2">
+						<label for="max_credits" class="text-sm font-medium">Max Credits</label>
+						<Input id="max_credits" name="max_credits" type="number" bind:value={max_credits} />
+					</div>
+					<Sheet.Footer>
+						<Button type="submit">Save Changes</Button>
+					</Sheet.Footer>
+				</form>
+
+				<form method="POST" action="?/refill_credits" use:enhance={() => {
 					return async ({ update }) => {
 						editDialogOpen = false;
 						await update();
 					};
-				}}
-				class="space-y-4"
-			>
-				<input type="hidden" name="user_id" value={selectedUser.id} />
-				<div class="space-y-2">
-					<label for="max_credits" class="text-sm font-medium">Max Credits</label>
-					<Input id="max_credits" name="max_credits" type="number" bind:value={max_credits} />
-				</div>
-				<Sheet.Footer>
-					<Button type="submit">Save Changes</Button>
-				</Sheet.Footer>
-			</form>
+				}}>
+					<input type="hidden" name="user_id" value={selectedUser.id} />
+					<Button
+						variant="outline"
+						type="submit"
+						class="w-full"
+						disabled={selectedUser.credits === selectedUser.max_credits}
+					>
+						Refill Credits
+					</Button>
+				</form>
+			</div>
 		{/if}
 	</Sheet.Content>
 </Sheet.Root>
