@@ -242,7 +242,9 @@ async def test_run_imslp_agent_history_parsing(monkeypatch):
 
     # Invalid history triggers except block and defaults to None
     await agent.run_imslp_agent("prompt", message_history="invalid_history")
-    mock_agent_run.assert_called_with("prompt", message_history=None)
+    mock_agent_run.assert_called_with(
+        "<user_request>\nprompt\n</user_request>", message_history=None
+    )
 
 
 @pytest.mark.asyncio
@@ -260,4 +262,6 @@ async def test_run_agent_history_parsing(monkeypatch):
     deps = agent.Deps(user=User(username="test"), scores=Scores(scores=[]))
     # Invalid history triggers except block and defaults to None
     await agent.run_agent("prompt", deps, message_history="invalid_history")
-    mock_agent_run.assert_called_with("prompt", message_history=None, deps=deps)
+    mock_agent_run.assert_called_with(
+        "<user_request>\nprompt\n</user_request>", message_history=None, deps=deps
+    )

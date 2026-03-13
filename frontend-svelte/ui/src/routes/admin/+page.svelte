@@ -6,6 +6,7 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Sheet from '$lib/components/ui/sheet/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import * as m from '$lib/paraglide/messages.js';
 
 	let { data }: PageProps = $props();
 
@@ -30,16 +31,16 @@
 </script>
 
 <div class="mb-4 flex items-center justify-between">
-	<h1 class="text-fancy-title text-2xl font-bold text-foreground">Admin Dashboard</h1>
+	<h1 class="text-fancy-title text-2xl font-bold text-foreground">{m.admin_dashboard()}</h1>
 </div>
 
 <div class="grid gap-6 md:grid-cols-2 mb-8">
 	<div class="rounded-md border bg-card p-6 text-card-foreground shadow-card">
-		<h2 class="text-fancy-title mb-2 text-xl font-semibold">Agent Configuration</h2>
-		<p class="mb-4 text-muted-foreground">Select the models used by the different agents.</p>
+		<h2 class="text-fancy-title mb-2 text-xl font-semibold">{m.agent_configuration()}</h2>
+		<p class="mb-4 text-muted-foreground">{m.agent_configuration_desc()}</p>
 		<form method="POST" action="?/set_models" use:enhance class="flex flex-col gap-4">
 			<div class="space-y-2">
-				<label for="model_main" class="text-sm font-medium leading-none">Main Agent Model</label>
+				<label for="model_main" class="text-sm font-medium leading-none">{m.main_agent_model()}</label>
 				<select id="model_main" name="model_main" class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
 					<option value="google-gla:gemini-2.5-flash" selected={data.activeModels.main === 'google-gla:gemini-2.5-flash' || data.activeModels.main === ''}>Gemini 2.5 Flash</option>
 					<option value="google-gla:gemini-2.5-pro" selected={data.activeModels.main === 'google-gla:gemini-2.5-pro'}>Gemini 2.5 Pro</option>
@@ -47,7 +48,7 @@
 				</select>
 			</div>
 			<div class="space-y-2">
-				<label for="model_imslp" class="text-sm font-medium leading-none">IMSLP Agent Model</label>
+				<label for="model_imslp" class="text-sm font-medium leading-none">{m.imslp_agent_model()}</label>
 				<select id="model_imslp" name="model_imslp" class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
 					<option value="google-gla:gemini-2.5-flash" selected={data.activeModels.imslp === 'google-gla:gemini-2.5-flash' || data.activeModels.imslp === ''}>Gemini 2.5 Flash</option>
 					<option value="google-gla:gemini-2.5-pro" selected={data.activeModels.imslp === 'google-gla:gemini-2.5-pro'}>Gemini 2.5 Pro</option>
@@ -55,7 +56,7 @@
 				</select>
 			</div>
 			<div class="space-y-2">
-				<label for="model_complete" class="text-sm font-medium leading-none">Complete Agent Model</label>
+				<label for="model_complete" class="text-sm font-medium leading-none">{m.complete_agent_model()}</label>
 				<select id="model_complete" name="model_complete" class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
 					<option value="google-gla:gemini-2.5-flash" selected={data.activeModels.complete === 'google-gla:gemini-2.5-flash' || data.activeModels.complete === ''}>Gemini 2.5 Flash</option>
 					<option value="google-gla:gemini-2.5-pro" selected={data.activeModels.complete === 'google-gla:gemini-2.5-pro'}>Gemini 2.5 Pro</option>
@@ -63,27 +64,27 @@
 				</select>
 			</div>
 			<button class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 self-start" type="submit">
-				Save
+				{m.save()}
 			</button>
 		</form>
 	</div>
 
 	<div class="rounded-md border bg-card p-6 text-card-foreground shadow-card">
-		<h2 class="text-fancy-title mb-2 text-xl font-semibold">IMSLP Database</h2>
+		<h2 class="text-fancy-title mb-2 text-xl font-semibold">{m.imslp_database()}</h2>
 		<p class="mb-4 text-muted-foreground">
-			The database contains {data.stats?.total_works || 0} works and {data.stats?.total_composers || 0} composers.
+			{m.imslp_database_stats({ works: data.stats?.total_works || 0, composers: data.stats?.total_composers || 0 })}
 		</p>
 		<div class="flex gap-4 items-center">
 			<form method="POST" action="?/update" use:enhance>
 				<button class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2" disabled={data.progress?.status === 'processing'}>
-					Update Database
+					{m.update_database()}
 				</button>
 			</form>
 			<form method="POST" action="?/empty" use:enhance onsubmit={(e) => {
-				if (!confirm('Are you sure you want to delete all IMSLP data?')) e.preventDefault();
+				if (!confirm(m.delete_imslp_confirm())) e.preventDefault();
 			}}>
 				<button class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-destructive text-destructive-foreground hover:bg-destructive/90 h-10 px-4 py-2" disabled={data.progress?.status === 'processing'}>
-					Delete All Data
+					{m.delete_all_data()}
 				</button>
 			</form>
 		</div>
@@ -93,9 +94,9 @@
 				<div class="flex justify-between mb-2">
 					<span class="font-medium text-sm">
 						{#if data.progress.status === 'cancelling'}
-							Status: CANCELLING... (finishing current item)
+							{m.status_cancelling()}
 						{:else}
-							Status: PROCESSING PAGE ({data.progress.page}/{data.progress.total})
+							{m.status_processing({ page: data.progress.page, total: data.progress.total })}
 						{/if}
 					</span>
 				</div>
@@ -107,7 +108,7 @@
 						disabled={data.progress.status === 'cancelling'}
 						class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 rounded-md px-3 disabled:opacity-50"
 					>
-						{data.progress.status === 'cancelling' ? '⏳ Cancelling...' : '🛑 Cancel Task'}
+						{data.progress.status === 'cancelling' ? m.cancelling() : m.cancel_task()}
 					</button>
 				</form>
 			</div>
@@ -116,18 +117,18 @@
 </div>
 
 <div class="mb-4 flex items-center justify-between">
-	<h2 class="text-fancy-title text-xl font-semibold text-foreground">Users</h2>
+	<h2 class="text-fancy-title text-xl font-semibold text-foreground">{m.users()}</h2>
 </div>
 
 <div class="rounded-md border bg-card text-card-foreground shadow-card">
 	<Table.Root>
 		<Table.Header>
 			<Table.Row>
-				<Table.Head>ID</Table.Head>
-				<Table.Head>Username</Table.Head>
-				<Table.Head>Role</Table.Head>
-				<Table.Head>Credits</Table.Head>
-				<Table.Head class="text-right">Actions</Table.Head>
+				<Table.Head>{m.id()}</Table.Head>
+				<Table.Head>{m.username()}</Table.Head>
+				<Table.Head>{m.role()}</Table.Head>
+				<Table.Head>{m.credits()}</Table.Head>
+				<Table.Head class="text-right">{m.actions()}</Table.Head>
 			</Table.Row>
 		</Table.Header>
 		<Table.Body>
@@ -139,25 +140,14 @@
 					<Table.Cell>{user.credits ?? '-'}/{user.max_credits ?? '-'}</Table.Cell>
 					<Table.Cell class="text-right">
 						<div class="flex items-center justify-end gap-2">
-							<Button variant="outline" size="sm" onclick={() => openEditDialog(user)}>Edit</Button>
-							<form method="POST" action="?/refill_credits" use:enhance>
-								<input type="hidden" name="user_id" value={user.id} />
-								<Button
-									variant="outline"
-									size="sm"
-									type="submit"
-									disabled={user.credits === user.max_credits}
-								>
-									Refill
-								</Button>
-							</form>
+							<Button variant="outline" size="sm" onclick={() => openEditDialog(user)}>{m.edit()}</Button>
 						</div>
 					</Table.Cell>
 				</Table.Row>
 			{:else}
 				<Table.Row>
 					<Table.Cell colspan={5} class="text-center text-muted-foreground py-4">
-						No users found.
+						{m.no_users_found()}
 					</Table.Cell>
 				</Table.Row>
 			{/each}
@@ -168,32 +158,51 @@
 <Sheet.Root bind:open={editDialogOpen}>
 	<Sheet.Content>
 		<Sheet.Header>
-			<Sheet.Title>Edit Max Credits for {selectedUser?.username}</Sheet.Title>
+			<Sheet.Title>{m.edit_max_credits({ username: selectedUser?.username || '' })}</Sheet.Title>
 			<Sheet.Description>
-				Set the maximum credit balance for the user.
+				{m.edit_max_credits_desc()}
 			</Sheet.Description>
 		</Sheet.Header>
 		{#if selectedUser}
-			<form
-				method="POST"
-				action="?/set_credits"
-				use:enhance={() => {
+			<div class="mt-4 space-y-6">
+				<form
+					method="POST"
+					action="?/set_credits"
+					use:enhance={() => {
+						return async ({ update }) => {
+							editDialogOpen = false;
+							await update();
+						};
+					}}
+					class="space-y-4"
+				>
+					<input type="hidden" name="user_id" value={selectedUser.id} />
+					<div class="space-y-2">
+						<label for="max_credits" class="text-sm font-medium">{m.max_credits()}</label>
+						<Input id="max_credits" name="max_credits" type="number" bind:value={max_credits} />
+					</div>
+					<Sheet.Footer>
+						<Button type="submit">{m.save_changes()}</Button>
+					</Sheet.Footer>
+				</form>
+
+				<form method="POST" action="?/refill_credits" use:enhance={() => {
 					return async ({ update }) => {
 						editDialogOpen = false;
 						await update();
 					};
-				}}
-				class="space-y-4"
-			>
-				<input type="hidden" name="user_id" value={selectedUser.id} />
-				<div class="space-y-2">
-					<label for="max_credits" class="text-sm font-medium">Max Credits</label>
-					<Input id="max_credits" name="max_credits" type="number" bind:value={max_credits} />
-				</div>
-				<Sheet.Footer>
-					<Button type="submit">Save Changes</Button>
-				</Sheet.Footer>
-			</form>
+				}}>
+					<input type="hidden" name="user_id" value={selectedUser.id} />
+					<Button
+						variant="outline"
+						type="submit"
+						class="w-full"
+						disabled={selectedUser.credits === selectedUser.max_credits}
+					>
+						{m.refill_credits()}
+					</Button>
+				</form>
+			</div>
 		{/if}
 	</Sheet.Content>
 </Sheet.Root>

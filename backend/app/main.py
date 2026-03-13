@@ -24,6 +24,19 @@ from shared.user import User
 logger = getLogger(__name__)
 
 
+def validate_prompt_security(prompt: str):
+    """Validate the prompt against common injection attacks."""
+    suspicious_keywords = [
+        "ignore previous",
+        "system prompt",
+        "drop table",
+        "bypass",
+        "forget all instructions",
+    ]
+    if any(keyword in prompt.lower() for keyword in suspicious_keywords):
+        raise HTTPException(status_code=400, detail="Invalid input detected.")
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:  # pragma: no cover
     """Placeholder for startup/shutdown events."""
@@ -58,12 +71,36 @@ def add_score(
     return score
 
 
-@app.post("/complete_score", dependencies=[Depends(get_current_user)])
-async def complete_score(score: Score, session: Session = Depends(get_session)):  # pragma: no cover
+@app.post("/complete_score")
+async def complete_score(
+    score: Score,
+    current_user: Annotated[User, Depends(get_current_user)],
+    session: Session = Depends(get_session),
+):  # pragma: no cover
     """Complete a score."""
+    if current_user.credits <= 0:
+        raise HTTPException(
+            status_code=403,
+            detail="You have run out of agent credits."
+            "Please contact alexis.arnaudon@gmail.com to get more credits.",
+        )
+
+    current_user.credits -= 1
+    session.add(current_user)
+    session.commit()
+
     setting = session.get(Setting, "model_complete")
     model = setting.value if setting else os.getenv("MODEL", "test")
-    return await run_complete_agent(score, model)
+
+    try:
+        result = await run_complete_agent(score, model)
+    except Exception as e:
+        current_user.credits += 1
+        session.add(current_user)
+        session.commit()
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+    return result
 
 
 @app.delete("/scores/{score_id}")
@@ -115,6 +152,8 @@ async def run_imslp_agent_api(
     session: Session = Depends(get_session),
 ):  # pragma: no cover
     """Run the imslp agent."""
+    validate_prompt_security(prompt)
+
     if current_user.credits <= 0:
         raise HTTPException(
             status_code=403,
@@ -122,13 +161,20 @@ async def run_imslp_agent_api(
             "Please contact alexis.arnaudon@gmail.com to get more credits.",
         )
 
-    setting = session.get(Setting, "model_imslp")
-    model = setting.value if setting else os.getenv("MODEL", "test")
-    result = await run_imslp_agent(prompt, message_history=message_history, model=model)
-
     current_user.credits -= 1
     session.add(current_user)
     session.commit()
+
+    setting = session.get(Setting, "model_imslp")
+    model = setting.value if setting else os.getenv("MODEL", "test")
+
+    try:
+        result = await run_imslp_agent(prompt, message_history=message_history, model=model)
+    except Exception as e:
+        current_user.credits += 1
+        session.add(current_user)
+        session.commit()
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
     return result
 
@@ -142,6 +188,8 @@ async def run_main_agent(
     session: Session = Depends(get_session),
 ):  # pragma: no cover
     """Run the agent."""
+    validate_prompt_security(prompt)
+
     if current_user.credits <= 0:
         raise HTTPException(
             status_code=403,
@@ -149,18 +197,26 @@ async def run_main_agent(
             "Please contact alexis.arnaudon@gmail.com to get more credits.",
         )
 
-    setting = session.get(Setting, "model_main")
-    model = setting.value if setting else os.getenv("MODEL", "test")
-    result = await run_agent(
-        prompt,
-        message_history=message_history,
-        deps=Deps(user=current_user, scores=Scores(**json.loads(deps))),
-        model=model,
-    )
-
     current_user.credits -= 1
     session.add(current_user)
     session.commit()
+
+    setting = session.get(Setting, "model_main")
+    model = setting.value if setting else os.getenv("MODEL", "test")
+
+    try:
+        result = await run_agent(
+            prompt,
+            message_history=message_history,
+            deps=Deps(user=current_user, scores=Scores(**json.loads(deps))),
+            model=model,
+        )
+    except Exception as e:
+        current_user.credits += 1
+        session.add(current_user)
+        session.commit()
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
     return result
 
 

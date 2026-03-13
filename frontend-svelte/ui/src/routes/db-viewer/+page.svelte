@@ -20,6 +20,7 @@
 	import AgentChat from '$lib/components/AgentChat.svelte';
 	import DataTableSortButton from './data-table-sort-button.svelte';
 	import { imslpAgentHistoryStore } from '$lib/stores/chat.svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	let { data, form }: PageProps = $props();
 	let selectedScoreId = $state<number | null>(null);
@@ -185,11 +186,11 @@
 
 <div class="p-8">
 	<div class="mb-8 rounded-md border bg-card p-4 text-card-foreground shadow-card">
-		<h2 class="text-fancy-title mb-4 text-lg font-semibold">Add New Score</h2>
+		<h2 class="text-fancy-title mb-4 text-lg font-semibold">{m.add_new_score()}</h2>
 		<Tabs.Root value="manual" class="w-full">
 			<Tabs.List class="mb-4">
-				<Tabs.Trigger value="manual">Manual Upload</Tabs.Trigger>
-				<Tabs.Trigger value="imslp">From IMSLP</Tabs.Trigger>
+				<Tabs.Trigger value="manual">{m.manual_upload()}</Tabs.Trigger>
+				<Tabs.Trigger value="imslp">{m.from_imslp()}</Tabs.Trigger>
 			</Tabs.List>
 			<Tabs.Content value="manual">
 				<form method="POST" action="?/upload" enctype="multipart/form-data" use:enhance={() => {
@@ -200,19 +201,19 @@
 					};
 				}} class="flex flex-col gap-4 md:flex-row md:items-end">
 					<div class="flex-1 space-y-2">
-						<label for="title" class="text-sm font-medium leading-none">Title</label>
+						<label for="title" class="text-sm font-medium leading-none">{m.title()}</label>
 						<Input id="title" name="title" required />
 					</div>
 					<div class="flex-1 space-y-2">
-						<label for="composer" class="text-sm font-medium leading-none">Composer</label>
+						<label for="composer" class="text-sm font-medium leading-none">{m.composer()}</label>
 						<Input id="composer" name="composer" required />
 					</div>
 					<div class="flex-1 space-y-2">
-						<label for="file" class="text-sm font-medium leading-none">PDF File</label>
+						<label for="file" class="text-sm font-medium leading-none">{m.pdf_file()}</label>
 						<Input id="file" name="file" type="file" accept="application/pdf" required />
 					</div>
 					<Button type="submit" disabled={uploading}>
-						{uploading ? 'Adding...' : 'Add'}
+						{uploading ? m.adding() : m.add()}
 					</Button>
 				</form>
 			</Tabs.Content>
@@ -221,14 +222,16 @@
 					<AgentChat
 						{form}
 						action="?/ask_agent"
-						title="From IMSLP"
-						placeholder="e.g. Find me piano sonatas by Beethoven"
+						title={m.from_imslp()}
+						placeholder={m.agent_placeholder_imslp()}
 						onResult={onImslpResult}
 						user={data.user}
 						store={imslpAgentHistoryStore}
 					>
 						{#snippet children()}
-							<div />
+							<div class="text-xs max-w-sm">
+								{m.warning_limit_100()}
+							</div>
 						{/snippet}
 						{#snippet resultSnippet({ msg, isLast })}
 							<p class="mb-4 text-sm whitespace-pre-wrap">{msg.answer}</p>
@@ -285,8 +288,7 @@
 
 										<div class="flex items-center justify-end space-x-2 py-4 px-4 border-t">
 											<div class="flex-1 text-sm text-muted-foreground">
-												Showing min({imslpTable.getRowModel().rows.length},{' '}
-												{imslpTable.getFilteredRowModel().rows.length}) results.
+												Page {imslpTable.getState().pagination.pageIndex + 1} of {Math.max(1, imslpTable.getPageCount())}
 											</div>
 											<Button
 												variant="outline"
@@ -321,12 +323,12 @@
 			<p class="mt-4 text-sm font-medium text-destructive">{form.error}</p>
 		{/if}
 		{#if form?.scoreAdded}
-			<p class="mt-4 text-sm font-medium text-green-600 dark:text-green-400">Score added successfully!</p>
+			<p class="mt-4 text-sm font-medium text-green-600 dark:text-green-400">{m.score_added_success()}</p>
 		{/if}
 	</div>
 
 	<div class="mb-4 flex items-center justify-between">
-		<h1 class="text-fancy-title text-2xl font-bold text-foreground">Database Viewer</h1>
+		<h1 class="text-fancy-title text-2xl font-bold text-foreground">{m.database_viewer()}</h1>
 		{#if selectedScoreId}
 			<div class="flex gap-2">
 				<form method="POST" action="?/delete" use:enhance={() => {
@@ -338,9 +340,9 @@
 					};
 				}}>
 					<input type="hidden" name="id" value={selectedScoreId} />
-					<Button type="submit" variant="destructive">Delete</Button>
+					<Button type="submit" variant="destructive">{m.delete()}</Button>
 				</form>
-				<Button href="/reader/{selectedScoreId}">View PDF</Button>
+				<Button href="/reader/{selectedScoreId}">{m.view_pdf()}</Button>
 			</div>
 		{/if}
 	</div>
@@ -438,7 +440,7 @@
 
 	<div class="flex items-center justify-end space-x-2 py-4">
 		<div class="flex-1 text-sm text-muted-foreground">
-			Showing {table.getRowModel().rows.length} of {table.getFilteredRowModel().rows.length} results.
+			Page {table.getState().pagination.pageIndex + 1} of {Math.max(1, table.getPageCount())}
 		</div>
 		<Button
 			variant="outline"

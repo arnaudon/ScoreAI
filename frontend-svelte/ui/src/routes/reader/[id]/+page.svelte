@@ -2,6 +2,7 @@
 	import type { PageProps } from './$types';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Sheet from '$lib/components/ui/sheet/index.js';
+	import * as m from '$lib/paraglide/messages.js';
 
 	let { data }: PageProps = $props();
 	let sheetOpen = $state(false);
@@ -31,8 +32,8 @@
 				<p class="text-muted-foreground">{data.score.composer}</p>
 			</div>
 			<div class="flex gap-2">
-				<Button variant="outline" onclick={enterPresentationMode}>Presentation Mode</Button>
-				<Button variant="outline" onclick={() => sheetOpen = true}>View Details</Button>
+				<Button variant="outline" onclick={enterPresentationMode}>{m.presentation_mode()}</Button>
+				<Button variant="outline" onclick={() => sheetOpen = true}>{m.view_details()}</Button>
 			</div>
 		</div>
 		
@@ -47,14 +48,14 @@
 				></iframe>
 			{:else}
 				<div class="flex h-full items-center justify-center text-muted-foreground">
-					No PDF available for this score.
+					{m.no_pdf_available()}
 				</div>
 			{/if}
 		</div>
 	{:else}
 		<div class="p-8 text-center text-muted-foreground">
-			<h2 class="text-xl font-bold">Score not found.</h2>
-			<p>We could not find the details for this score.</p>
+			<h2 class="text-xl font-bold">{m.score_not_found()}</h2>
+			<p>{m.score_not_found_desc()}</p>
 		</div>
 	{/if}
 </div>
@@ -62,8 +63,8 @@
 <Sheet.Root bind:open={sheetOpen}>
 	<Sheet.Content class="w-full overflow-y-auto sm:max-w-md">
 		<Sheet.Header>
-			<Sheet.Title>Score Details</Sheet.Title>
-			<Sheet.Description>Full metadata for the selected score.</Sheet.Description>
+			<Sheet.Title>{m.score_details()}</Sheet.Title>
+			<Sheet.Description>{m.score_details_desc()}</Sheet.Description>
 		</Sheet.Header>
 		{#if data.score}
 			<div class="mt-6 flex flex-col gap-3">
@@ -75,7 +76,7 @@
 						<span class="col-span-2 text-sm text-muted-foreground break-words">
 							{#if key === 'youtube_url' && value}
 								<a href={value as string} target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline">
-									Watch on YouTube
+									{m.watch_on_youtube()}
 								</a>
 							{:else}
 								{value !== null && value !== '' ? value : '-'}

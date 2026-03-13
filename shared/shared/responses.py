@@ -11,6 +11,7 @@ class Response(BaseModel):
 
     response: str
     score_id: Optional[int] = None
+    score_ids: Optional[List[int]] = None
 
 
 class FullResponse(BaseModel):

@@ -68,11 +68,21 @@ export const actions: Actions = {
 			if (response.ok) {
 				const result = await response.json();
 				let scoreDetails = null;
+				let returnScores = [];
+				
 				const scoreId = result?.score_id || result?.response?.score_id;
 				if (scoreId) {
 					scoreDetails = scores.find((s: any) => s.id === scoreId) || null;
 				}
-				return { success: true, answer: result, question: question.toString(), scoreDetails };
+
+				const scoreIds = result?.score_ids || result?.response?.score_ids || [];
+				if (Array.isArray(scoreIds) && scoreIds.length > 0) {
+					returnScores = scoreIds.map((id: any) => scores.find((s: any) => s.id === id)).filter(Boolean);
+				} else if (scoreDetails) {
+					returnScores = [scoreDetails];
+				}
+
+				return { success: true, answer: result, question: question.toString(), scoreDetails, scores: returnScores };
 			} else {
 				const result = await response.json().catch(() => ({}));
 				return fail(response.status, { error: result.detail || `Failed to get response (${response.status})` });
