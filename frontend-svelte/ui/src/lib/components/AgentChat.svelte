@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import type { ActionResult } from '@sveltejs/kit';
@@ -17,7 +18,8 @@
 		placeholder,
 		onResult,
 		children,
-		resultSnippet
+		resultSnippet,
+		user
 	}: {
 		form: any;
 		action: string;
@@ -26,6 +28,7 @@
 		onResult: (result: any) => { question: string; answer: any; rawHistory?: any };
 		children: Snippet;
 		resultSnippet: Snippet<[{ msg: HistoryMessage; isLast: boolean }]>;
+		user: any;
 	} = $props();
 
 	let history = $state<HistoryMessage[]>([]);
@@ -56,7 +59,8 @@
 			update: (options?: { reset?: boolean }) => Promise<void>;
 		}) => {
 			loading = false;
-			if (result.type === 'success' && result.data?.success) {
+			const success = result.type === 'success' && result.data?.success;
+			if (success) {
 				const data = result.data as any;
 				const parsed = onResult(data);
 				history.push({
@@ -68,7 +72,10 @@
 					rawHistory = parsed.rawHistory;
 				}
 			}
-			update({ reset: true });
+			await update({ reset: true });
+			if (success) {
+				await invalidateAll();
+			}
 		};
 	}
 </script>
@@ -103,7 +110,12 @@
 
 		<div class="mt-4 flex justify-between items-end text-sm text-muted-foreground">
 			{@render children()}
-			<Button variant="outline" size="sm" onclick={clearHistory}>Clean history</Button>
+			<div class="flex items-center gap-4">
+				{#if user?.credits !== undefined}
+					<span class="font-medium">Credits: {user.credits}/50</span>
+				{/if}
+				<Button variant="outline" size="sm" onclick={clearHistory}>Clean history</Button>
+			</div>
 		</div>
 	</div>
 </div>

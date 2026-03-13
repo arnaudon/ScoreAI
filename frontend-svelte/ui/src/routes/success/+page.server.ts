@@ -4,12 +4,23 @@ import { env } from '$env/dynamic/private';
 
 const BACKEND_URL = env.BACKEND_URL || 'http://localhost:8000';
 
-export const load: PageServerLoad = async ({ cookies }) => {
+export const load: PageServerLoad = async ({ cookies, fetch }) => {
 	const token = cookies.get('access_token');
 	if (!token) {
 		redirect(303, '/login');
 	}
-	return {};
+
+	const res = await fetch(`${BACKEND_URL}/user`, {
+		headers: { Authorization: `Bearer ${token}` }
+	});
+
+	if (!res.ok) {
+		cookies.delete('access_token', { path: '/' });
+		redirect(303, '/login');
+	}
+
+	const user = await res.json();
+	return { user };
 };
 
 export const actions: Actions = {

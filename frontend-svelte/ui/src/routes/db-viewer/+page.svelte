@@ -223,6 +223,7 @@
 						title="From IMSLP"
 						placeholder="e.g. Find me piano sonatas by Beethoven"
 						onResult={onImslpResult}
+						user={data.user}
 					>
 						{#snippet children()}
 							<div />

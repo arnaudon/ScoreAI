@@ -4,7 +4,7 @@
 	import AgentChat from '$lib/components/AgentChat.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 
-	let { form } = $props();
+	let { form, data } = $props();
 	let sheetOpen = $state(false);
 	let selectedScoreDetails = $state<any>(null);
 
@@ -29,7 +29,7 @@
 </script>
 
 <div class="flex flex-col h-[calc(100vh-8rem)] max-w-4xl mx-auto w-full">
-	<AgentChat {form} action="?/ask" title="Agent" placeholder="Question" {onResult}>
+	<AgentChat {form} action="?/ask" title="Agent" placeholder="Question" {onResult} user={data.user}>
 		{#snippet children()}
 			<div>
 				<p class="mb-2">Here is how to use me:</p>

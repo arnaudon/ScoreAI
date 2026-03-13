@@ -6,27 +6,37 @@ const BACKEND_URL = env.BACKEND_URL || 'http://localhost:8000';
 
 export const load: PageServerLoad = async ({ cookies, fetch }) => {
 	const token = cookies.get('access_token');
-	
 	if (!token) {
 		redirect(303, '/login');
 	}
 
-	try {
-		const response = await fetch(`${BACKEND_URL}/scores`, {
+	async function fetchUser() {
+		const res = await fetch(`${BACKEND_URL}/user`, {
+			headers: { Authorization: `Bearer ${token}` }
+		});
+		if (!res.ok) {
+			cookies.delete('access_token', { path: '/' });
+			redirect(303, '/login');
+		}
+		return res.json();
+	}
+
+	async function fetchScores() {
+		const res = await fetch(`${BACKEND_URL}/scores`, {
 			headers: {
 				Authorization: `Bearer ${token}`
 			}
 		});
-
-		if (response.ok) {
-			const scores = await response.json();
-			return { scores };
-		}
-	} catch (error) {
-		console.error('Failed to fetch scores:', error);
+		return res.ok ? await res.json() : [];
 	}
 
-	return { scores: [] };
+	try {
+		const [user, scores] = await Promise.all([fetchUser(), fetchScores()]);
+		return { user, scores };
+	} catch (error) {
+		console.error('Failed to fetch page data:', error);
+		redirect(303, '/login');
+	}
 };
 
 export const actions: Actions = {
