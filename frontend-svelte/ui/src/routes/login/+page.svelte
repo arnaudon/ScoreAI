@@ -34,10 +34,25 @@
 				<label for="username" class="text-sm leading-none font-medium">Username</label>
 				<Input id="username" name="username" type="text" value={form?.username ?? ''} />
 			</div>
+			{#if isRegister}
+				<div class="space-y-2">
+					<label for="email" class="text-sm leading-none font-medium">Email</label>
+					<Input id="email" name="email" type="email" value={form?.email ?? ''} required />
+				</div>
+			{/if}
 			<div class="space-y-2">
 				<label for="password" class="text-sm leading-none font-medium">Password</label>
 				<Input id="password" name="password" type="password" />
 			</div>
+
+			{#if isRegister}
+				<div class="space-y-2">
+					<label for="instrument" class="text-sm leading-none font-medium"
+						>Preferred Instrument</label
+					>
+					<Input id="instrument" name="instrument" type="text" value={form?.instrument ?? ''} />
+				</div>
+			{/if}
 
 			{#if !isRegister}
 				<div class="flex items-center space-x-2 pt-2">

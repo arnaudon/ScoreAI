@@ -24,6 +24,19 @@
 					<Input id="username" value={data.user?.username} disabled class="max-w-md" />
 				</div>
 				<div class="space-y-2">
+					<label for="email" class="text-sm font-medium">Email</label>
+					<Input id="email" value={data.user?.email || '-'} disabled class="max-w-md" />
+				</div>
+				<div class="space-y-2">
+					<label for="instrument" class="text-sm font-medium">Preferred Instrument</label>
+					<Input
+						id="instrument"
+						value={data.user?.instrument || '-'}
+						disabled
+						class="max-w-md capitalize"
+					/>
+				</div>
+				<div class="space-y-2">
 					<label for="role" class="text-sm font-medium">Role</label>
 					<Input id="role" value={data.user?.role || (data.user?.is_admin ? 'admin' : 'user')} disabled class="max-w-md capitalize" />
 				</div>
