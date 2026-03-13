@@ -7,7 +7,7 @@ from sqlmodel import Session, SQLModel, create_engine
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///database/app.db")
 
 
-def init_db():
+def init_db():  # pragma: no cover
     """Initialize database."""
     init_engine = create_engine(DATABASE_URL, echo=True)
     SQLModel.metadata.create_all(init_engine)
