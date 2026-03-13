@@ -104,7 +104,9 @@ def get_scores(
 
 
 @app.post("/imslp_agent", dependencies=[Depends(get_current_user)])
-async def run_imslp_agent_api(prompt: str, message_history=None):  # pragma: no cover
+async def run_imslp_agent_api(
+    prompt: str = Body(...), message_history: list | None = Body(None)
+):  # pragma: no cover
     """Run the imslp agent."""
     return await run_imslp_agent(prompt, message_history=message_history)
 
