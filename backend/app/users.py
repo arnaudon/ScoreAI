@@ -284,3 +284,20 @@ async def delete_account(
     session.delete(current_user)
     session.commit()
     return {"message": "Account deleted successfully"}
+
+
+# --- Tests ---
+
+def test_password_hashing():
+    """Test password hashing and verification."""
+    password = "supersecretpassword"
+    hashed = get_password_hash(password)
+    assert verify_password(password, hashed) is True
+    assert verify_password("wrongpassword", hashed) is False
+
+
+def test_create_access_token_generates_string():
+    """Test that access token creation returns a valid string."""
+    token = create_access_token({"sub": "testuser", "role": "user"})
+    assert isinstance(token, str)
+    assert len(token) > 0
