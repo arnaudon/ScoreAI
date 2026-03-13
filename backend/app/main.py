@@ -118,7 +118,10 @@ async def run_imslp_agent_api(
 ):  # pragma: no cover
     """Run the imslp agent."""
     if current_user.credits <= 0:
-        raise HTTPException(status_code=403, detail="You have run out of agent credits.")
+        raise HTTPException(
+            status_code=403,
+            detail="You have run out of agent credits. Please contact alexis.arnaudon@gmail.com to get more.",
+        )
 
     setting = session.get(Setting, "model_imslp")
     model = setting.value if setting else os.getenv("MODEL", "test")
@@ -141,7 +144,10 @@ async def run_main_agent(
 ):  # pragma: no cover
     """Run the agent."""
     if current_user.credits <= 0:
-        raise HTTPException(status_code=403, detail="You have run out of agent credits.")
+        raise HTTPException(
+            status_code=403,
+            detail="You have run out of agent credits. Please contact alexis.arnaudon@gmail.com to get more.",
+        )
 
     setting = session.get(Setting, "model_main")
     model = setting.value if setting else os.getenv("MODEL", "test")
