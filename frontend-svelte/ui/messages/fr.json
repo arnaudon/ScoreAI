@@ -109,5 +109,12 @@
 	"edit_max_credits_desc": "Définir le solde de crédit maximum pour l'utilisateur.",
 	"max_credits": "Crédits Max",
 	"save_changes": "Enregistrer les modifications",
-	"refill_credits": "Recharger les crédits"
+	"refill_credits": "Recharger les crédits",
+	"login": "Connexion",
+	"login_description": "Votre bibliothèque intelligente de partitions musicales. Téléchargez, gérez et découvrez des partitions avec l'aide de l'IA.",
+	"sign_up": "S'inscrire",
+	"password": "Mot de passe",
+	"keep_logged_in": "Rester connecté",
+	"already_have_account": "Vous avez déjà un compte ?",
+	"dont_have_account": "Vous n'avez pas de compte ?"
 }

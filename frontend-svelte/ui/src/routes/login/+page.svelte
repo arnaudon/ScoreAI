@@ -4,6 +4,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import { enhance } from '$app/forms';
+	import * as m from '$lib/paraglide/messages.js';
 
 	let { form }: PageProps = $props();
 	let isRegister = $state(false);
@@ -14,14 +15,13 @@
 		<div class="mb-6 text-center">
 			<h1 class="text-fancy-title text-3xl font-bold">ScoreAI</h1>
 			<p class="mt-2 text-muted-foreground">
-				Your intelligent music score library. Upload, manage, and discover scores with AI-powered
-				assistance.
+				{m.login_description()}
 			</p>
 		</div>
 
 		<div class="separator-ornate"></div>
 		<h2 class="text-fancy-title mb-6 text-center text-xl font-semibold">
-			{isRegister ? 'Sign Up' : 'Login'}
+			{isRegister ? m.sign_up() : m.login()}
 		</h2>
 
 		<form
@@ -31,40 +31,40 @@
 			use:enhance
 		>
 			<div class="space-y-2">
-				<label for="username" class="text-sm leading-none font-medium">Username</label>
+				<label for="username" class="text-sm leading-none font-medium">{m.username()}</label>
 				<Input id="username" name="username" type="text" value={form?.username ?? ''} />
 			</div>
 			{#if isRegister}
 				<div class="space-y-2">
-					<label for="email" class="text-sm leading-none font-medium">Email</label>
+					<label for="email" class="text-sm leading-none font-medium">{m.email()}</label>
 					<Input id="email" name="email" type="email" value={form?.email ?? ''} required />
 				</div>
 			{/if}
 			<div class="space-y-2">
-				<label for="password" class="text-sm leading-none font-medium">Password</label>
+				<label for="password" class="text-sm leading-none font-medium">{m.password()}</label>
 				<Input id="password" name="password" type="password" />
 			</div>
 
 			{#if isRegister}
 				<div class="space-y-2">
 					<label for="instrument" class="text-sm leading-none font-medium"
-						>Preferred Instrument</label
+						>{m.preferred_instrument()}</label
 					>
 					<select
 						id="instrument"
 						name="instrument"
 						class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					>
-						<option value="" disabled selected={!form?.instrument}>Select an instrument...</option>
-						<option value="piano" selected={form?.instrument === 'piano'}>Piano</option>
-						<option value="violin" selected={form?.instrument === 'violin'}>Violin</option>
-						<option value="viola" selected={form?.instrument === 'viola'}>Viola</option>
-						<option value="cello" selected={form?.instrument === 'cello'}>Cello</option>
-						<option value="guitar" selected={form?.instrument === 'guitar'}>Guitar</option>
-						<option value="flute" selected={form?.instrument === 'flute'}>Flute</option>
-						<option value="clarinet" selected={form?.instrument === 'clarinet'}>Clarinet</option>
-						<option value="trumpet" selected={form?.instrument === 'trumpet'}>Trumpet</option>
-						<option value="other" selected={form?.instrument === 'other'}>Other</option>
+						<option value="" disabled selected={!form?.instrument}>{m.select_instrument()}</option>
+						<option value="piano" selected={form?.instrument === 'piano'}>{m.inst_piano()}</option>
+						<option value="violin" selected={form?.instrument === 'violin'}>{m.inst_violin()}</option>
+						<option value="viola" selected={form?.instrument === 'viola'}>{m.inst_viola()}</option>
+						<option value="cello" selected={form?.instrument === 'cello'}>{m.inst_cello()}</option>
+						<option value="guitar" selected={form?.instrument === 'guitar'}>{m.inst_guitar()}</option>
+						<option value="flute" selected={form?.instrument === 'flute'}>{m.inst_flute()}</option>
+						<option value="clarinet" selected={form?.instrument === 'clarinet'}>{m.inst_clarinet()}</option>
+						<option value="trumpet" selected={form?.instrument === 'trumpet'}>{m.inst_trumpet()}</option>
+						<option value="other" selected={form?.instrument === 'other'}>{m.inst_other()}</option>
 					</select>
 				</div>
 			{/if}
@@ -76,7 +76,7 @@
 						for="remember"
 						class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 					>
-						Keep me logged in
+						{m.keep_logged_in()}
 					</label>
 				</div>
 			{/if}
@@ -88,24 +88,24 @@
 				<p class="text-sm font-medium text-green-600 dark:text-green-400">{form.message}</p>
 			{/if}
 
-			<Button type="submit" class="w-full">{isRegister ? 'Sign Up' : 'Log in'}</Button>
+			<Button type="submit" class="w-full">{isRegister ? m.sign_up() : m.login()}</Button>
 		</form>
 
 		<div class="mt-4 text-center text-sm">
 			{#if isRegister}
 				<p class="text-muted-foreground">
-					Already have an account? <button
+					{m.already_have_account()} <button
 						type="button"
 						class="text-primary hover:underline"
-						onclick={() => (isRegister = false)}>Log in</button
+						onclick={() => (isRegister = false)}>{m.login()}</button
 					>
 				</p>
 			{:else}
 				<p class="text-muted-foreground">
-					Don't have an account? <button
+					{m.dont_have_account()} <button
 						type="button"
 						class="text-primary hover:underline"
-						onclick={() => (isRegister = true)}>Sign up</button
+						onclick={() => (isRegister = true)}>{m.sign_up()}</button
 					>
 				</p>
 			{/if}

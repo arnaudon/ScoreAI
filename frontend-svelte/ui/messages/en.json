@@ -109,5 +109,12 @@
 	"edit_max_credits_desc": "Set the maximum credit balance for the user.",
 	"max_credits": "Max Credits",
 	"save_changes": "Save Changes",
-	"refill_credits": "Refill Credits"
+	"refill_credits": "Refill Credits",
+	"login": "Login",
+	"login_description": "Your intelligent music score library. Upload, manage, and discover scores with AI-powered assistance.",
+	"sign_up": "Sign Up",
+	"password": "Password",
+	"keep_logged_in": "Keep me logged in",
+	"already_have_account": "Already have an account?",
+	"dont_have_account": "Don't have an account?"
 }
