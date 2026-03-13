@@ -14,7 +14,7 @@ from sqlmodel import Session, select
 
 from app import imslp, users
 from app.agent import Deps, run_agent, run_complete_agent, run_imslp_agent
-from app.db import Setting, get_session
+from app.db import Setting, get_session, init_db
 from app.file_helper import file_helper
 from app.users import get_admin_user, get_current_user, get_current_user_from_token
 from shared.scores import Score, Scores
@@ -26,6 +26,7 @@ logger = getLogger(__name__)
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:  # pragma: no cover
     """Placeholder for startup/shutdown events."""
+    init_db()
     yield
 
 

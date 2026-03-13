@@ -7,6 +7,12 @@ from sqlmodel import Field, Session, SQLModel, create_engine
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///database/app.db")
 
 
+def init_db():
+    """Initialize database."""
+    init_engine = create_engine(DATABASE_URL, echo=True)
+    SQLModel.metadata.create_all(init_engine)
+
+
 class Setting(SQLModel, table=True):
     """Key-value settings for the app."""
 
