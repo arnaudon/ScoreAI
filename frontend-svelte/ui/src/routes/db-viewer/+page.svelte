@@ -285,8 +285,7 @@
 
 										<div class="flex items-center justify-end space-x-2 py-4 px-4 border-t">
 											<div class="flex-1 text-sm text-muted-foreground">
-												Showing min({imslpTable.getRowModel().rows.length},{' '}
-												{imslpTable.getFilteredRowModel().rows.length}) results.
+												Page {imslpTable.getState().pagination.pageIndex + 1} of {Math.max(1, imslpTable.getPageCount())}
 											</div>
 											<Button
 												variant="outline"
@@ -438,7 +437,7 @@
 
 	<div class="flex items-center justify-end space-x-2 py-4">
 		<div class="flex-1 text-sm text-muted-foreground">
-			Showing {table.getRowModel().rows.length} of {table.getFilteredRowModel().rows.length} results.
+			Page {table.getState().pagination.pageIndex + 1} of {Math.max(1, table.getPageCount())}
 		</div>
 		<Button
 			variant="outline"
