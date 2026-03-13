@@ -4,7 +4,7 @@
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import * as Sheet from '$lib/components/ui/sheet/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 
 	let { data }: PageProps = $props();
@@ -152,14 +152,14 @@
 	</Table.Root>
 </div>
 
-<Dialog.Root bind:open={editDialogOpen}>
-	<Dialog.Content>
-		<Dialog.Header>
-			<Dialog.Title>Edit Credits for {selectedUser?.username}</Dialog.Title>
-			<Dialog.Description>
+<Sheet.Root bind:open={editDialogOpen}>
+	<Sheet.Content>
+		<Sheet.Header>
+			<Sheet.Title>Edit Credits for {selectedUser?.username}</Sheet.Title>
+			<Sheet.Description>
 				Set a new credit balance for the user. This will take effect immediately.
-			</Dialog.Description>
-		</Dialog.Header>
+			</Sheet.Description>
+		</Sheet.Header>
 		{#if selectedUser}
 			<form
 				method="POST"
@@ -177,10 +177,10 @@
 					<label for="credits" class="text-sm font-medium">Credits</label>
 					<Input id="credits" name="credits" type="number" bind:value={credits} />
 				</div>
-				<Dialog.Footer>
+				<Sheet.Footer>
 					<Button type="submit">Save Changes</Button>
-				</Dialog.Footer>
+				</Sheet.Footer>
 			</form>
 		{/if}
-	</Dialog.Content>
-</Dialog.Root>
+	</Sheet.Content>
+</Sheet.Root>
