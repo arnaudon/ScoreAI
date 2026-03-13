@@ -64,14 +64,6 @@
 					</button>
 				</form>
 			</div>
-		{:else if data.progress?.status === 'cancelled'}
-			<div class="mt-6 p-4 border rounded-md bg-yellow-500/10 text-yellow-600 border-yellow-500/20">
-				Task Cancelled.
-			</div>
-		{:else if data.progress?.status === 'completed'}
-			<div class="mt-6 p-4 border rounded-md bg-green-500/10 text-green-600 border-green-500/20">
-				Task Finished!
-			</div>
 		{/if}
 	</div>
 </div>
