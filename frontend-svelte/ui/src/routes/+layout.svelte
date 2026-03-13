@@ -33,6 +33,9 @@
 				{@render children()}
 			</main>
 			<footer class="p-4 text-center text-sm text-muted-foreground">
+				<p class="mb-2">
+					<a href="/privacy" class="hover:underline">{m.privacy_policy()}</a>
+				</p>
 				© 2026 Alexis Arnaudon. {m.footer_contact()}
 				<a href="mailto:alexis.arnaudon@gmail.com" class="hover:underline">
 					alexis.arnaudon@gmail.com
@@ -57,6 +60,9 @@
 					</button>
 				</div>
 			</div>
+			<p class="mb-2">
+				<a href="/privacy" class="hover:underline">{m.privacy_policy()}</a>
+			</p>
 			© 2026 Alexis Arnaudon. {m.footer_contact()}
 			<a href="mailto:alexis.arnaudon@gmail.com" class="hover:underline">
 				alexis.arnaudon@gmail.com

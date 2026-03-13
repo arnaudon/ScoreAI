@@ -116,5 +116,6 @@
 	"password": "Mot de passe",
 	"keep_logged_in": "Rester connecté",
 	"already_have_account": "Vous avez déjà un compte ?",
-	"dont_have_account": "Vous n'avez pas de compte ?"
+	"dont_have_account": "Vous n'avez pas de compte ?",
+	"privacy_policy": "Politique de confidentialité"
 }
