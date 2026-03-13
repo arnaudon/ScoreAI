@@ -135,7 +135,7 @@
 		const scores = res.scores || [];
 		imslpScores = scores;
 		return {
-			question: data.prompt,
+			question: data.question,
 			answer: {
 				answer: res.response,
 				scores: scores

@@ -140,10 +140,10 @@ export const actions: Actions = {
 		}
 
 		const data = await request.formData();
-		const prompt = data.get('prompt');
+		const question = data.get('question');
 		const messageHistoryRaw = data.get('message_history');
 
-		if (!prompt) {
+		if (!question) {
 			return fail(400, { error: 'Missing prompt' });
 		}
 
@@ -172,7 +172,7 @@ export const actions: Actions = {
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({
-					prompt: prompt.toString(),
+					prompt: question.toString(),
 					deps: deps,
 					message_history: messageHistory
 				})
@@ -201,7 +201,7 @@ export const actions: Actions = {
 
 			return {
 				success: true,
-				prompt: prompt.toString(),
+				question: question.toString(),
 				agent_results: {
 					response: agent_response_text,
 					scores,
