@@ -2,6 +2,7 @@ import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { env } from '$env/dynamic/private';
 import { env as publicEnv } from '$env/dynamic/public';
+import { dev } from '$app/environment';
 
 const BACKEND_URL = env.BACKEND_URL || 'http://localhost:8000';
 const PUBLIC_BACKEND_URL = publicEnv.PUBLIC_BACKEND_URL || 'http://localhost:8000';
@@ -27,7 +28,7 @@ export const load: PageServerLoad = async ({ cookies, params, fetch }) => {
 				cookies.set('last_score_id', params.id, { 
 					path: '/',
 					httpOnly: true,
-					secure: false,
+					secure: !dev,
 					sameSite: 'lax',
 					maxAge: 60 * 60 * 24 * 30 // 30 days
 				});
