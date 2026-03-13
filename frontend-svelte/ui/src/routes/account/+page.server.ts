@@ -30,6 +30,7 @@ export const actions: Actions = {
 
 		const data = await request.formData();
 		const instrument = data.get('instrument');
+		const email = data.get('email');
 
 		const res = await fetch(`${BACKEND_URL}/user`, {
 			method: 'PUT',
@@ -38,7 +39,8 @@ export const actions: Actions = {
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({
-				instrument: instrument?.toString()
+				instrument: instrument?.toString(),
+				email: email?.toString()
 			})
 		});
 

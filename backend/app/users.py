@@ -36,6 +36,7 @@ class UserUpdateRequest(BaseModel):
     """User update request model."""
 
     instrument: str | None = None
+    email: str | None = None
 
 
 class PasswordChangeRequest(BaseModel):
@@ -185,6 +186,10 @@ async def update_user(
     updated = False
     if req.instrument is not None:
         current_user.instrument = req.instrument
+        updated = True
+
+    if req.email is not None:
+        current_user.email = req.email
         updated = True
 
     if updated:

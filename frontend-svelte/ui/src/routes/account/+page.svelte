@@ -37,7 +37,7 @@
 				</div>
 				<div class="space-y-2">
 					<label for="email" class="text-sm font-medium">Email</label>
-					<Input id="email" value={data.user?.email || '-'} disabled class="max-w-md" />
+					<Input id="email" name="email" type="email" value={data.user?.email || ''} class="max-w-md" required />
 				</div>
 				<div class="space-y-2">
 					<label for="instrument" class="text-sm font-medium">Preferred Instrument</label>
