@@ -2,6 +2,12 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import DarkModeToggle from './DarkModeToggle.svelte';
 	import { page } from '$app/state';
+	import { setLocale, languageTag } from '$lib/paraglide/runtime';
+	import * as m from '$lib/paraglide/messages.js';
+
+	function toggleLanguage() {
+		setLocale(languageTag() === 'en' ? 'fr' : 'en');
+	}
 </script>
 
 <Sidebar.Root>
@@ -15,28 +21,28 @@
 					<Sidebar.MenuItem>
 						<Sidebar.MenuButton>
 							{#snippet child({ props })}
-								<a href="/" {...props}>Home</a>
+								<a href="/" {...props}>{m.nav_home()}</a>
 							{/snippet}
 						</Sidebar.MenuButton>
 					</Sidebar.MenuItem>
 					<Sidebar.MenuItem>
 						<Sidebar.MenuButton>
 							{#snippet child({ props })}
-								<a href="/db-viewer" {...props}>Database Viewer</a>
+								<a href="/db-viewer" {...props}>{m.nav_db_viewer()}</a>
 							{/snippet}
 						</Sidebar.MenuButton>
 					</Sidebar.MenuItem>
 					<Sidebar.MenuItem>
 						<Sidebar.MenuButton>
 							{#snippet child({ props })}
-								<a href="/reader" {...props}>PDF Viewer</a>
+								<a href="/reader" {...props}>{m.nav_pdf_viewer()}</a>
 							{/snippet}
 						</Sidebar.MenuButton>
 					</Sidebar.MenuItem>
 					<Sidebar.MenuItem>
 						<Sidebar.MenuButton>
 							{#snippet child({ props })}
-								<a href="/account" {...props}>Account</a>
+								<a href="/account" {...props}>{m.nav_account()}</a>
 							{/snippet}
 						</Sidebar.MenuButton>
 					</Sidebar.MenuItem>
@@ -44,7 +50,7 @@
 						<Sidebar.MenuItem>
 							<Sidebar.MenuButton>
 								{#snippet child({ props })}
-									<a href="/admin" {...props}>Admin</a>
+									<a href="/admin" {...props}>{m.nav_admin()}</a>
 								{/snippet}
 							</Sidebar.MenuButton>
 						</Sidebar.MenuItem>
@@ -59,12 +65,17 @@
 				<Sidebar.MenuButton>
 					{#snippet child({ props })}
 						<form method="POST" action="/logout" class="w-full">
-							<button type="submit" {...props} class="w-full text-left">Logout</button>
+							<button type="submit" {...props} class="w-full text-left">{m.nav_logout()}</button>
 						</form>
 					{/snippet}
 				</Sidebar.MenuButton>
 			</Sidebar.MenuItem>
 		</Sidebar.Menu>
-		<DarkModeToggle />
+		<div class="flex items-center gap-2">
+			<DarkModeToggle />
+			<button onclick={toggleLanguage} class="rounded-md border p-2 text-xs font-semibold hover:bg-muted">
+				{m.toggle_lang()}
+			</button>
+		</div>
 	</Sidebar.Footer>
 </Sidebar.Root>

@@ -1,4 +1,11 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"hello_world": "Hello, {name} from fr!"
+	"nav_home": "Accueil",
+	"nav_db_viewer": "Base de données",
+	"nav_pdf_viewer": "Lecteur PDF",
+	"nav_account": "Mon Compte",
+	"nav_admin": "Administration",
+	"nav_logout": "Déconnexion",
+	"footer_contact": "Contact :",
+	"toggle_lang": "EN"
 }

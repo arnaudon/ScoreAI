@@ -1,12 +1,17 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { locales, localizeHref } from '$lib/paraglide/runtime';
+	import { locales, localizeHref, setLocale, languageTag } from '$lib/paraglide/runtime';
+	import * as m from '$lib/paraglide/messages.js';
 	import '../app.css';
 	import AppSidebar from '$lib/components/Sidebar.svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { ModeWatcher } from 'mode-watcher';
 
 	let { children, data } = $props();
+
+	function toggleLanguage() {
+		setLocale(languageTag() === 'en' ? 'fr' : 'en');
+	}
 </script>
 
 <ModeWatcher />
@@ -20,7 +25,7 @@
 				{@render children()}
 			</main>
 			<footer class="p-4 text-center text-sm text-muted-foreground">
-				© 2026 Alexis Arnaudon. Contact:
+				© 2026 Alexis Arnaudon. {m.footer_contact()}
 				<a href="mailto:alexis.arnaudon@gmail.com" class="hover:underline">
 					alexis.arnaudon@gmail.com
 				</a>
@@ -33,7 +38,12 @@
 			{@render children()}
 		</main>
 		<footer class="p-4 text-center text-sm text-muted-foreground">
-			© 2026 Alexis Arnaudon. Contact:
+			<div class="mb-2">
+				<button onclick={toggleLanguage} class="rounded-md border px-2 py-1 text-xs font-semibold hover:bg-muted">
+					{m.toggle_lang()}
+				</button>
+			</div>
+			© 2026 Alexis Arnaudon. {m.footer_contact()}
 			<a href="mailto:alexis.arnaudon@gmail.com" class="hover:underline">
 				alexis.arnaudon@gmail.com
 			</a>
