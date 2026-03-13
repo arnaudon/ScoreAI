@@ -26,7 +26,13 @@ logger = getLogger(__name__)
 
 def validate_prompt_security(prompt: str):
     """Validate the prompt against common injection attacks."""
-    suspicious_keywords = ["ignore previous", "system prompt", "drop table", "bypass", "forget all instructions"]
+    suspicious_keywords = [
+        "ignore previous",
+        "system prompt",
+        "drop table",
+        "bypass",
+        "forget all instructions",
+    ]
     if any(keyword in prompt.lower() for keyword in suspicious_keywords):
         raise HTTPException(status_code=400, detail="Invalid input detected.")
 
@@ -197,7 +203,7 @@ async def run_main_agent(
 
     setting = session.get(Setting, "model_main")
     model = setting.value if setting else os.getenv("MODEL", "test")
-    
+
     try:
         result = await run_agent(
             prompt,

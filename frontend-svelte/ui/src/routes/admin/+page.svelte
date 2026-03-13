@@ -178,11 +178,11 @@
 				>
 					<input type="hidden" name="user_id" value={selectedUser.id} />
 					<div class="space-y-2">
-						<label for="max_credits" class="text-sm font-medium">Max Credits</label>
+						<label for="max_credits" class="text-sm font-medium">{m.max_credits()}</label>
 						<Input id="max_credits" name="max_credits" type="number" bind:value={max_credits} />
 					</div>
 					<Sheet.Footer>
-						<Button type="submit">Save Changes</Button>
+						<Button type="submit">{m.save_changes()}</Button>
 					</Sheet.Footer>
 				</form>
 
@@ -199,7 +199,7 @@
 						class="w-full"
 						disabled={selectedUser.credits === selectedUser.max_credits}
 					>
-						Refill Credits
+						{m.refill_credits()}
 					</Button>
 				</form>
 			</div>
