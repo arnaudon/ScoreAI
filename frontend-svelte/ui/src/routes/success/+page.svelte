@@ -22,7 +22,8 @@
 			answer: {
 				answer: typeof textAns === 'string' ? textAns : JSON.stringify(textAns, null, 2),
 				score_id: scoreId,
-				scoreDetails: data.scoreDetails
+				scoreDetails: data.scoreDetails,
+				scores: data.scores || []
 			},
 			rawHistory: data.answer?.message_history
 		};
@@ -52,7 +53,7 @@
 
 		{#snippet resultSnippet({ msg })}
 			<p class="mt-2 text-muted-foreground whitespace-pre-wrap">{msg.answer}</p>
-			{#if msg.scoreDetails}
+			{#if msg.scores && msg.scores.length > 0}
 				<div class="mt-4 rounded-md border bg-card text-card-foreground">
 					<Table.Root>
 						<Table.Header>
@@ -63,17 +64,19 @@
 							</Table.Row>
 						</Table.Header>
 						<Table.Body>
-							<Table.Row
-								class="cursor-pointer transition-colors hover:bg-muted/50"
-								onclick={() => {
-									selectedScoreDetails = msg.scoreDetails;
-									sheetOpen = true;
-								}}
-							>
-								<Table.Cell>{msg.scoreDetails.id}</Table.Cell>
-								<Table.Cell>{msg.scoreDetails.title}</Table.Cell>
-								<Table.Cell>{msg.scoreDetails.composer}</Table.Cell>
-							</Table.Row>
+							{#each msg.scores as score}
+								<Table.Row
+									class="cursor-pointer transition-colors hover:bg-muted/50"
+									onclick={() => {
+										selectedScoreDetails = score;
+										sheetOpen = true;
+									}}
+								>
+									<Table.Cell>{score.id}</Table.Cell>
+									<Table.Cell>{score.title}</Table.Cell>
+									<Table.Cell>{score.composer}</Table.Cell>
+								</Table.Row>
+							{/each}
 						</Table.Body>
 					</Table.Root>
 				</div>
