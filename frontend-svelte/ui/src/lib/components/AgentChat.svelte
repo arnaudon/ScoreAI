@@ -112,7 +112,7 @@
 			{@render children()}
 			<div class="flex items-center gap-4">
 				{#if user?.credits !== undefined}
-					<span class="font-medium">Credits: {user.credits}/50</span>
+					<span class="font-medium">Credits: {user.credits}/{user.max_credits}</span>
 				{/if}
 				<Button variant="outline" size="sm" onclick={clearHistory}>Clean history</Button>
 			</div>

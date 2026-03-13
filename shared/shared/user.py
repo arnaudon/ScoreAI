@@ -22,4 +22,5 @@ class User(SQLModel, table=True):
     password: str | None = None
     role: str = Field(default="user")
     credits: int = Field(default=50)
+    max_credits: int = Field(default=50)
     scores: List["Score"] = Relationship(back_populates="user")

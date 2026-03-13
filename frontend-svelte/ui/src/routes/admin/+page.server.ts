@@ -64,14 +64,35 @@ export const load: PageServerLoad = async ({ cookies, fetch }) => {
 };
 
 export const actions = {
+	refill_credits: async ({ request, cookies, fetch }) => {
+		const token = cookies.get('access_token');
+		const data = await request.formData();
+		const userId = data.get('user_id');
+
+		if (!userId) {
+			return fail(400, { error: 'User ID is required.' });
+		}
+
+		const res = await fetch(`${BACKEND_URL}/users/${userId}/refill_credits`, {
+			method: 'POST',
+			headers: {
+				Authorization: `Bearer ${token}`
+			}
+		});
+
+		if (!res.ok) {
+			const result = await res.json().catch(() => ({}));
+			return fail(res.status, { error: result.detail || 'Failed to refill credits.' });
+		}
+	},
 	set_credits: async ({ request, cookies, fetch }) => {
 		const token = cookies.get('access_token');
 		const data = await request.formData();
 		const userId = data.get('user_id');
-		const credits = data.get('credits');
+		const max_credits = data.get('max_credits');
 
-		if (!userId || credits === null) {
-			return fail(400, { error: 'User ID and credits are required.' });
+		if (!userId || max_credits === null) {
+			return fail(400, { error: 'User ID and max credits are required.' });
 		}
 
 		const res = await fetch(`${BACKEND_URL}/users/${userId}/credits`, {
@@ -80,7 +101,7 @@ export const actions = {
 				Authorization: `Bearer ${token}`,
 				'Content-Type': 'application/json'
 			},
-			body: JSON.stringify({ credits: Number(credits) })
+			body: JSON.stringify({ max_credits: Number(max_credits) })
 		});
 
 		if (!res.ok) {

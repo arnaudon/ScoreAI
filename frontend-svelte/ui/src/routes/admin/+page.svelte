@@ -10,12 +10,12 @@
 	let { data }: PageProps = $props();
 
 	let selectedUser = $state<any>(null);
-	let credits = $state(0);
+	let max_credits = $state(0);
 	let editDialogOpen = $state(false);
 
 	function openEditDialog(user: any) {
 		selectedUser = user;
-		credits = user.credits ?? 0;
+		max_credits = user.max_credits ?? 50;
 		editDialogOpen = true;
 	}
 
@@ -136,9 +136,22 @@
 					<Table.Cell>{user.id || '-'}</Table.Cell>
 					<Table.Cell>{user.username}</Table.Cell>
 					<Table.Cell class="capitalize">{user.role || (user.is_admin ? 'Admin' : 'User')}</Table.Cell>
-					<Table.Cell>{user.credits ?? '-'}</Table.Cell>
+					<Table.Cell>{user.credits ?? '-'}/{user.max_credits ?? '-'}</Table.Cell>
 					<Table.Cell class="text-right">
-						<Button variant="outline" size="sm" onclick={() => openEditDialog(user)}>Edit</Button>
+						<div class="flex items-center justify-end gap-2">
+							<Button variant="outline" size="sm" onclick={() => openEditDialog(user)}>Edit</Button>
+							<form method="POST" action="?/refill_credits" use:enhance>
+								<input type="hidden" name="user_id" value={user.id} />
+								<Button
+									variant="outline"
+									size="sm"
+									type="submit"
+									disabled={user.credits === user.max_credits}
+								>
+									Refill
+								</Button>
+							</form>
+						</div>
 					</Table.Cell>
 				</Table.Row>
 			{:else}
@@ -155,9 +168,9 @@
 <Sheet.Root bind:open={editDialogOpen}>
 	<Sheet.Content>
 		<Sheet.Header>
-			<Sheet.Title>Edit Credits for {selectedUser?.username}</Sheet.Title>
+			<Sheet.Title>Edit Max Credits for {selectedUser?.username}</Sheet.Title>
 			<Sheet.Description>
-				Set a new credit balance for the user. This will take effect immediately.
+				Set the maximum credit balance for the user.
 			</Sheet.Description>
 		</Sheet.Header>
 		{#if selectedUser}
@@ -174,8 +187,8 @@
 			>
 				<input type="hidden" name="user_id" value={selectedUser.id} />
 				<div class="space-y-2">
-					<label for="credits" class="text-sm font-medium">Credits</label>
-					<Input id="credits" name="credits" type="number" bind:value={credits} />
+					<label for="max_credits" class="text-sm font-medium">Max Credits</label>
+					<Input id="max_credits" name="max_credits" type="number" bind:value={max_credits} />
 				</div>
 				<Sheet.Footer>
 					<Button type="submit">Save Changes</Button>

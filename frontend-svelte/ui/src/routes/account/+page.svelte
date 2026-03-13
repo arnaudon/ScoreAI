@@ -29,7 +29,7 @@
 				</div>
 				<div class="space-y-2">
 					<label for="credits" class="text-sm font-medium">Credits</label>
-					<Input id="credits" value={data.user?.credits} disabled class="max-w-md" />
+					<Input id="credits" value={`${data.user?.credits} / ${data.user?.max_credits}`} disabled class="max-w-md" />
 				</div>
 			</div>
 		</section>
