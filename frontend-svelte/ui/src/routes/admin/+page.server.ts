@@ -1,4 +1,4 @@
-import { redirect } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { env } from '$env/dynamic/private';
 
@@ -46,15 +46,86 @@ export const load: PageServerLoad = async ({ cookies, fetch }) => {
 			progress = await progressResponse.json();
 		}
 
-		return { users, stats, progress };
+		let activeModels = { main: '', imslp: '', complete: '' };
+		const modelResponse = await fetch(`${BACKEND_URL}/admin/model`, {
+			headers: { Authorization: `Bearer ${token}` }
+		});
+		if (modelResponse.ok) {
+			const resData = await modelResponse.json();
+			activeModels = resData.models || { main: '', imslp: '', complete: '' };
+		}
+
+		return { users, stats, progress, activeModels };
 	} catch (error) {
 		console.error('Failed to fetch admin data:', error);
 	}
 
-	return { users: [], stats: { total_works: 0, total_composers: 0 }, progress: { status: 'idle', page: 0, total: 0 } };
+	return { users: [], stats: { total_works: 0, total_composers: 0 }, progress: { status: 'idle', page: 0, total: 0 }, activeModels: { main: '', imslp: '', complete: '' } };
 };
 
 export const actions = {
+	refill_credits: async ({ request, cookies, fetch }) => {
+		const token = cookies.get('access_token');
+		const data = await request.formData();
+		const userId = data.get('user_id');
+
+		if (!userId) {
+			return fail(400, { error: 'User ID is required.' });
+		}
+
+		const res = await fetch(`${BACKEND_URL}/users/${userId}/refill_credits`, {
+			method: 'POST',
+			headers: {
+				Authorization: `Bearer ${token}`
+			}
+		});
+
+		if (!res.ok) {
+			const result = await res.json().catch(() => ({}));
+			return fail(res.status, { error: result.detail || 'Failed to refill credits.' });
+		}
+	},
+	set_credits: async ({ request, cookies, fetch }) => {
+		const token = cookies.get('access_token');
+		const data = await request.formData();
+		const userId = data.get('user_id');
+		const max_credits = data.get('max_credits');
+
+		if (!userId || max_credits === null) {
+			return fail(400, { error: 'User ID and max credits are required.' });
+		}
+
+		const res = await fetch(`${BACKEND_URL}/users/${userId}/credits`, {
+			method: 'PUT',
+			headers: {
+				Authorization: `Bearer ${token}`,
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ max_credits: Number(max_credits) })
+		});
+
+		if (!res.ok) {
+			const result = await res.json().catch(() => ({}));
+			return fail(res.status, { error: result.detail || 'Failed to update credits.' });
+		}
+	},
+	set_models: async ({ request, cookies, fetch }) => {
+		const token = cookies.get('access_token');
+		const data = await request.formData();
+		const models = {
+			main: data.get('model_main')?.toString() || '',
+			imslp: data.get('model_imslp')?.toString() || '',
+			complete: data.get('model_complete')?.toString() || ''
+		};
+		await fetch(`${BACKEND_URL}/admin/model`, {
+			method: 'POST',
+			headers: {
+				Authorization: `Bearer ${token}`,
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ models })
+		});
+	},
 	update: async ({ request, cookies, fetch }) => {
 		const data = await request.formData();
 		const maxPages = data.get('max_pages') || '300';

@@ -32,11 +32,24 @@ class Token(BaseModel):
     token_type: str
 
 
+class UserUpdateRequest(BaseModel):
+    """User update request model."""
+
+    instrument: str | None = None
+    email: str | None = None
+
+
 class PasswordChangeRequest(BaseModel):
     """Password change request model."""
 
     current_password: str
     new_password: str
+
+
+class CreditUpdateRequest(BaseModel):
+    """Credit update request model."""
+
+    max_credits: int
 
 
 password_hash = PasswordHash.recommended()
@@ -163,6 +176,30 @@ async def get_current_user_route(
     return current_user
 
 
+@router.put("/user")
+async def update_user(
+    req: UserUpdateRequest,
+    current_user: Annotated[User, Depends(get_current_user)],
+    session: Session = Depends(get_session),
+):
+    """Update current user."""
+    updated = False
+    if req.instrument is not None:
+        current_user.instrument = req.instrument
+        updated = True
+
+    if req.email is not None:
+        current_user.email = req.email
+        updated = True
+
+    if updated:
+        session.add(current_user)
+        session.commit()
+        session.refresh(current_user)
+
+    return current_user
+
+
 @router.get("/is_admin")
 async def is_admin(current_user: Annotated[User | None, Depends(get_admin_user)]):
     """Check if user is admin."""
@@ -187,6 +224,55 @@ async def update_password(
     session.add(current_user)
     session.commit()
     return {"message": "Password updated successfully"}
+
+
+@router.put("/users/{user_id}/credits")
+async def set_user_credits(
+    user_id: int,
+    request: CreditUpdateRequest,
+    current_user: Annotated[User | None, Depends(get_admin_user)],
+    session: Session = Depends(get_session),
+):
+    """Set max credits for a user (admin only)."""
+    if current_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to perform this action.",
+        )
+
+    user_to_update = session.get(User, user_id)
+    if not user_to_update:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user_to_update.max_credits = request.max_credits
+    session.add(user_to_update)
+    session.commit()
+    session.refresh(user_to_update)
+    return user_to_update
+
+
+@router.post("/users/{user_id}/refill_credits")
+async def refill_user_credits(
+    user_id: int,
+    current_user: Annotated[User | None, Depends(get_admin_user)],
+    session: Session = Depends(get_session),
+):
+    """Refill credits for a user to their max value (admin only)."""
+    if current_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to perform this action.",
+        )
+
+    user_to_update = session.get(User, user_id)
+    if not user_to_update:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user_to_update.credits = user_to_update.max_credits
+    session.add(user_to_update)
+    session.commit()
+    session.refresh(user_to_update)
+    return user_to_update
 
 
 @router.delete("/user")

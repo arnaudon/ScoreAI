@@ -34,10 +34,40 @@
 				<label for="username" class="text-sm leading-none font-medium">Username</label>
 				<Input id="username" name="username" type="text" value={form?.username ?? ''} />
 			</div>
+			{#if isRegister}
+				<div class="space-y-2">
+					<label for="email" class="text-sm leading-none font-medium">Email</label>
+					<Input id="email" name="email" type="email" value={form?.email ?? ''} required />
+				</div>
+			{/if}
 			<div class="space-y-2">
 				<label for="password" class="text-sm leading-none font-medium">Password</label>
 				<Input id="password" name="password" type="password" />
 			</div>
+
+			{#if isRegister}
+				<div class="space-y-2">
+					<label for="instrument" class="text-sm leading-none font-medium"
+						>Preferred Instrument</label
+					>
+					<select
+						id="instrument"
+						name="instrument"
+						class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+					>
+						<option value="" disabled selected={!form?.instrument}>Select an instrument...</option>
+						<option value="piano" selected={form?.instrument === 'piano'}>Piano</option>
+						<option value="violin" selected={form?.instrument === 'violin'}>Violin</option>
+						<option value="viola" selected={form?.instrument === 'viola'}>Viola</option>
+						<option value="cello" selected={form?.instrument === 'cello'}>Cello</option>
+						<option value="guitar" selected={form?.instrument === 'guitar'}>Guitar</option>
+						<option value="flute" selected={form?.instrument === 'flute'}>Flute</option>
+						<option value="clarinet" selected={form?.instrument === 'clarinet'}>Clarinet</option>
+						<option value="trumpet" selected={form?.instrument === 'trumpet'}>Trumpet</option>
+						<option value="other" selected={form?.instrument === 'other'}>Other</option>
+					</select>
+				</div>
+			{/if}
 
 			{#if !isRegister}
 				<div class="flex items-center space-x-2 pt-2">

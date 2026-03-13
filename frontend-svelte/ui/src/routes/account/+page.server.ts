@@ -24,6 +24,33 @@ export const load: PageServerLoad = async ({ cookies, fetch }) => {
 };
 
 export const actions: Actions = {
+	update_profile: async ({ request, cookies, fetch }) => {
+		const token = cookies.get('access_token');
+		if (!token) return fail(401, { error: 'Unauthorized' });
+
+		const data = await request.formData();
+		const instrument = data.get('instrument');
+		const email = data.get('email');
+
+		const res = await fetch(`${BACKEND_URL}/user`, {
+			method: 'PUT',
+			headers: {
+				Authorization: `Bearer ${token}`,
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				instrument: instrument?.toString(),
+				email: email?.toString()
+			})
+		});
+
+		if (!res.ok) {
+			const result = await res.json();
+			return fail(res.status, { form: 'profile', error: result.detail || 'Failed to update profile' });
+		}
+
+		return { form: 'profile', success: true };
+	},
 	update_password: async ({ request, cookies, fetch }) => {
 		const token = cookies.get('access_token');
 		if (!token) return fail(401, { error: 'Unauthorized' });

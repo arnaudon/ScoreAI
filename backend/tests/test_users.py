@@ -194,6 +194,34 @@ def test_update_password(user_in_db: User, client: TestClient):
     assert login_resp.status_code == 200
 
 
+def test_update_user_endpoint(user_in_db: User, client: TestClient):
+    """PUT /user updates the current user (covers update_user)."""
+    token = users.create_access_token(data={"sub": user_in_db.username})
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Test full update
+    resp = client.put(
+        "/user",
+        json={"instrument": "piano", "email": "new@example.com"},
+        headers=headers,
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["instrument"] == "piano"
+    assert data["email"] == "new@example.com"
+
+    # Test partial/no update (no changes)
+    resp_none = client.put(
+        "/user",
+        json={},
+        headers=headers,
+    )
+    assert resp_none.status_code == 200
+    data_none = resp_none.json()
+    assert data_none["instrument"] == "piano"
+    assert data_none["email"] == "new@example.com"
+
+
 def test_delete_account(user_in_db: User, client: TestClient):
     """DELETE /user deletes the account."""
 
@@ -209,3 +237,124 @@ def test_delete_account(user_in_db: User, client: TestClient):
     # The user should no longer be accessible
     resp_after = client.get("/user", headers=headers)
     assert resp_after.status_code == 401
+
+
+def test_set_user_credits(user_in_db: User, client: TestClient, session: Session):
+    """PUT /users/{user_id}/credits sets max credits for a user."""
+    app.dependency_overrides.pop(users.get_current_user, None)
+
+    # Create an admin user token
+    admin_user = User(username="admin_user", email="admin@test.com", password="pwd", role="admin")
+    session.add(admin_user)
+    session.commit()
+
+    admin_token = users.create_access_token(data={"sub": admin_user.username})
+    admin_headers = {"Authorization": f"Bearer {admin_token}"}
+
+    # 1. Success
+    resp = client.put(
+        f"/users/{user_in_db.id}/credits",
+        json={"max_credits": 100},
+        headers=admin_headers,
+    )
+    assert resp.status_code == 200
+    assert resp.json()["max_credits"] == 100
+
+    # 2. User not found
+    resp_not_found = client.put(
+        "/users/9999/credits",
+        json={"max_credits": 100},
+        headers=admin_headers,
+    )
+    assert resp_not_found.status_code == 404
+
+    # 3. Forbidden (not admin)
+    user_token = users.create_access_token(data={"sub": user_in_db.username})
+    user_headers = {"Authorization": f"Bearer {user_token}"}
+    resp_forbidden = client.put(
+        f"/users/{user_in_db.id}/credits",
+        json={"max_credits": 100},
+        headers=user_headers,
+    )
+    assert resp_forbidden.status_code == 403
+
+
+def test_main_admin_model_endpoints(client: TestClient, session: Session):
+    """Test get and set active models in main.py."""
+    app.dependency_overrides.pop(users.get_current_user, None)
+
+    admin_user = User(
+        username="admin_model_user", email="adminm@test.com", password="pwd", role="admin"
+    )
+    session.add(admin_user)
+    session.commit()
+
+    admin_token = users.create_access_token(data={"sub": admin_user.username})
+    admin_headers = {"Authorization": f"Bearer {admin_token}"}
+
+    # Set models (creates new settings)
+    resp_set = client.post(
+        "/admin/model",
+        json={"models": {"main": "gpt-4o", "imslp": "gpt-4o-mini"}},
+        headers=admin_headers,
+    )
+    assert resp_set.status_code == 200
+
+    # Get models
+    resp_get = client.get("/admin/model", headers=admin_headers)
+    assert resp_get.status_code == 200
+    models = resp_get.json()["models"]
+    assert models["main"] == "gpt-4o"
+    assert models["imslp"] == "gpt-4o-mini"
+
+    # Set existing model to cover the update branch
+    resp_set2 = client.post(
+        "/admin/model",
+        json={"models": {"main": "gpt-3.5"}},
+        headers=admin_headers,
+    )
+    assert resp_set2.status_code == 200
+
+    resp_get2 = client.get("/admin/model", headers=admin_headers)
+    assert resp_get2.json()["models"]["main"] == "gpt-3.5"
+
+
+def test_refill_user_credits(user_in_db: User, client: TestClient, session: Session):
+    """POST /users/{user_id}/refill_credits refills credits for a user."""
+    app.dependency_overrides.pop(users.get_current_user, None)
+
+    admin_user = User(username="admin_user2", email="admin2@test.com", password="pwd", role="admin")
+    session.add(admin_user)
+    session.commit()
+
+    admin_token = users.create_access_token(data={"sub": admin_user.username})
+    admin_headers = {"Authorization": f"Bearer {admin_token}"}
+
+    user_in_db.max_credits = 50
+    user_in_db.credits = 10
+    session.add(user_in_db)
+    session.commit()
+
+    # 1. Success
+    resp = client.post(
+        f"/users/{user_in_db.id}/refill_credits",
+        headers=admin_headers,
+    )
+    assert resp.status_code == 200
+    assert resp.json()["credits"] == 50
+
+    # 2. User not found
+    resp_not_found = client.post(
+        "/users/9999/refill_credits",
+        headers=admin_headers,
+    )
+    assert resp_not_found.status_code == 404
+
+    # 3. Forbidden (not admin)
+    user_token = users.create_access_token(data={"sub": user_in_db.username})
+    user_headers = {"Authorization": f"Bearer {user_token}"}
+    resp_forbidden = client.post(
+        f"/users/{user_in_db.id}/refill_credits",
+        headers=user_headers,
+    )
+    assert resp_forbidden.status_code == 403

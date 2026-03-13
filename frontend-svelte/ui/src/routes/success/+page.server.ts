@@ -4,12 +4,23 @@ import { env } from '$env/dynamic/private';
 
 const BACKEND_URL = env.BACKEND_URL || 'http://localhost:8000';
 
-export const load: PageServerLoad = async ({ cookies }) => {
+export const load: PageServerLoad = async ({ cookies, fetch }) => {
 	const token = cookies.get('access_token');
 	if (!token) {
 		redirect(303, '/login');
 	}
-	return {};
+
+	const res = await fetch(`${BACKEND_URL}/user`, {
+		headers: { Authorization: `Bearer ${token}` }
+	});
+
+	if (!res.ok) {
+		cookies.delete('access_token', { path: '/' });
+		redirect(303, '/login');
+	}
+
+	const user = await res.json();
+	return { user };
 };
 
 export const actions: Actions = {
@@ -63,7 +74,8 @@ export const actions: Actions = {
 				}
 				return { success: true, answer: result, question: question.toString(), scoreDetails };
 			} else {
-				return fail(response.status, { error: `Failed to get response (${response.status})` });
+				const result = await response.json().catch(() => ({}));
+				return fail(response.status, { error: result.detail || `Failed to get response (${response.status})` });
 			}
 		} catch (error) {
 			console.error('Agent error:', error);

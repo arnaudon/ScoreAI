@@ -6,27 +6,37 @@ const BACKEND_URL = env.BACKEND_URL || 'http://localhost:8000';
 
 export const load: PageServerLoad = async ({ cookies, fetch }) => {
 	const token = cookies.get('access_token');
-	
 	if (!token) {
 		redirect(303, '/login');
 	}
 
-	try {
-		const response = await fetch(`${BACKEND_URL}/scores`, {
+	async function fetchUser() {
+		const res = await fetch(`${BACKEND_URL}/user`, {
+			headers: { Authorization: `Bearer ${token}` }
+		});
+		if (!res.ok) {
+			cookies.delete('access_token', { path: '/' });
+			redirect(303, '/login');
+		}
+		return res.json();
+	}
+
+	async function fetchScores() {
+		const res = await fetch(`${BACKEND_URL}/scores`, {
 			headers: {
 				Authorization: `Bearer ${token}`
 			}
 		});
-
-		if (response.ok) {
-			const scores = await response.json();
-			return { scores };
-		}
-	} catch (error) {
-		console.error('Failed to fetch scores:', error);
+		return res.ok ? await res.json() : [];
 	}
 
-	return { scores: [] };
+	try {
+		const [user, scores] = await Promise.all([fetchUser(), fetchScores()]);
+		return { user, scores };
+	} catch (error) {
+		console.error('Failed to fetch page data:', error);
+		redirect(303, '/login');
+	}
 };
 
 export const actions: Actions = {
@@ -140,28 +150,54 @@ export const actions: Actions = {
 		}
 
 		const data = await request.formData();
-		const prompt = data.get('prompt');
+		const question = data.get('question');
+		const messageHistoryRaw = data.get('message_history');
 
-		if (!prompt) {
+		if (!question) {
 			return fail(400, { error: 'Missing prompt' });
 		}
 
+		let messageHistory = null;
+		if (messageHistoryRaw) {
+			try {
+				messageHistory = JSON.parse(messageHistoryRaw.toString());
+			} catch (e) {
+				console.error('Failed to parse message_history', e);
+			}
+		}
+
 		try {
-			const promptParam = encodeURIComponent(prompt.toString());
-			const res = await fetch(`${BACKEND_URL}/imslp_agent?prompt=${promptParam}`, {
+			const scoresRes = await fetch(`${BACKEND_URL}/scores`, {
+				headers: {
+					Authorization: `Bearer ${token}`
+				}
+			});
+			const scores_deps = scoresRes.ok ? await scoresRes.json() : [];
+			const deps = JSON.stringify({ scores: scores_deps });
+
+			const res = await fetch(`${BACKEND_URL}/imslp_agent`, {
 				method: 'POST',
-				headers: { Authorization: `Bearer ${token}` }
+				headers: {
+					Authorization: `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					prompt: question.toString(),
+					deps: deps,
+					message_history: messageHistory
+				})
 			});
 
 			if (!res.ok) {
-				return fail(res.status, { error: 'Failed to query agent' });
+				const result = await res.json().catch(() => ({}));
+				return fail(res.status, { error: result.detail || 'Failed to query agent' });
 			}
 
 			const json = await res.json();
 			let scores = [];
 			const score_ids = json.response?.score_ids || [];
 			const agent_response_text = json.response?.response || '';
-			
+
 			if (score_ids.length > 0) {
 				const idsParam = encodeURIComponent(JSON.stringify(score_ids));
 				const scoresRes = await fetch(`${BACKEND_URL}/imslp/scores_by_ids?score_ids=${idsParam}`, {
@@ -172,7 +208,17 @@ export const actions: Actions = {
 				}
 			}
 
-			return { success: true, agent_results: { response: agent_response_text, scores } };
+			const returned_message_history = json.response?.message_history || messageHistory;
+
+			return {
+				success: true,
+				question: question.toString(),
+				agent_results: {
+					response: agent_response_text,
+					scores,
+					message_history: returned_message_history
+				}
+			};
 		} catch (error) {
 			console.error('Ask agent error:', error);
 			return fail(500, { error: 'Server error when contacting backend' });

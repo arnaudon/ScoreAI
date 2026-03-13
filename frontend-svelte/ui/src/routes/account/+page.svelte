@@ -6,6 +6,7 @@
 
 	let { data, form }: PageProps = $props();
 
+	let loadingProfile = $state(false);
 	let loadingPassword = $state(false);
 	let loadingDelete = $state(false);
 </script>
@@ -16,18 +17,79 @@
 	<div class="space-y-8">
 		<section class="rounded-md border bg-card p-6 text-card-foreground shadow-card">
 			<h2 class="text-fancy-title mb-4 text-xl font-semibold">Profile Information</h2>
-			<p class="mb-6 text-sm text-muted-foreground">View your account's profile information.</p>
-			
-			<div class="space-y-4">
+			<p class="mb-6 text-sm text-muted-foreground">View and update your account's profile information.</p>
+
+			<form
+				method="POST"
+				action="?/update_profile"
+				class="space-y-4"
+				use:enhance={() => {
+					loadingProfile = true;
+					return async ({ update }) => {
+						loadingProfile = false;
+						update({ reset: false });
+					};
+				}}
+			>
 				<div class="space-y-2">
 					<label for="username" class="text-sm font-medium">Username</label>
 					<Input id="username" value={data.user?.username} disabled class="max-w-md" />
 				</div>
 				<div class="space-y-2">
-					<label for="role" class="text-sm font-medium">Role</label>
-					<Input id="role" value={data.user?.role || (data.user?.is_admin ? 'admin' : 'user')} disabled class="max-w-md capitalize" />
+					<label for="email" class="text-sm font-medium">Email</label>
+					<Input id="email" name="email" type="email" value={data.user?.email || ''} class="max-w-md" required />
 				</div>
-			</div>
+				<div class="space-y-2">
+					<label for="instrument" class="text-sm font-medium">Preferred Instrument</label>
+					<select
+						id="instrument"
+						name="instrument"
+						class="flex h-10 w-full max-w-md items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+					>
+						<option value="" disabled selected={!data.user?.instrument}>Select an instrument...</option>
+						<option value="piano" selected={data.user?.instrument === 'piano'}>Piano</option>
+						<option value="violin" selected={data.user?.instrument === 'violin'}>Violin</option>
+						<option value="viola" selected={data.user?.instrument === 'viola'}>Viola</option>
+						<option value="cello" selected={data.user?.instrument === 'cello'}>Cello</option>
+						<option value="guitar" selected={data.user?.instrument === 'guitar'}>Guitar</option>
+						<option value="flute" selected={data.user?.instrument === 'flute'}>Flute</option>
+						<option value="clarinet" selected={data.user?.instrument === 'clarinet'}>Clarinet</option>
+						<option value="trumpet" selected={data.user?.instrument === 'trumpet'}>Trumpet</option>
+						<option value="other" selected={data.user?.instrument === 'other'}>Other</option>
+					</select>
+				</div>
+				<div class="space-y-2">
+					<label for="role" class="text-sm font-medium">Role</label>
+					<Input
+						id="role"
+						value={data.user?.role || (data.user?.is_admin ? 'admin' : 'user')}
+						disabled
+						class="max-w-md capitalize"
+					/>
+				</div>
+				<div class="space-y-2">
+					<label for="credits" class="text-sm font-medium">Credits</label>
+					<Input
+						id="credits"
+						value={`${data.user?.credits} / ${data.user?.max_credits}`}
+						disabled
+						class="max-w-md"
+					/>
+				</div>
+
+				{#if form?.form === 'profile' && form?.error}
+					<p class="text-sm font-medium text-destructive">{form.error}</p>
+				{/if}
+				{#if form?.form === 'profile' && form?.success}
+					<p class="text-sm font-medium text-green-600 dark:text-green-400">
+						Profile updated successfully!
+					</p>
+				{/if}
+
+				<Button type="submit" disabled={loadingProfile}>
+					{loadingProfile ? 'Saving...' : 'Save Profile'}
+				</Button>
+			</form>
 		</section>
 
 		<section class="rounded-md border bg-card p-6 text-card-foreground shadow-card">

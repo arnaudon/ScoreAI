@@ -1,6 +1,7 @@
 """Backend main entry point."""
 
 import json
+import os
 import uuid
 from contextlib import asynccontextmanager
 from logging import getLogger
@@ -15,8 +16,9 @@ from app import imslp, users
 from app.agent import Deps, run_agent, run_complete_agent, run_imslp_agent
 from app.db import get_session, init_db
 from app.file_helper import file_helper
-from app.users import get_current_user, get_current_user_from_token
+from app.users import get_admin_user, get_current_user, get_current_user_from_token
 from shared.scores import Score, Scores
+from shared.settings import Setting
 from shared.user import User
 
 logger = getLogger(__name__)
@@ -24,7 +26,7 @@ logger = getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:  # pragma: no cover
-    """Initialize database on startup."""
+    """Placeholder for startup/shutdown events."""
     init_db()
     yield
 
@@ -57,9 +59,11 @@ def add_score(
 
 
 @app.post("/complete_score", dependencies=[Depends(get_current_user)])
-async def complete_score(score: Score):  # pragma: no cover
+async def complete_score(score: Score, session: Session = Depends(get_session)):  # pragma: no cover
     """Complete a score."""
-    return await run_complete_agent(score)
+    setting = session.get(Setting, "model_complete")
+    model = setting.value if setting else os.getenv("MODEL", "test")
+    return await run_complete_agent(score, model)
 
 
 @app.delete("/scores/{score_id}")
@@ -103,10 +107,30 @@ def get_scores(
     return session.exec(select(Score).where(Score.user_id == current_user.id)).all()
 
 
-@app.post("/imslp_agent", dependencies=[Depends(get_current_user)])
-async def run_imslp_agent_api(prompt: str, message_history=None):  # pragma: no cover
+@app.post("/imslp_agent")
+async def run_imslp_agent_api(
+    current_user: Annotated[User, Depends(get_current_user)],
+    prompt: str = Body(...),
+    message_history: list | None = Body(None),
+    session: Session = Depends(get_session),
+):  # pragma: no cover
     """Run the imslp agent."""
-    return await run_imslp_agent(prompt, message_history=message_history)
+    if current_user.credits <= 0:
+        raise HTTPException(
+            status_code=403,
+            detail="You have run out of agent credits."
+            "Please contact alexis.arnaudon@gmail.com to get more credits.",
+        )
+
+    setting = session.get(Setting, "model_imslp")
+    model = setting.value if setting else os.getenv("MODEL", "test")
+    result = await run_imslp_agent(prompt, message_history=message_history, model=model)
+
+    current_user.credits -= 1
+    session.add(current_user)
+    session.commit()
+
+    return result
 
 
 @app.post("/agent")
@@ -115,13 +139,59 @@ async def run_main_agent(
     prompt: str = Body(...),
     deps: str = Body(...),
     message_history: list | None = Body(None),
+    session: Session = Depends(get_session),
 ):  # pragma: no cover
     """Run the agent."""
-    return await run_agent(
+    if current_user.credits <= 0:
+        raise HTTPException(
+            status_code=403,
+            detail="You have run out of agent credits."
+            "Please contact alexis.arnaudon@gmail.com to get more credits.",
+        )
+
+    setting = session.get(Setting, "model_main")
+    model = setting.value if setting else os.getenv("MODEL", "test")
+    result = await run_agent(
         prompt,
         message_history=message_history,
         deps=Deps(user=current_user, scores=Scores(**json.loads(deps))),
+        model=model,
     )
+
+    current_user.credits -= 1
+    session.add(current_user)
+    session.commit()
+    return result
+
+
+@app.get("/admin/model", dependencies=[Depends(get_admin_user)])
+def get_active_model(session: Session = Depends(get_session)):
+    """Get the currently active agent models."""
+    main_setting = session.get(Setting, "model_main")
+    imslp_setting = session.get(Setting, "model_imslp")
+    complete_setting = session.get(Setting, "model_complete")
+
+    models = {
+        "main": (main_setting.value if main_setting else os.getenv("MODEL", "test")),
+        "imslp": (imslp_setting.value if imslp_setting else os.getenv("MODEL", "test")),
+        "complete": (complete_setting.value if complete_setting else os.getenv("MODEL", "test")),
+    }
+    return {"models": models}
+
+
+@app.post("/admin/model", dependencies=[Depends(get_admin_user)])
+def set_active_model(models: dict = Body(..., embed=True), session: Session = Depends(get_session)):
+    """Set the currently active agent models."""
+    for key, val in models.items():
+        setting_key = f"model_{key}"
+        setting = session.get(Setting, setting_key)
+        if setting:
+            setting.value = val
+        else:
+            setting = Setting(key=setting_key, value=val)
+        session.add(setting)
+    session.commit()
+    return {"message": "Models updated", "models": models}
 
 
 def get_pdf_user(token: str = "", session: Session = Depends(get_session)):  # pragma: no cover

@@ -1,5 +1,6 @@
 """conftest"""
 
+import glob
 import os
 
 import pytest
@@ -17,6 +18,18 @@ from shared.user import User
 os.environ["DATABASE_PATH"] = "test.db"
 pytestmark = pytest.mark.anyio
 models.ALLOW_MODEL_REQUESTS = False
+
+
+@pytest.fixture(scope="session", autouse=True)
+def cleanup_test_pdfs():
+    """Clean up generated PDFs after tests."""
+    yield
+    for file in glob.glob("tests/data/*.pdf"):
+        if os.path.basename(file) != "real_score.pdf":
+            try:
+                os.remove(file)
+            except OSError:
+                pass
 
 
 @pytest.fixture(name="session")

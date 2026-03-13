@@ -17,7 +17,9 @@
 		getFilteredRowModel
 	} from '@tanstack/table-core';
 	import { FlexRender, createSvelteTable, renderComponent } from '$lib/components/ui/data-table/index.js';
+	import AgentChat from '$lib/components/AgentChat.svelte';
 	import DataTableSortButton from './data-table-sort-button.svelte';
+	import { imslpAgentHistoryStore } from '$lib/stores/chat.svelte';
 
 	let { data, form }: PageProps = $props();
 	let selectedScoreId = $state<number | null>(null);
@@ -128,9 +130,24 @@
 		}
 	];
 
+	let imslpScores = $state<any[]>([]);
+	function onImslpResult(data: any) {
+		const res = data.agent_results;
+		const scores = res.scores || [];
+		imslpScores = scores;
+		return {
+			question: data.question,
+			answer: {
+				answer: res.response,
+				scores: scores
+			},
+			rawHistory: res.message_history
+		};
+	}
+
 	const imslpTable = createSvelteTable({
 		get data() {
-			return form?.agent_results?.scores || [];
+			return imslpScores;
 		},
 		columns: imslpColumns,
 		state: {
@@ -200,94 +217,104 @@
 				</form>
 			</Tabs.Content>
 			<Tabs.Content value="imslp">
-				<form method="POST" action="?/ask_agent" use:enhance={() => {
-					uploading = true;
-					return async ({ update }) => {
-						uploading = false;
-						update();
-					};
-				}} class="flex flex-col gap-4">
-					<div class="flex-1 space-y-2">
-						<label for="prompt" class="text-sm font-medium leading-none">What are you looking for?</label>
-						<Input id="prompt" name="prompt" placeholder="e.g. Find me piano sonatas by Beethoven" required />
-					</div>
-					<Button type="submit" disabled={uploading}>
-						{uploading ? 'Thinking...' : 'Ask Agent'}
-					</Button>
-				</form>
-				{#if form?.agent_results}
-					<div class="mt-4 p-4 border rounded-md bg-muted/50">
-						{#if form.agent_results.response}
-							<p class="mb-4 text-sm whitespace-pre-wrap">{form.agent_results.response}</p>
-						{/if}
-						{#if form.agent_results.scores && form.agent_results.scores.length > 0}
-							<div class="mb-4 overflow-hidden rounded-md border bg-card text-card-foreground shadow-card">
-								<Table.Root>
-									<Table.Header>
-										{#each imslpTable.getHeaderGroups() as headerGroup (headerGroup.id)}
-											<Table.Row>
-												{#each headerGroup.headers as header (header.id)}
-													<Table.Head>
-														{#if !header.isPlaceholder}
-															<FlexRender
-																content={header.column.columnDef.header}
-																context={header.getContext()}
-															/>
-														{/if}
-													</Table.Head>
-												{/each}
-											</Table.Row>
-										{/each}
-									</Table.Header>
-									<Table.Body>
-										{#each imslpTable.getRowModel().rows as row (row.id)}
-											<Table.Row class="cursor-pointer transition-colors hover:bg-muted/50 {agentSelectedScore?.id === row.original.id ? 'bg-muted' : ''}" onclick={() => {
-												if (!uploading) {
-													agentSelectedScore = row.original;
-													imslpSheetOpen = true;
-												}
-											}}>
-												{#each row.getVisibleCells() as cell (cell.id)}
-													<Table.Cell class="max-w-[120px] truncate sm:max-w-[150px] md:max-w-[200px]">
-														<FlexRender
-															content={cell.column.columnDef.cell}
-															context={cell.getContext()}
-														/>
-													</Table.Cell>
-												{/each}
-											</Table.Row>
-										{/each}
-									</Table.Body>
-								</Table.Root>
-								
-								<div class="flex items-center justify-end space-x-2 py-4 px-4 border-t">
-									<div class="flex-1 text-sm text-muted-foreground">
-										Showing min({imslpTable.getRowModel().rows.length}, {imslpTable.getFilteredRowModel().rows.length}) results.
-									</div>
-									<Button
-										variant="outline"
-										size="sm"
-										onclick={() => imslpTable.previousPage()}
-										disabled={!imslpTable.getCanPreviousPage()}
+				<div class="flex flex-col h-[500px] w-full">
+					<AgentChat
+						{form}
+						action="?/ask_agent"
+						title="From IMSLP"
+						placeholder="e.g. Find me piano sonatas by Beethoven"
+						onResult={onImslpResult}
+						user={data.user}
+						store={imslpAgentHistoryStore}
+					>
+						{#snippet children()}
+							<div />
+						{/snippet}
+						{#snippet resultSnippet({ msg, isLast })}
+							<p class="mb-4 text-sm whitespace-pre-wrap">{msg.answer}</p>
+							{#if isLast}
+								{#if msg.scores && msg.scores.length > 0}
+									<div
+										class="mb-4 overflow-hidden rounded-md border bg-card text-card-foreground shadow-card"
 									>
-										Previous
-									</Button>
-									<Button
-										variant="outline"
-										size="sm"
-										onclick={() => imslpTable.nextPage()}
-										disabled={!imslpTable.getCanNextPage()}
-									>
-										Next
-									</Button>
-								</div>
-							</div>
+										<Table.Root>
+											<Table.Header>
+												{#each imslpTable.getHeaderGroups() as headerGroup (headerGroup.id)}
+													<Table.Row>
+														{#each headerGroup.headers as header (header.id)}
+															<Table.Head>
+																{#if !header.isPlaceholder}
+																	<FlexRender
+																		content={header.column.columnDef.header}
+																		context={header.getContext()}
+																	/>
+																{/if}
+															</Table.Head>
+														{/each}
+													</Table.Row>
+												{/each}
+											</Table.Header>
+											<Table.Body>
+												{#each imslpTable.getRowModel().rows as row (row.id)}
+													<Table.Row
+														class="cursor-pointer transition-colors hover:bg-muted/50 {agentSelectedScore?.id ===
+														row.original.id
+															? 'bg-muted'
+															: ''}"
+														onclick={() => {
+															if (!uploading) {
+																agentSelectedScore = row.original;
+																imslpSheetOpen = true;
+															}
+														}}
+													>
+														{#each row.getVisibleCells() as cell (cell.id)}
+															<Table.Cell
+																class="max-w-[120px] truncate sm:max-w-[150px] md:max-w-[200px]"
+															>
+																<FlexRender
+																	content={cell.column.columnDef.cell}
+																	context={cell.getContext()}
+																/>
+															</Table.Cell>
+														{/each}
+													</Table.Row>
+												{/each}
+											</Table.Body>
+										</Table.Root>
 
-						{:else if form.agent_results.response}
-							<p class="text-sm text-muted-foreground mt-2 text-center">No matching scores found.</p>
-						{/if}
-					</div>
-				{/if}
+										<div class="flex items-center justify-end space-x-2 py-4 px-4 border-t">
+											<div class="flex-1 text-sm text-muted-foreground">
+												Showing min({imslpTable.getRowModel().rows.length},{' '}
+												{imslpTable.getFilteredRowModel().rows.length}) results.
+											</div>
+											<Button
+												variant="outline"
+												size="sm"
+												onclick={() => imslpTable.previousPage()}
+												disabled={!imslpTable.getCanPreviousPage()}
+											>
+												Previous
+											</Button>
+											<Button
+												variant="outline"
+												size="sm"
+												onclick={() => imslpTable.nextPage()}
+												disabled={!imslpTable.getCanNextPage()}
+											>
+												Next
+											</Button>
+										</div>
+									</div>
+								{:else if msg.answer}
+									<p class="text-sm text-muted-foreground mt-2 text-center">
+										No matching scores found.
+									</p>
+								{/if}
+							{/if}
+						{/snippet}
+					</AgentChat>
+				</div>
 			</Tabs.Content>
 		</Tabs.Root>
 		{#if form?.error}

@@ -2,7 +2,6 @@
 
 import os
 import random
-from typing import Any
 
 from dotenv import load_dotenv
 from pydantic import BaseModel, TypeAdapter
@@ -24,7 +23,6 @@ if os.getenv("USE_LOGFIRE"):
 
 load_dotenv()
 
-MODEL: Any = os.getenv("MODEL", "test")
 postgres_server = MCPServerSSE("http://mcp-postgres:8001/sse")
 
 
@@ -88,10 +86,10 @@ async def get_easiest_score_by_composer(ctx: RunContext[Deps], filter_params: Fi
     return "Not found"
 
 
-def get_main_agent():
+def get_main_agent(model: str | None = None):
     """Initializes and returns the main agent for handling user queries about scores."""
     agent = Agent(
-        MODEL,
+        model or os.getenv("MODEL", "test"),
         output_type=Response,
         deps_type=Deps,
         system_prompt="""Your task it to find a score to play.
@@ -103,6 +101,7 @@ def get_main_agent():
         Use my username in the conversations.
         """,
         toolsets=[postgres_server],
+        retries=3,
     )
     agent.tool(get_score_info)
     agent.tool(get_user_name)
@@ -112,7 +111,7 @@ def get_main_agent():
     return agent
 
 
-async def run_imslp_agent(prompt: str, message_history=None):
+async def run_imslp_agent(prompt: str, message_history=None, model: str | None = None):
     """
     Run an agent specialized for querying the IMSLP database.
 
@@ -127,7 +126,7 @@ async def run_imslp_agent(prompt: str, message_history=None):
         A FullResponse object containing the agent's response and message history.
     """
     agent = Agent(
-        MODEL,
+        model or os.getenv("MODEL", "test"),
         system_prompt="""
         You are a database assistant. 
         Your ONLY source of data is the table: public.imslp.
@@ -164,6 +163,12 @@ async def run_imslp_agent(prompt: str, message_history=None):
         history = []
         if e.status_code == 429:
             response = ImslpResponse(response="Rate limit exceeded (Quota hit)", score_ids=[])
+        elif e.status_code == 503:
+            response = ImslpResponse(
+                response="The model is currently experiencing high demand. "
+                "Please try again in a few moments.",
+                score_ids=[],
+            )
         else:
             response = ImslpResponse(response="An HTTP error occurred", score_ids=[])
     except Exception:  # pylint: disable=broad-exception-caught
@@ -175,7 +180,7 @@ async def run_imslp_agent(prompt: str, message_history=None):
     return ImslpFullResponse(response=response, message_history=history)
 
 
-async def run_agent(prompt: str, deps: Deps, message_history=None):
+async def run_agent(prompt: str, deps: Deps, message_history=None, model: str | None = None):
     """
     Run the main conversational agent to find musical scores.
 
@@ -187,7 +192,7 @@ async def run_agent(prompt: str, deps: Deps, message_history=None):
     Returns:
         A FullResponse object containing the agent's response and message history.
     """
-    agent = get_main_agent()
+    agent = get_main_agent(model)
 
     if message_history:
         try:
@@ -208,6 +213,11 @@ async def run_agent(prompt: str, deps: Deps, message_history=None):
         history = []
         if e.status_code == 429:
             response = Response(response="Rate limit exceeded (Quota hit)")
+        elif e.status_code == 503:
+            response = Response(
+                response="The model is currently experiencing high demand. "
+                "Please try again in a few moments."
+            )
         else:
             response = Response(response="An HTTP error occurred")
     except Exception:  # pylint: disable=broad-exception-caught
@@ -217,7 +227,7 @@ async def run_agent(prompt: str, deps: Deps, message_history=None):
     return FullResponse(response=response, message_history=history)
 
 
-async def run_complete_agent(score: Score):
+async def run_complete_agent(score: Score, model: str | None = None):
     """
     Run an agent to find and add missing information to a score.
 
@@ -231,7 +241,7 @@ async def run_complete_agent(score: Score):
         The updated Score object.
     """
     agent = Agent(
-        MODEL,
+        model or os.getenv("MODEL", "test"),
         output_type=Score,
         system_prompt="""You are a music expert, and your task it to provide accurate
         informations about a music piece. Use the search tool to find current information

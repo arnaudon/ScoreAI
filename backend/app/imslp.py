@@ -5,7 +5,6 @@ import json
 import logging
 import os
 import time
-from typing import Any
 
 import httpx
 import requests
@@ -20,8 +19,8 @@ from sqlmodel import Session, func, select, text
 from app.db import engine, get_session
 from app.users import get_admin_user
 from shared.scores import IMSLP, ScoreBase
+from shared.settings import Setting
 
-MODEL: Any = os.getenv("MODEL", "test")
 logger = logging.getLogger(__name__)
 progress_tracker = {"status": "idle", "page": 0, "cancel_requested": False}
 router = APIRouter(prefix="/imslp", tags=["imslp"])
@@ -92,10 +91,14 @@ async def get_page(start):
     return data
 
 
-async def fix_entry(entry):
+async def fix_entry(entry, session):
     """Fix missing values in the entry using an agent."""
+
+    setting = session.get(Setting, "model_complete")
+    model = setting.value if setting else os.getenv("MODEL", "test")
+
     agent = Agent(
-        MODEL,
+        model,
         output_type=ScoreBase,
         system_prompt=""" Fix missing values.""",
         tools=[duckduckgo_search_tool()],
@@ -111,9 +114,11 @@ async def fix_entry(entry):
                 setattr(entry, key, value)
             break
         except (ModelHTTPError, UnexpectedModelBehavior) as e:
-            if (
-                isinstance(e, ModelHTTPError) and e.status_code == 503 and attempt < max_retries - 1
-            ) or (isinstance(e, UnexpectedModelBehavior) and attempt < max_retries - 1):
+            # Do not retry client errors (4xx)
+            if isinstance(e, ModelHTTPError) and e.status_code < 500:
+                raise e
+
+            if attempt < max_retries - 1:
                 wait_time = 2**attempt * 5  # Exponential backoff
                 logger.warning(
                     "Model error %s , retrying in %s s (attempt %s / %s)",
@@ -148,7 +153,7 @@ async def add_entry(i, item, session, overwrite=False):
         key=metadata.get("Key", ""),
         score_metadata=json.dumps(metadata),
     )
-    await fix_entry(entry)
+    await fix_entry(entry, session)
     stmt = insert(IMSLP).values(entry.model_dump())
     update_columns = {
         col.name: stmt.excluded[col.name]
@@ -208,6 +213,7 @@ def get_progress():
 def cancel():
     """Cancel the IMSLP update"""
     progress_tracker["cancel_requested"] = True
+    progress_tracker["status"] = "cancelling"
 
 
 @router.get("/stats", dependencies=[Depends(get_admin_user)])

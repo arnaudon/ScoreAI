@@ -51,9 +51,16 @@ export const actions: Actions = {
 		const data = await request.formData();
 		const username = data.get('username');
 		const password = data.get('password');
+		const email = data.get('email');
+		const instrument = data.get('instrument');
 
-		if (!username || !password) {
-			return fail(400, { username: username?.toString(), error: 'Missing username or password' });
+		if (!username || !password || !email) {
+			return fail(400, {
+				username: username?.toString(),
+				email: email?.toString(),
+				instrument: instrument?.toString(),
+				error: 'Missing username, password or email'
+			});
 		}
 
 		const response = await fetch(`${BACKEND_URL}/users`, {
@@ -63,7 +70,9 @@ export const actions: Actions = {
 			},
 			body: JSON.stringify({
 				username: username.toString(),
-				password: password.toString()
+				password: password.toString(),
+				email: email.toString(),
+				instrument: instrument?.toString()
 			})
 		});
 
@@ -73,7 +82,12 @@ export const actions: Actions = {
 				const result = await response.json();
 				errorMsg = result.detail || errorMsg;
 			} catch (e) {}
-			return fail(response.status, { username: username.toString(), error: errorMsg });
+			return fail(response.status, {
+				username: username.toString(),
+				email: email.toString(),
+				instrument: instrument?.toString(),
+				error: errorMsg
+			});
 		}
 
 		// Automatically log in the user after successful registration

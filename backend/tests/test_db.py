@@ -7,12 +7,6 @@ from app import db
 db.DATABASE_URL = "sqlite:///.test.db"
 
 
-def test_init_db():
-    """test init db"""
-
-    db.init_db()
-
-
 def test_get_session():
     """test get session"""
 

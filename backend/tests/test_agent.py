@@ -4,22 +4,18 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from pydantic_ai.exceptions import ModelHTTPError
-from pydantic_ai.models.test import TestModel
 
 from app import agent
-from shared.responses import FullResponse
-from shared.responses import ImslpResponse
-from shared.responses import Response
+from shared.responses import FullResponse, ImslpResponse, Response
 from shared.scores import Difficulty, Score, Scores
 from shared.user import User
 
 
 @pytest.mark.asyncio
-async def test_agent_success(monkeypatch, test_scores: Scores, test_user: User):
+async def test_agent_success(test_scores: Scores, test_user: User):
     """test agent happy path with TestModel"""
-    monkeypatch.setattr(agent, "MODEL", TestModel())
     result = await agent.run_agent(
-        prompt="test", deps=agent.Deps(user=test_user, scores=test_scores)
+        prompt="test", deps=agent.Deps(user=test_user, scores=test_scores), model="test"
     )
     assert isinstance(result, FullResponse)
 
@@ -130,7 +126,7 @@ async def test_run_agent_http_error_429(monkeypatch):
     mock_agent_run = AsyncMock(side_effect=ModelHTTPError(429, "error"))
     mock_agent = MagicMock()
     mock_agent.run = mock_agent_run
-    monkeypatch.setattr("app.agent.get_main_agent", lambda: mock_agent)
+    monkeypatch.setattr("app.agent.get_main_agent", lambda *args, **kwargs: mock_agent)
     deps = agent.Deps(user=User(username="test"), scores=Scores(scores=[]))
     result = await agent.run_agent("prompt", deps)
     assert result.response.response == "Rate limit exceeded (Quota hit)"
@@ -143,7 +139,7 @@ async def test_run_agent_http_error_other(monkeypatch):
     mock_agent_run = AsyncMock(side_effect=err)
     mock_agent = MagicMock()
     mock_agent.run = mock_agent_run
-    monkeypatch.setattr("app.agent.get_main_agent", lambda: mock_agent)
+    monkeypatch.setattr("app.agent.get_main_agent", lambda *args, **kwargs: mock_agent)
     deps = agent.Deps(user=User(username="test"), scores=Scores(scores=[]))
     result = await agent.run_agent("prompt", deps)
     assert result.response.response == "An HTTP error occurred"
@@ -155,7 +151,7 @@ async def test_run_agent_exception(monkeypatch):
     mock_agent_run = AsyncMock(side_effect=Exception("error"))
     mock_agent = MagicMock()
     mock_agent.run = mock_agent_run
-    monkeypatch.setattr("app.agent.get_main_agent", lambda: mock_agent)
+    monkeypatch.setattr("app.agent.get_main_agent", lambda *args, **kwargs: mock_agent)
     deps = agent.Deps(user=User(username="test"), scores=Scores(scores=[]))
     result = await agent.run_agent("prompt", deps)
     assert result.response.response == "An unexpected error occurred"
@@ -259,7 +255,7 @@ async def test_run_agent_history_parsing(monkeypatch):
     mock_agent_run = AsyncMock(return_value=mock_result)
     mock_agent = MagicMock()
     mock_agent.run = mock_agent_run
-    monkeypatch.setattr("app.agent.get_main_agent", lambda: mock_agent)
+    monkeypatch.setattr("app.agent.get_main_agent", lambda *args, **kwargs: mock_agent)
 
     deps = agent.Deps(user=User(username="test"), scores=Scores(scores=[]))
     # Invalid history triggers except block and defaults to None
