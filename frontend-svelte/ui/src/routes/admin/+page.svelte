@@ -22,6 +22,24 @@
 
 <div class="grid gap-6 md:grid-cols-2 mb-8">
 	<div class="rounded-md border bg-card p-6 text-card-foreground shadow-card">
+		<h2 class="text-fancy-title mb-2 text-xl font-semibold">Agent Configuration</h2>
+		<p class="mb-4 text-muted-foreground">Select the global model used by agents.</p>
+		<form method="POST" action="?/set_model" use:enhance class="flex gap-4 items-end">
+			<div class="flex-1 space-y-2">
+				<label for="model" class="text-sm font-medium leading-none">Agent Model</label>
+				<select id="model" name="model" class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+					<option value="openai:gpt-4o" selected={data.activeModel === 'openai:gpt-4o' || data.activeModel === ''}>GPT-4o</option>
+					<option value="openai:gpt-4o-mini" selected={data.activeModel === 'openai:gpt-4o-mini'}>GPT-4o-Mini</option>
+					<option value="anthropic:claude-3-5-sonnet-latest" selected={data.activeModel === 'anthropic:claude-3-5-sonnet-latest'}>Claude 3.5 Sonnet</option>
+				</select>
+			</div>
+			<button class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2" type="submit">
+				Save
+			</button>
+		</form>
+	</div>
+
+	<div class="rounded-md border bg-card p-6 text-card-foreground shadow-card">
 		<h2 class="text-fancy-title mb-2 text-xl font-semibold">IMSLP Database</h2>
 		<p class="mb-4 text-muted-foreground">
 			The database contains {data.stats?.total_works || 0} works and {data.stats?.total_composers || 0} composers.

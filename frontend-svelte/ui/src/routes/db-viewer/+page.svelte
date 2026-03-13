@@ -210,15 +210,6 @@
 						<label for="file" class="text-sm font-medium leading-none">PDF File</label>
 						<Input id="file" name="file" type="file" accept="application/pdf" required />
 					</div>
-					<div class="flex-1 space-y-2">
-						<label for="model" class="text-sm font-medium leading-none">Agent Model</label>
-						<select id="model" name="model" class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-							<option value="">Default Model</option>
-							<option value="openai:gpt-4o">GPT-4o</option>
-							<option value="openai:gpt-4o-mini">GPT-4o-Mini</option>
-							<option value="anthropic:claude-3-5-sonnet-latest">Claude 3.5 Sonnet</option>
-						</select>
-					</div>
 					<Button type="submit" disabled={uploading}>
 						{uploading ? 'Adding...' : 'Add'}
 					</Button>

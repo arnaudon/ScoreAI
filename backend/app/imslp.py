@@ -21,7 +21,6 @@ from app.db import engine, get_session
 from app.users import get_admin_user
 from shared.scores import IMSLP, ScoreBase
 
-MODEL: Any = os.getenv("MODEL", "test")
 logger = logging.getLogger(__name__)
 progress_tracker = {"status": "idle", "page": 0, "cancel_requested": False}
 router = APIRouter(prefix="/imslp", tags=["imslp"])
@@ -94,8 +93,9 @@ async def get_page(start):
 
 async def fix_entry(entry):
     """Fix missing values in the entry using an agent."""
+    from app.agent import ACTIVE_MODEL
     agent = Agent(
-        MODEL,
+        ACTIVE_MODEL,
         output_type=ScoreBase,
         system_prompt=""" Fix missing values.""",
         tools=[duckduckgo_search_tool()],

@@ -18,7 +18,6 @@ export const actions: Actions = {
 		const data = await request.formData();
 		const question = data.get('question');
 		const messageHistoryRaw = data.get('message_history');
-		const model = data.get('model')?.toString();
 
 		if (!question) {
 			return fail(400, { error: 'Missing question' });
@@ -51,8 +50,7 @@ export const actions: Actions = {
 				body: JSON.stringify({
 					prompt: question.toString(),
 					deps: deps,
-					message_history: messageHistory,
-					model: model
+					message_history: messageHistory
 				})
 			});
 

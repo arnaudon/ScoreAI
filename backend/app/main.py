@@ -12,10 +12,11 @@ from fastapi.responses import StreamingResponse
 from sqlmodel import Session, select
 
 from app import imslp, users
+import app.agent as agent_module
 from app.agent import Deps, run_agent, run_complete_agent, run_imslp_agent
 from app.db import get_session, init_db
 from app.file_helper import file_helper
-from app.users import get_current_user, get_current_user_from_token
+from app.users import get_admin_user, get_current_user, get_current_user_from_token
 from shared.scores import Score, Scores
 from shared.user import User
 
@@ -57,9 +58,9 @@ def add_score(
 
 
 @app.post("/complete_score", dependencies=[Depends(get_current_user)])
-async def complete_score(score: Score, model: str | None = None):  # pragma: no cover
+async def complete_score(score: Score):  # pragma: no cover
     """Complete a score."""
-    return await run_complete_agent(score, model)
+    return await run_complete_agent(score)
 
 
 @app.delete("/scores/{score_id}")
@@ -105,10 +106,10 @@ def get_scores(
 
 @app.post("/imslp_agent", dependencies=[Depends(get_current_user)])
 async def run_imslp_agent_api(
-    prompt: str = Body(...), message_history: list | None = Body(None), model: str | None = Body(None)
+    prompt: str = Body(...), message_history: list | None = Body(None)
 ):  # pragma: no cover
     """Run the imslp agent."""
-    return await run_imslp_agent(prompt, message_history=message_history, model=model)
+    return await run_imslp_agent(prompt, message_history=message_history)
 
 
 @app.post("/agent")
@@ -117,15 +118,26 @@ async def run_main_agent(
     prompt: str = Body(...),
     deps: str = Body(...),
     message_history: list | None = Body(None),
-    model: str | None = Body(None),
 ):  # pragma: no cover
     """Run the agent."""
     return await run_agent(
         prompt,
         message_history=message_history,
         deps=Deps(user=current_user, scores=Scores(**json.loads(deps))),
-        model=model,
     )
+
+
+@app.get("/admin/model", dependencies=[Depends(get_admin_user)])
+def get_active_model():
+    """Get the currently active global agent model."""
+    return {"model": agent_module.ACTIVE_MODEL}
+
+
+@app.post("/admin/model", dependencies=[Depends(get_admin_user)])
+def set_active_model(model: str = Body(..., embed=True)):
+    """Set the currently active global agent model."""
+    agent_module.ACTIVE_MODEL = model
+    return {"message": "Model updated", "model": model}
 
 
 def get_pdf_user(token: str = "", session: Session = Depends(get_session)):  # pragma: no cover

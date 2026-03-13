@@ -46,15 +46,39 @@ export const load: PageServerLoad = async ({ cookies, fetch }) => {
 			progress = await progressResponse.json();
 		}
 
-		return { users, stats, progress };
+		let activeModel = '';
+		const modelResponse = await fetch(`${BACKEND_URL}/admin/model`, {
+			headers: { Authorization: `Bearer ${token}` }
+		});
+		if (modelResponse.ok) {
+			const resData = await modelResponse.json();
+			activeModel = resData.model;
+		}
+
+		return { users, stats, progress, activeModel };
 	} catch (error) {
 		console.error('Failed to fetch admin data:', error);
 	}
 
-	return { users: [], stats: { total_works: 0, total_composers: 0 }, progress: { status: 'idle', page: 0, total: 0 } };
+	return { users: [], stats: { total_works: 0, total_composers: 0 }, progress: { status: 'idle', page: 0, total: 0 }, activeModel: '' };
 };
 
 export const actions = {
+	set_model: async ({ request, cookies, fetch }) => {
+		const token = cookies.get('access_token');
+		const data = await request.formData();
+		const model = data.get('model')?.toString();
+		if (model) {
+			await fetch(`${BACKEND_URL}/admin/model`, {
+				method: 'POST',
+				headers: {
+					Authorization: `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ model })
+			});
+		}
+	},
 	update: async ({ request, cookies, fetch }) => {
 		const data = await request.formData();
 		const maxPages = data.get('max_pages') || '300';
