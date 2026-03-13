@@ -24,6 +24,13 @@ from shared.user import User
 logger = getLogger(__name__)
 
 
+def validate_prompt_security(prompt: str):
+    """Validate the prompt against common injection attacks."""
+    suspicious_keywords = ["ignore previous", "system prompt", "drop table", "bypass", "forget all instructions"]
+    if any(keyword in prompt.lower() for keyword in suspicious_keywords):
+        raise HTTPException(status_code=400, detail="Invalid input detected.")
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:  # pragma: no cover
     """Placeholder for startup/shutdown events."""
@@ -139,6 +146,8 @@ async def run_imslp_agent_api(
     session: Session = Depends(get_session),
 ):  # pragma: no cover
     """Run the imslp agent."""
+    validate_prompt_security(prompt)
+
     if current_user.credits <= 0:
         raise HTTPException(
             status_code=403,
@@ -173,6 +182,8 @@ async def run_main_agent(
     session: Session = Depends(get_session),
 ):  # pragma: no cover
     """Run the agent."""
+    validate_prompt_security(prompt)
+
     if current_user.credits <= 0:
         raise HTTPException(
             status_code=403,
