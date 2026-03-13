@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { locales, localizeHref, setLocale, languageTag } from '$lib/paraglide/runtime';
+	import { locales, localizeHref, setLocale } from '$lib/paraglide/runtime';
 	import * as m from '$lib/paraglide/messages.js';
 	import '../app.css';
 	import AppSidebar from '$lib/components/Sidebar.svelte';
@@ -40,11 +40,11 @@
 		<footer class="p-4 text-center text-sm text-muted-foreground">
 			<div class="mb-2 flex justify-center">
 				<div class="flex rounded-md border text-xs font-semibold">
-					<button onclick={() => setLanguage('en')} class="px-2 py-1 hover:bg-muted {languageTag() === 'en' ? 'bg-muted' : ''}">
+					<button onclick={() => setLanguage('en')} class="px-2 py-1 hover:bg-muted">
 						EN
 					</button>
 					<div class="w-[1px] bg-border"></div>
-					<button onclick={() => setLanguage('fr')} class="px-2 py-1 hover:bg-muted {languageTag() === 'fr' ? 'bg-muted' : ''}">
+					<button onclick={() => setLanguage('fr')} class="px-2 py-1 hover:bg-muted">
 						FR
 					</button>
 				</div>

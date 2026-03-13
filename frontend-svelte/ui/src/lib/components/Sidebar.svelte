@@ -2,7 +2,7 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import DarkModeToggle from './DarkModeToggle.svelte';
 	import { page } from '$app/state';
-	import { setLocale, languageTag } from '$lib/paraglide/runtime';
+	import { setLocale } from '$lib/paraglide/runtime';
 	import * as m from '$lib/paraglide/messages.js';
 
 	function setLanguage(lang: 'en' | 'fr') {
@@ -74,11 +74,11 @@
 		<div class="flex items-center gap-2">
 			<DarkModeToggle />
 			<div class="flex rounded-md border text-xs font-semibold">
-				<button onclick={() => setLanguage('en')} class="p-2 hover:bg-muted {languageTag() === 'en' ? 'bg-muted' : ''}">
+				<button onclick={() => setLanguage('en')} class="p-2 hover:bg-muted">
 					EN
 				</button>
 				<div class="w-[1px] bg-border"></div>
-				<button onclick={() => setLanguage('fr')} class="p-2 hover:bg-muted {languageTag() === 'fr' ? 'bg-muted' : ''}">
+				<button onclick={() => setLanguage('fr')} class="p-2 hover:bg-muted">
 					FR
 				</button>
 			</div>
