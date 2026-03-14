@@ -17,6 +17,7 @@
 	import { FlexRender, createSvelteTable, renderComponent } from '$lib/components/ui/data-table/index.js';
 	import DataTableSortButton from '../db-viewer/data-table-sort-button.svelte';
 	import * as m from '$lib/paraglide/messages.js';
+	import { languageTag } from '$lib/paraglide/runtime.js';
 
 	let { form, data } = $props();
 	let sheetOpen = $state(false);
@@ -218,7 +219,7 @@
 		</Sheet.Header>
 		{#if selectedScoreDetails}
 			<div class="mt-6 flex flex-col gap-3">
-				{#each Object.entries(selectedScoreDetails).filter(([k]) => !['id', 'user_id', 'pdf_path', 'number_of_plays', 'source', 'imslp_id'].includes(k)).sort(([a], [b]) => {
+				{#each Object.entries(selectedScoreDetails).filter(([k]) => !['id', 'user_id', 'pdf_path', 'number_of_plays', 'source', 'imslp_id', 'short_description_fr', 'long_description_fr'].includes(k)).sort(([a], [b]) => {
 					const order = ['title', 'composer', 'year', 'period', 'instrumentation', 'short_description', 'key', 'genre', 'form', 'style', 'long_description', 'difficulty', 'notable_interpreters', 'notable_interpeters', 'youtube_url'];
 					const idxA = order.indexOf(a);
 					const idxB = order.indexOf(b);
@@ -236,6 +237,8 @@
 								<a href={value as string} target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline">
 									Watch on YouTube
 								</a>
+							{:else if (key === 'short_description' || key === 'long_description') && languageTag() === 'fr'}
+								{selectedScoreDetails[key + '_fr'] || value || '-'}
 							{:else}
 								{value !== null && value !== '' ? value : '-'}
 							{/if}
