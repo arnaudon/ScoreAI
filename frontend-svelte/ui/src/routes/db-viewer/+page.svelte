@@ -472,7 +472,7 @@
 		{#if selectedScore}
 			<div class="mt-6 flex flex-col gap-3">
 				{#each Object.entries(selectedScore).filter(([k]) => !['id', 'user_id', 'pdf_path', 'number_of_plays', 'source', 'imslp_id'].includes(k)).sort(([a], [b]) => {
-					const order = ['title', 'composer', 'year', 'instrumentation', 'short_description', 'key', 'genre', 'form', 'style', 'long_description', 'difficulty', 'notable_interpreters', 'notable_interpeters', 'youtube_url'];
+					const order = ['title', 'composer', 'year', 'period', 'instrumentation', 'short_description', 'key', 'genre', 'form', 'style', 'long_description', 'difficulty', 'notable_interpreters', 'notable_interpeters', 'youtube_url'];
 					const idxA = order.indexOf(a);
 					const idxB = order.indexOf(b);
 					if (idxA !== -1 && idxB !== -1) return idxA - idxB;
@@ -543,7 +543,7 @@
 		{#if agentSelectedScore}
 			<div class="mt-6 flex flex-col gap-3">
 				{#each Object.entries(agentSelectedScore).filter(([k]) => !['id', 'user_id', 'pdf_path', 'number_of_plays', 'source', 'imslp_id', 'score_metadata'].includes(k)).sort(([a], [b]) => {
-					const order = ['title', 'composer', 'year', 'instrumentation', 'short_description', 'key', 'genre', 'form', 'style', 'long_description', 'difficulty', 'notable_interpreters', 'notable_interpeters', 'youtube_url'];
+					const order = ['title', 'composer', 'year', 'period', 'instrumentation', 'short_description', 'key', 'genre', 'form', 'style', 'long_description', 'difficulty', 'notable_interpreters', 'notable_interpeters', 'youtube_url'];
 					const idxA = order.indexOf(a);
 					const idxB = order.indexOf(b);
 					if (idxA !== -1 && idxB !== -1) return idxA - idxB;
