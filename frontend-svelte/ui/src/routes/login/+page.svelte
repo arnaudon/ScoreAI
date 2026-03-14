@@ -13,7 +13,7 @@
 <div class="flex h-full items-center justify-center py-20">
 	<div class="bg-card text-card-foreground w-full max-w-sm rounded-lg border p-8 shadow-card">
 		<div class="mb-6 text-center">
-			<h1 class="text-fancy-title text-3xl font-bold">ScoreAI</h1>
+			<h1 class="text-fancy-title text-3xl font-bold">ScoreGuide</h1>
 			<p class="mt-2 text-muted-foreground">
 				{m.login_description()}
 			</p>

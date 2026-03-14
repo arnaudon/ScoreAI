@@ -12,7 +12,7 @@
 
 <Sidebar.Root>
 	<Sidebar.Header class="p-4 border-b">
-		<h2 class="text-xl font-bold text-foreground">ScoreAI</h2>
+		<h2 class="text-xl font-bold text-foreground">ScoreGuide</h2>
 	</Sidebar.Header>
 	<Sidebar.Content>
 		<Sidebar.Group>

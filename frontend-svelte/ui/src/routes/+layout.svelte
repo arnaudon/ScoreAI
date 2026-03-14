@@ -15,9 +15,9 @@
 </script>
 
 <svelte:head>
-	<title>ScoreAI</title>
+	<title>ScoreGuide</title>
 	<meta name="description" content="Your intelligent music score library. Upload, manage, and discover scores with AI-powered assistance." />
-	<meta property="og:title" content="ScoreAI" />
+	<meta property="og:title" content="ScoreGuide" />
 	<meta property="og:description" content="Your intelligent music score library. Upload, manage, and discover scores with AI-powered assistance." />
 	<meta property="og:type" content="website" />
 </svelte:head>
