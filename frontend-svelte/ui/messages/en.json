@@ -120,5 +120,6 @@
 	"privacy_policy": "Privacy Policy",
 	"clean_history": "Clean history",
 	"ask": "Ask",
-	"agent_placeholder_main": "e.g. Find me piano sonatas by Beethoven"
+	"agent_placeholder_main": "e.g. Find me piano sonatas by Beethoven",
+	"imslp_search_help": "I am here to help you search the IMSLP database."
 }
