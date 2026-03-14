@@ -8,9 +8,9 @@ Create Date: 2024-03-14 00:00:00.000000
 
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
-import sqlmodel
+from alembic import op
+from sqlmodel.sql.sqltypes import AutoString
 
 # revision identifiers, used by Alembic.
 revision: str = "4a2b2b8b97b4"
@@ -22,21 +22,11 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     op.add_column(
         "score",
-        sa.Column(
-            "short_description_fr",
-            sqlmodel.sql.sqltypes.AutoString(),
-            nullable=False,
-            server_default="",
-        ),
+        sa.Column("short_description_fr", AutoString(), nullable=False, server_default=""),
     )
     op.add_column(
         "score",
-        sa.Column(
-            "long_description_fr",
-            sqlmodel.sql.sqltypes.AutoString(),
-            nullable=False,
-            server_default="",
-        ),
+        sa.Column("long_description_fr", AutoString(), nullable=False, server_default=""),
     )
 
 
