@@ -218,7 +218,7 @@
 				</form>
 			</Tabs.Content>
 			<Tabs.Content value="imslp">
-				<div class="flex flex-col h-[500px] w-full">
+				<div class="flex flex-col {imslpAgentHistoryStore.history.length > 0 ? 'h-[500px]' : 'h-auto'} w-full">
 					<AgentChat
 						{form}
 						action="?/ask_agent"
