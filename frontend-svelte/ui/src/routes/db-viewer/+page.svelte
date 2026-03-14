@@ -22,7 +22,7 @@
 	import DataTableSortButton from './data-table-sort-button.svelte';
 	import { imslpAgentHistoryStore } from '$lib/stores/chat.svelte';
 	import * as m from '$lib/paraglide/messages.js';
-	import { languageTag } from '$lib/paraglide/runtime.js';
+	import { page } from '$app/state';
 
 	let { data, form }: PageProps = $props();
 	let selectedScoreId = $state<number | null>(null);
@@ -522,7 +522,7 @@
 								<a href={value} target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline">
 									Watch on YouTube
 								</a>
-							{:else if (key === 'short_description' || key === 'long_description') && languageTag() === 'fr'}
+							{:else if (key === 'short_description' || key === 'long_description') && (page.url.pathname.startsWith('/fr/') || page.url.pathname === '/fr')}
 								{selectedScore[key + '_fr'] || value || '-'}
 							{:else}
 								{value !== null && value !== '' ? value : '-'}
@@ -595,7 +595,7 @@
 								<a href={value as string} target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline">
 									{m.view_on_imslp()}
 								</a>
-							{:else if (key === 'short_description' || key === 'long_description') && languageTag() === 'fr'}
+							{:else if (key === 'short_description' || key === 'long_description') && (page.url.pathname.startsWith('/fr/') || page.url.pathname === '/fr')}
 								{agentSelectedScore[key + '_fr'] || value || '-'}
 							{:else}
 								{value !== null && value !== '' ? value : '-'}
