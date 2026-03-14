@@ -61,7 +61,9 @@ class Score(ScoreBase, table=True):
     user: Optional["User"] = Relationship(back_populates="scores")
 
     short_description: str = Field(default="")
+    short_description_fr: str = Field(default="")
     long_description: str = Field(default="")
+    long_description_fr: str = Field(default="")
     youtube_url: str = Field(default="")
     difficulty: Difficulty = Field(default=Difficulty.moderate)
     notable_interpreters: str = Field(default="")
