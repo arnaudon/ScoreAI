@@ -143,5 +143,6 @@
 	"label_notable_interpreters": "Interprètes notables",
 	"label_youtube_url": "URL YouTube",
 	"label_permlink": "Permalien",
-	"page_of": "Page {page} sur {total}"
+	"page_of": "Page {page} sur {total}",
+	"choose_file": "Choisir un fichier"
 }

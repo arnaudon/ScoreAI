@@ -30,6 +30,8 @@
 	let uploading = $state(false);
 	let recompleting = $state(false);
 	let sheetOpen = $state(false);
+	let manualFiles = $state<any>();
+	let imslpFiles = $state<any>();
 	let selectedScore = $derived(data.scores.find((s: any) => s.id === selectedScoreId));
 
 	let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: 10 });
@@ -221,6 +223,7 @@
 					uploading = true;
 					return async ({ update }) => {
 						uploading = false;
+						manualFiles = undefined;
 						update();
 					};
 				}} class="flex flex-col gap-4 md:flex-row md:items-end">
@@ -234,7 +237,14 @@
 					</div>
 					<div class="flex-1 space-y-2">
 						<label for="file" class="text-sm font-medium leading-none">{m.pdf_file()}</label>
-						<Input id="file" name="file" type="file" accept="application/pdf" required />
+						<div class="relative">
+							<Input id="file" name="file" type="file" accept="application/pdf" required class="sr-only" bind:files={manualFiles} />
+							<label for="file" class="flex h-9 w-full cursor-pointer items-center rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground">
+								<span class="truncate text-muted-foreground">
+									{manualFiles && manualFiles.length > 0 ? manualFiles[0].name : m.choose_file()}
+								</span>
+							</label>
+						</div>
 					</div>
 					<Button type="submit" disabled={uploading}>
 						{uploading ? m.adding() : m.add()}
@@ -605,13 +615,21 @@
 						uploading = false;
 						agentSelectedScore = null;
 						imslpSheetOpen = false;
+						imslpFiles = undefined;
 						update();
 					};
 				}} class="flex flex-col gap-4">
 					<input type="hidden" name="imslp_id" value={agentSelectedScore.id} />
 					<div class="space-y-2">
 						<label for="agent_file_sheet" class="text-sm font-medium leading-none">{m.pdf_file()}</label>
-						<Input id="agent_file_sheet" name="file" type="file" accept="application/pdf" required />
+						<div class="relative">
+							<Input id="agent_file_sheet" name="file" type="file" accept="application/pdf" required class="sr-only" bind:files={imslpFiles} />
+							<label for="agent_file_sheet" class="flex h-9 w-full cursor-pointer items-center rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground">
+								<span class="truncate text-muted-foreground">
+									{imslpFiles && imslpFiles.length > 0 ? imslpFiles[0].name : m.choose_file()}
+								</span>
+							</label>
+						</div>
 					</div>
 					<Button type="submit" disabled={uploading} class="w-full">
 						{uploading ? m.adding() : m.add_score()}
