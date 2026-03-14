@@ -91,10 +91,9 @@
 
 <div class="flex flex-col h-full w-full {store.history.length === 0 && !loading ? 'justify-center' : ''}">
 	<div class="mb-4">
-		<h1 class="text-lg font-bold text-foreground">{title}</h1>
-		{#if store.history.length === 0 && !loading}
-			<p class="text-sm text-muted-foreground mt-1">{m.how_can_i_help()}</p>
-		{/if}
+		<h1 class="text-lg font-bold text-foreground">
+			{title}{#if store.history.length === 0 && !loading} {m.how_can_i_help()}{/if}
+		</h1>
 	</div>
 
 	<div class="overflow-y-auto space-y-4 pr-2 {store.history.length > 0 || loading ? 'mb-4' : ''}" bind:this={scrollContainer}>
