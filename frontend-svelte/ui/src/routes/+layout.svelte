@@ -36,7 +36,7 @@
 				<div class="flex flex-wrap justify-center items-center gap-x-4 gap-y-2">
 					<a href="/privacy" class="hover:underline">{m.privacy_policy()}</a>
 					<a href="/contact" class="hover:underline">{m.contact()}</a>
-					<span>© 2026 Alexis Arnaudon.</span>
+					<span>© 2026 Alexis Arnaudon</span>
 				</div>
 			</footer>
 		</Sidebar.Inset>
@@ -61,7 +61,7 @@
 			<div class="flex flex-wrap justify-center items-center gap-x-4 gap-y-2">
 				<a href="/privacy" class="hover:underline">{m.privacy_policy()}</a>
 				<a href="/contact" class="hover:underline">{m.contact()}</a>
-				<span>© 2026 Alexis Arnaudon.</span>
+				<span>© 2026 Alexis Arnaudon</span>
 			</div>
 		</footer>
 	</div>
