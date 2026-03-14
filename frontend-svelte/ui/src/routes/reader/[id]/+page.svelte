@@ -109,7 +109,7 @@
 								<a href={value as string} target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline">
 									{m.watch_on_youtube()}
 								</a>
-							{:else if (key === 'short_description' || key === 'long_description') && (page.url.pathname.startsWith('/fr/') || page.url.pathname === '/fr')}
+							{:else if (key === 'short_description' || key === 'long_description') && !m.label_title().toLowerCase().includes('title')}
 								{data.score[key + '_fr'] || value || '-'}
 							{:else}
 								{value !== null && value !== '' ? value : '-'}
