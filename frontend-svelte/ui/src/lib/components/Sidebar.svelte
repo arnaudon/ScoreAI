@@ -11,7 +11,7 @@
 </script>
 
 <Sidebar.Root>
-	<Sidebar.Header class="p-4 border-b">
+	<Sidebar.Header class="p-4">
 		<h2 class="text-xl font-bold text-foreground">ScoreGuide</h2>
 	</Sidebar.Header>
 	<Sidebar.Content>
