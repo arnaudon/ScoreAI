@@ -82,9 +82,9 @@
 		text-shadow: var(--text-shadow);
 	}
 
-	body::before {
+	.main-wrapper::before {
 		content: '';
-		position: fixed;
+		position: absolute;
 		inset: 1rem;
 		border: 1px solid hsl(var(--foreground) / 0.1);
 		pointer-events: none;

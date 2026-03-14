@@ -27,7 +27,7 @@
 {#if data.loggedIn}
 	<Sidebar.Provider style="--sidebar-width: 10rem;">
 		<AppSidebar />
-		<Sidebar.Inset class="flex w-full flex-1 flex-col bg-background text-foreground">
+		<Sidebar.Inset class="flex w-full flex-1 flex-col bg-background text-foreground main-wrapper">
 			<main class="w-full flex-1 overflow-y-auto p-8">
 				<Sidebar.Trigger class="mb-4" />
 				{@render children()}
@@ -42,7 +42,7 @@
 		</Sidebar.Inset>
 	</Sidebar.Provider>
 {:else}
-	<div class="flex min-h-screen flex-col bg-background text-foreground">
+	<div class="flex min-h-screen flex-col bg-background text-foreground main-wrapper relative">
 		<main class="w-full flex-1">
 			{@render children()}
 		</main>
