@@ -121,6 +121,13 @@
 </script>
 
 <div class="flex flex-col h-[calc(100vh-12rem)] max-w-4xl mx-auto w-full">
+	{#if data.hasScores === false}
+		<div class="mb-4 rounded-md border border-dashed border-border bg-muted/50 p-4 text-center text-sm text-muted-foreground">
+			Your score database is empty. 
+			<a href="/db-viewer" class="font-medium text-primary hover:underline">Click here to add some scores</a> 
+			before asking the agent!
+		</div>
+	{/if}
 	<AgentChat
 		{form}
 		action="?/ask"
@@ -132,13 +139,6 @@
 		store={mainAgentHistoryStore}
 	>
 		{#snippet children()}
-			{#if data.hasScores === false}
-				<div class="mb-4 rounded-md border border-dashed border-border bg-muted/50 p-4 text-center text-sm text-muted-foreground">
-					Your score database is empty. 
-					<a href="/db-viewer" class="font-medium text-primary hover:underline">Click here to add some scores</a> 
-					before asking the agent!
-				</div>
-			{/if}
 		{/snippet}
 
 		{#snippet resultSnippet({ msg, isLast })}
