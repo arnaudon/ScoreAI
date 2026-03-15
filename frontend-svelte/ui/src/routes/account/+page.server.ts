@@ -1,6 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { env } from '$env/dynamic/private';
+import { dev } from '$app/environment';
 
 const BACKEND_URL = env.BACKEND_URL || 'http://localhost:8000';
 
@@ -101,7 +102,7 @@ export const actions: Actions = {
 			return fail(res.status, { form: 'delete', error: 'Failed to delete account' });
 		}
 
-		cookies.delete('access_token', { path: '/' });
+		cookies.delete('access_token', { path: '/', httpOnly: true, secure: !dev, sameSite: 'lax' });
 		redirect(303, '/login');
 	}
 };

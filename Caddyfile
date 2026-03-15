@@ -1,0 +1,17 @@
+# To enable HTTPS, replace the ports below with your actual domain names.
+# Example:
+# yourdomain.com {
+#     reverse_proxy frontend:3000
+# }
+
+:80 {
+	reverse_proxy frontend:3000
+}
+
+:8000 {
+	reverse_proxy backend:8000
+}
+
+:5050 {
+	reverse_proxy pgadmin:80
+}

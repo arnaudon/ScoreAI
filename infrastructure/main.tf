@@ -57,6 +57,17 @@ resource "openstack_networking_secgroup_rule_v2" "my_sg_ssh_http" {
   security_group_id = openstack_networking_secgroup_v2.my_security_group.id
 }
 
+resource "openstack_networking_secgroup_rule_v2" "pgadmin" {
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 5050 
+  port_range_max    = 5050 
+  remote_ip_prefix  = "0.0.0.0/0"
+  security_group_id = openstack_networking_secgroup_v2.my_security_group.id
+}
+
+
 resource "openstack_networking_secgroup_rule_v2" "backend" {
   direction         = "ingress"
   ethertype         = "IPv4"

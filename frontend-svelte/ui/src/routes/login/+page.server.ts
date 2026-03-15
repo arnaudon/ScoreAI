@@ -45,7 +45,7 @@ export const actions: Actions = {
 			maxAge
 		});
 
-		redirect(303, '/success');
+		redirect(303, '/home');
 	},
 
 	register: async ({ request, cookies, fetch }) => {
@@ -113,7 +113,7 @@ export const actions: Actions = {
 				sameSite: 'lax',
 				maxAge: 60 * 60 * 24 // 1 day
 			});
-			redirect(303, '/success');
+			redirect(303, '/home');
 		} else {
 			return { username: username.toString(), success: true, message: 'Registration successful! Please log in.' };
 		}

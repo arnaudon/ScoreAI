@@ -34,10 +34,6 @@ jobs:
         # Run your pytest suite inside the running container
         run: docker compose exec -T backend pytest backend
 
-      - name: Run streamlit Frontend Tests
-        # Run your pytest suite inside the running container
-        run: docker compose exec -T frontend-streamlit pytest frontend
-
       - name: Check Container Logs (If failed)
         if: failure()
         run: docker compose logs

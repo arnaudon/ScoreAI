@@ -5,7 +5,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 	const token = cookies.get('access_token');
 	
 	if (token) {
-		redirect(303, '/success');
+		redirect(303, '/home');
 	} else {
 		redirect(303, '/login');
 	}

@@ -4,6 +4,7 @@
 	import { page } from '$app/state';
 	import { setLocale } from '$lib/paraglide/runtime';
 	import * as m from '$lib/paraglide/messages.js';
+	import { enhance } from '$app/forms';
 
 	function setLanguage(lang: 'en' | 'fr') {
 		setLocale(lang);
@@ -65,7 +66,7 @@
 			<Sidebar.MenuItem>
 				<Sidebar.MenuButton class="justify-center text-center">
 					{#snippet child({ props })}
-						<form method="POST" action="/logout" class="w-full">
+						<form method="POST" action="/logout" class="w-full" use:enhance>
 							<button type="submit" {...props}>{m.nav_logout()}</button>
 						</form>
 					{/snippet}

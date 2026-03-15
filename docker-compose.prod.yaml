@@ -1,35 +1,56 @@
 services:
   db:
     restart: always
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    depends_on:
+      - db
+
+  db-backup:
+    image: schickling/postgres-backup-s3
+    restart: always
+    environment:
+      - SCHEDULE=@weekly
+      - S3_PREFIX=database-backups
+    env_file: .env
+    depends_on:
+      - db
+
+  caddy:
+    image: caddy:2-alpine
+    restart: always
     ports:
-      - "5432:5432"
+      - "80:80"
+      - "443:443"
+      - "8000:8000"
+      - "5050:5050"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+      - backend
+      - pgadmin
 
   backend:
     restart: always
-    ports:
-      - '8000:8000'
-
-  frontend-streamlit:
-    restart: always
-    ports:
-      - '8501:8501' # Streamlit default port
-    environment:
-      - API_URL=http://backend:8000
-      - PUBLIC_API_URL=http://188.213.128.236:8000
-    env_file: .env
-    depends_on:
-      - backend
 
   frontend:
     restart: always
-    ports:
-      - '80:3000'
     environment:
       - BACKEND_URL=http://backend:8000
-      - PUBLIC_BACKEND_URL=http://188.213.128.236:8000
+      - PUBLIC_BACKEND_URL=http://backend:8000
       - BODY_SIZE_LIMIT=Infinity
     env_file: .env
 
 
 volumes:
   postgres_data:
+  caddy_data:
+  caddy_config:
