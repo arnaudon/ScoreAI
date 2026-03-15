@@ -123,9 +123,9 @@
 <div class="flex flex-col h-[calc(100vh-12rem)] max-w-4xl mx-auto w-full">
 	{#if data.hasScores === false}
 		<div class="mb-4 rounded-md border border-dashed border-border bg-muted/50 p-4 text-center text-sm text-muted-foreground">
-			Your score database is empty. 
-			<a href="/db-viewer" class="font-medium text-primary hover:underline">Click here to add some scores</a> 
-			before asking the agent!
+			{m.empty_db_p1()} 
+			<a href="/db-viewer" class="font-medium text-primary hover:underline">{m.empty_db_link()}</a> 
+			{m.empty_db_p2()}
 		</div>
 	{/if}
 	<AgentChat
