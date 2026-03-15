@@ -1,6 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { env } from '$env/dynamic/private';
+import { dev } from '$app/environment';
 
 const BACKEND_URL = env.BACKEND_URL || 'http://localhost:8000';
 
@@ -15,7 +16,7 @@ export const load: PageServerLoad = async ({ cookies, fetch }) => {
 	});
 
 	if (!res.ok) {
-		cookies.delete('access_token', { path: '/' });
+		cookies.delete('access_token', { path: '/', httpOnly: true, secure: !dev, sameSite: 'lax' });
 		redirect(303, '/login');
 	}
 
