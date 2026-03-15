@@ -306,6 +306,10 @@ async def run_imslp_complete_agent(entry_json: str, model: str | None = None) ->
             res = await agent.run(prompt)
             return res.output
         except Exception as e:  # pylint: disable=broad-exception-caught
+            # Do not retry client errors (4xx)
+            if isinstance(e, ModelHTTPError) and e.status_code < 500:
+                raise e
+
             if attempt < max_retries - 1:
                 wait_time = 2**attempt * 5  # Exponential backoff
                 logger.warning(
