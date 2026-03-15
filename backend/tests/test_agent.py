@@ -7,7 +7,7 @@ from pydantic_ai.exceptions import ModelHTTPError
 
 from app import agent
 from shared.responses import FullResponse, ImslpResponse, Response
-from shared.scores import Difficulty, Score, Scores
+from shared.scores import Difficulty, Score, ScoreBase, Scores
 from shared.user import User
 
 
@@ -265,3 +265,66 @@ async def test_run_agent_history_parsing(monkeypatch):
     mock_agent_run.assert_called_with(
         "<user_request>\nprompt\n</user_request>", message_history=None, deps=deps
     )
+
+
+@pytest.mark.asyncio
+async def test_run_imslp_complete_agent_success(monkeypatch):
+    """Test run_imslp_complete_agent successfully completes an entry."""
+    score_base = ScoreBase(title="test", composer="test")
+    mock_result = MagicMock()
+    mock_result.output = score_base
+    mock_agent_run = AsyncMock(return_value=mock_result)
+    mock_agent_instance = MagicMock()
+    mock_agent_instance.run = mock_agent_run
+    mock_agent_class = MagicMock(return_value=mock_agent_instance)
+    monkeypatch.setattr("app.agent.Agent", mock_agent_class)
+
+    result = await agent.run_imslp_complete_agent('{"title": "test"}')
+    assert result == score_base
+
+
+@pytest.mark.asyncio
+async def test_run_imslp_complete_agent_http_error_retry(monkeypatch):
+    """Test run_imslp_complete_agent retries on 503 error."""
+    score_base = ScoreBase(title="test", composer="test")
+    mock_result = MagicMock()
+    mock_result.output = score_base
+    mock_agent_run = AsyncMock(side_effect=[ModelHTTPError(503, "error"), mock_result])
+    mock_agent_instance = MagicMock()
+    mock_agent_instance.run = mock_agent_run
+    mock_agent_class = MagicMock(return_value=mock_agent_instance)
+    monkeypatch.setattr("app.agent.Agent", mock_agent_class)
+    monkeypatch.setattr("app.agent.time.sleep", lambda x: None)
+
+    result = await agent.run_imslp_complete_agent('{"title": "test"}')
+    assert result == score_base
+    assert mock_agent_run.call_count == 2
+
+
+@pytest.mark.asyncio
+async def test_run_imslp_complete_agent_http_error_no_retry(monkeypatch):
+    """Test run_imslp_complete_agent does not retry on 4xx error."""
+    mock_agent_run = AsyncMock(side_effect=ModelHTTPError(400, "error"))
+    mock_agent_instance = MagicMock()
+    mock_agent_instance.run = mock_agent_run
+    mock_agent_class = MagicMock(return_value=mock_agent_instance)
+    monkeypatch.setattr("app.agent.Agent", mock_agent_class)
+
+    with pytest.raises(ModelHTTPError):
+        await agent.run_imslp_complete_agent('{"title": "test"}')
+    assert mock_agent_run.call_count == 1
+
+
+@pytest.mark.asyncio
+async def test_run_imslp_complete_agent_generic_exception(monkeypatch):
+    """Test run_imslp_complete_agent raises after max retries."""
+    mock_agent_run = AsyncMock(side_effect=Exception("error"))
+    mock_agent_instance = MagicMock()
+    mock_agent_instance.run = mock_agent_run
+    mock_agent_class = MagicMock(return_value=mock_agent_instance)
+    monkeypatch.setattr("app.agent.Agent", mock_agent_class)
+    monkeypatch.setattr("app.agent.time.sleep", lambda x: None)
+
+    with pytest.raises(Exception):
+        await agent.run_imslp_complete_agent('{"title": "test"}')
+    assert mock_agent_run.call_count == 5

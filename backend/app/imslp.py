@@ -4,21 +4,18 @@ import asyncio
 import json
 import logging
 import os
-import time
 
 import httpx
 import requests
 from bs4 import BeautifulSoup
 from fastapi import APIRouter, BackgroundTasks, Depends
-from pydantic_ai import Agent
-from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
-from pydantic_ai.exceptions import ModelHTTPError, UnexpectedModelBehavior
 from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import Session, func, select, text
 
+from app.agent import run_imslp_complete_agent
 from app.db import engine, get_session
 from app.users import get_admin_user
-from shared.scores import IMSLP, ScoreBase
+from shared.scores import IMSLP
 from shared.settings import Setting
 
 logger = logging.getLogger(__name__)
@@ -94,42 +91,15 @@ async def get_page(start):
 async def fix_entry(entry, session):
     """Fix missing values in the entry using an agent."""
 
-    setting = session.get(Setting, "model_complete")
+    setting = session.get(Setting, "model_imslp_complete")
     model = setting.value if setting else os.getenv("MODEL", "test")
 
-    agent = Agent(
-        model,
-        output_type=ScoreBase,
-        system_prompt=""" Fix missing values.""",
-        tools=[duckduckgo_search_tool()],
-    )
-    prompt = f"""Find the information about music piece {entry.model_dump_json()},
-    use score_metadata or internet search if the information is missing."""
-
-    max_retries = 5
-    for attempt in range(max_retries):
-        try:
-            res = await agent.run(prompt)
-            for key, value in res.output.model_dump().items():
-                setattr(entry, key, value)
-            break
-        except (ModelHTTPError, UnexpectedModelBehavior) as e:
-            # Do not retry client errors (4xx)
-            if isinstance(e, ModelHTTPError) and e.status_code < 500:
-                raise e
-
-            if attempt < max_retries - 1:
-                wait_time = 2**attempt * 5  # Exponential backoff
-                logger.warning(
-                    "Model error %s , retrying in %s s (attempt %s / %s)",
-                    e,
-                    wait_time,
-                    attempt + 1,
-                    max_retries,
-                )
-                time.sleep(wait_time)
-            else:
-                raise e
+    try:
+        output = await run_imslp_complete_agent(entry.model_dump_json(), model)
+        for key, value in output.model_dump().items():
+            setattr(entry, key, value)
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        logger.error("Failed to fix entry: %s", e)
 
 
 async def add_entry(i, item, session, overwrite=False):

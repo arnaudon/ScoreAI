@@ -4,7 +4,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
-from pydantic_ai.exceptions import ModelHTTPError, UnexpectedModelBehavior
 from sqlmodel import Session, select
 
 from app import db
@@ -69,8 +68,8 @@ def mock_requests_session():
 
 @pytest.fixture(name="mock_agent")
 def mock_agent_fixture():
-    """Mock Agent."""
-    with patch("app.imslp.Agent") as mock:
+    """Mock run_imslp_complete_agent."""
+    with patch("app.imslp.run_imslp_complete_agent", new_callable=AsyncMock) as mock:
         yield mock
 
 
@@ -175,10 +174,7 @@ async def test_get_page(mock_httpx_get):  # pylint: disable=redefined-outer-name
 @pytest.mark.asyncio
 async def test_fix_entry(mock_agent, session):  # pylint: disable=redefined-outer-name
     """Test fixing entry with agent."""
-    mock_agent_instance = mock_agent.return_value
-    mock_run_result = MagicMock()
-    mock_run_result.output = ScoreBase(title="Fixed Title", composer="Fixed Composer")
-    mock_agent_instance.run = AsyncMock(return_value=mock_run_result)
+    mock_agent.return_value = ScoreBase(title="Fixed Title", composer="Fixed Composer")
 
     entry = IMSLP(title="Old Title", permlink="http://example.com", composer="Old Composer")
     await fix_entry(entry, session)
@@ -188,55 +184,15 @@ async def test_fix_entry(mock_agent, session):  # pylint: disable=redefined-oute
 
 
 @pytest.mark.asyncio
-async def test_fix_entry_retry_on_http_error(mock_agent, session):
-    """Test fix_entry retries on ModelHTTPError 503."""
-    mock_agent_instance = mock_agent.return_value
-    mock_agent_instance.run = AsyncMock()
-    mock_run_result = MagicMock()
-    mock_run_result.output = ScoreBase(title="Fixed Title", composer="Fixed Composer")
-    mock_agent_instance.run.side_effect = [
-        ModelHTTPError(model_name="test", status_code=503),
-        mock_run_result,
-    ]
+async def test_fix_entry_exception(mock_agent, session):
+    """Test fixing entry handles exceptions gracefully."""
+    mock_agent.side_effect = Exception("Agent error")
 
     entry = IMSLP(title="Old Title", permlink="http://example.com", composer="Old Composer")
-    with patch("app.imslp.time.sleep"):
-        await fix_entry(entry, session)
+    await fix_entry(entry, session)
 
-    assert entry.title == "Fixed Title"
-    assert mock_agent_instance.run.call_count == 2
-
-
-@pytest.mark.asyncio
-async def test_fix_entry_retry_on_unexpected_behavior(mock_agent, session):
-    """Test fix_entry retries on UnexpectedModelBehavior."""
-    mock_agent_instance = mock_agent.return_value
-    mock_agent_instance.run = AsyncMock()
-    mock_run_result = MagicMock()
-    mock_run_result.output = ScoreBase(title="Fixed Title", composer="Fixed Composer")
-    mock_agent_instance.run.side_effect = [
-        UnexpectedModelBehavior("Unexpected behavior"),
-        mock_run_result,
-    ]
-
-    entry = IMSLP(title="Old Title", permlink="http://example.com", composer="Old Composer")
-    with patch("app.imslp.time.sleep"):
-        await fix_entry(entry, session)
-
-    assert entry.title == "Fixed Title"
-    assert mock_agent_instance.run.call_count == 2
-
-
-@pytest.mark.asyncio
-async def test_fix_entry_raises_error(mock_agent, session):
-    """Test fix_entry raises non-retryable error."""
-    mock_agent_instance = mock_agent.return_value
-    mock_agent_instance.run.side_effect = ModelHTTPError(model_name="test", status_code=400)
-
-    entry = IMSLP(title="Old Title", permlink="http://example.com", composer="Old Composer")
-    with pytest.raises(ModelHTTPError):
-        await fix_entry(entry, session)
-    assert mock_agent_instance.run.call_count == 1
+    assert entry.title == "Old Title"
+    assert mock_agent.call_count == 1
 
 
 @pytest.mark.asyncio
@@ -245,10 +201,7 @@ async def test_add_entry(
 ):  # pylint: disable=redefined-outer-name
     """Test adding entry."""
     # Mock fix_entry dependencies
-    mock_agent_instance = mock_agent.return_value
-    mock_run_result = MagicMock()
-    mock_run_result.output = ScoreBase(title="Fixed Title", composer="Fixed Composer")
-    mock_agent_instance.run = AsyncMock(return_value=mock_run_result)
+    mock_agent.return_value = ScoreBase(title="Fixed Title", composer="Fixed Composer")
 
     # Mock get_metadata dependencies
     html = """
@@ -304,10 +257,7 @@ async def test_get_works(
 ):  # pylint: disable=redefined-outer-name
     """Test getting works."""
     # Mock fix_entry dependencies
-    mock_agent_instance = mock_agent.return_value
-    mock_run_result = MagicMock()
-    mock_run_result.output = ScoreBase(title="Fixed Title", composer="Fixed Composer")
-    mock_agent_instance.run = AsyncMock(return_value=mock_run_result)
+    mock_agent.return_value = ScoreBase(title="Fixed Title", composer="Fixed Composer")
 
     # Mock get_page responses
     # First call returns data, second call (next page) returns empty

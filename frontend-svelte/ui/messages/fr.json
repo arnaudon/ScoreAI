@@ -152,5 +152,8 @@
 	"privacy_p2": "Nous ne demandons des informations personnelles que lorsque nous en avons réellement besoin pour vous fournir un service. Nous les collectons par des moyens justes et légaux, avec votre connaissance et votre consentement.",
 	"privacy_p3": "Nous ne partageons aucune information d'identification personnelle publiquement ou avec des tiers, sauf lorsque la loi l'exige.",
 	"privacy_p4": "Vous êtes libre de refuser notre demande d'informations personnelles, en comprenant que nous pourrions être incapables de vous fournir certains des services souhaités.",
-	"privacy_p5": "Votre utilisation continue de notre site web sera considérée comme une acceptation de nos pratiques en matière de confidentialité et d'informations personnelles. Si vous avez des questions sur la manière dont nous traitons les données des utilisateurs et les informations personnelles, n'hésitez pas à nous contacter."
+	"privacy_p5": "Votre utilisation continue de notre site web sera considérée comme une acceptation de nos pratiques en matière de confidentialité et d'informations personnelles. Si vous avez des questions sur la manière dont nous traitons les données des utilisateurs et les informations personnelles, n'hésitez pas à nous contacter.",
+	"empty_db_p1": "Votre base de données de partitions est vide.",
+	"empty_db_link": "Cliquez ici pour ajouter des partitions",
+	"empty_db_p2": "avant de demander à l'agent !"
 }

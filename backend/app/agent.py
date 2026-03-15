@@ -1,7 +1,9 @@
 """LLM agent module."""
 
+import logging
 import os
 import random
+import time
 
 from dotenv import load_dotenv
 from pydantic import BaseModel, TypeAdapter
@@ -12,7 +14,7 @@ from pydantic_ai.mcp import MCPServerSSE
 from pydantic_ai.messages import ModelMessage
 
 from shared.responses import FullResponse, ImslpFullResponse, ImslpResponse, Response
-from shared.scores import Difficulty, Score, Scores
+from shared.scores import Difficulty, Score, ScoreBase, Scores
 from shared.user import User
 
 if os.getenv("USE_LOGFIRE"):
@@ -22,6 +24,8 @@ if os.getenv("USE_LOGFIRE"):
     logfire.instrument_pydantic_ai()
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 postgres_server = MCPServerSSE("http://mcp-postgres:8001/sse")
 
@@ -281,3 +285,41 @@ async def run_complete_agent(score: Score, model: str | None = None):
     except Exception:  # pylint: disable=broad-exception-caught
         response = score
     return response
+
+
+async def run_imslp_complete_agent(entry_json: str, model: str | None = None) -> ScoreBase:
+    """
+    Run an agent to fix missing values in an IMSLP entry.
+    """
+    agent = Agent(
+        model or os.getenv("MODEL", "test"),
+        output_type=ScoreBase,
+        system_prompt=""" Fix missing values.""",
+        tools=[duckduckgo_search_tool()],
+    )
+    prompt = f"""Find the information about music piece {entry_json},
+    use score_metadata or internet search if the information is missing."""
+
+    max_retries = 5
+    for attempt in range(max_retries):
+        try:
+            res = await agent.run(prompt)
+            return res.output
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            # Do not retry client errors (4xx)
+            if isinstance(e, ModelHTTPError) and e.status_code < 500:  # pylint: disable=no-member
+                raise e
+
+            if attempt < max_retries - 1:
+                wait_time = 2**attempt * 5  # Exponential backoff
+                logger.warning(
+                    "Error %s , retrying in %s s (attempt %s / %s)",
+                    e,
+                    wait_time,
+                    attempt + 1,
+                    max_retries,
+                )
+                time.sleep(wait_time)
+            else:
+                logger.error("Failed to fix entry after %s attempts: %s", max_retries, e)
+                raise e

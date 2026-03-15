@@ -152,5 +152,8 @@
 	"privacy_p2": "We only ask for personal information when we truly need it to provide a service to you. We collect it by fair and lawful means, with your knowledge and consent.",
 	"privacy_p3": "We don't share any personally identifying information publicly or with third-parties, except when required to by law.",
 	"privacy_p4": "You are free to refuse our request for your personal information, with the understanding that we may be unable to provide you with some of your desired services.",
-	"privacy_p5": "Your continued use of our website will be regarded as acceptance of our practices around privacy and personal information. If you have any questions about how we handle user data and personal information, feel free to contact us."
+	"privacy_p5": "Your continued use of our website will be regarded as acceptance of our practices around privacy and personal information. If you have any questions about how we handle user data and personal information, feel free to contact us.",
+	"empty_db_p1": "Your score database is empty.",
+	"empty_db_link": "Click here to add some scores",
+	"empty_db_p2": "before asking the agent!"
 }

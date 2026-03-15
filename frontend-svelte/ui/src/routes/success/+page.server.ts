@@ -20,7 +20,21 @@ export const load: PageServerLoad = async ({ cookies, fetch }) => {
 	}
 
 	const user = await res.json();
-	return { user };
+
+	let hasScores = false;
+	try {
+		const scoresRes = await fetch(`${BACKEND_URL}/scores`, {
+			headers: { Authorization: `Bearer ${token}` }
+		});
+		if (scoresRes.ok) {
+			const scores = await scoresRes.json();
+			hasScores = Array.isArray(scores) && scores.length > 0;
+		}
+	} catch (e) {
+		console.error('Failed to fetch scores check', e);
+	}
+
+	return { user, hasScores };
 };
 
 export const actions: Actions = {
