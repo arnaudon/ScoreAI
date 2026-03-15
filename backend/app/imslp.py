@@ -10,10 +10,9 @@ import httpx
 import requests
 from bs4 import BeautifulSoup
 from fastapi import APIRouter, BackgroundTasks, Depends
-from pydantic_ai import Agent
-from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
-from pydantic_ai.exceptions import ModelHTTPError, UnexpectedModelBehavior
 from sqlalchemy.dialects.postgresql import insert
+
+from app.agent import run_imslp_complete_agent
 from sqlmodel import Session, func, select, text
 
 from app.db import engine, get_session
