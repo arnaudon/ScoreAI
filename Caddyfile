@@ -15,6 +15,6 @@
 	reverse_proxy backend:8000
 }
 
-:8501 {
-	reverse_proxy frontend-streamlit:8501
+:5050 {
+	reverse_proxy pgadmin:80
 }
