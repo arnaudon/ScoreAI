@@ -21,7 +21,7 @@ jobs:
           script: |
             sudo apt-get update
             sudo apt-get -y upgrade
-            cd /home/debian/ScoreAI
+            cd /home/debian/ScoreGuide
             git pull origin main
             echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
             echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" > .env
