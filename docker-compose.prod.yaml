@@ -2,6 +2,20 @@ services:
   db:
     restart: always
 
+  pgbouncer:
+    image: edoburu/pgbouncer
+    restart: always
+    environment:
+      - DB_HOST=db
+      - DB_USER=${POSTGRES_USER:-postgres}
+      - DB_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - DB_NAME=${POSTGRES_DB:-postgres}
+      - POOL_MODE=transaction
+      - MAX_CLIENT_CONN=1000
+      - DEFAULT_POOL_SIZE=20
+    depends_on:
+      - db
+
   pgadmin:
     image: dpage/pgadmin4
     restart: always
@@ -40,6 +54,10 @@ services:
 
   backend:
     restart: always
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@pgbouncer:5432/${POSTGRES_DB:-postgres}
+    depends_on:
+      - pgbouncer
 
   frontend:
     restart: always

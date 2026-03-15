@@ -3,6 +3,7 @@
 import os
 
 from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.pool import NullPool
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -19,10 +20,7 @@ def init_db():  # pragma: no cover
 engine = create_engine(
     DATABASE_URL,
     echo=False,
-    pool_size=20,
-    max_overflow=20,
-    pool_recycle=3600,
-    pool_timeout=30,
+    poolclass=NullPool,
 )
 
 
@@ -35,10 +33,7 @@ def get_session():
 async_engine = create_async_engine(
     ASYNC_DATABASE_URL,
     echo=False,
-    pool_size=20,
-    max_overflow=20,
-    pool_recycle=3600,
-    pool_timeout=30,
+    poolclass=NullPool,
 )
 
 
