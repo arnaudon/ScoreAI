@@ -46,13 +46,13 @@ export const load: PageServerLoad = async ({ cookies, fetch }) => {
 			progress = await progressResponse.json();
 		}
 
-		let activeModels = { main: '', imslp: '', complete: '' };
+		let activeModels = { main: '', imslp: '', complete: '', imslp_complete: '' };
 		const modelResponse = await fetch(`${BACKEND_URL}/admin/model`, {
 			headers: { Authorization: `Bearer ${token}` }
 		});
 		if (modelResponse.ok) {
 			const resData = await modelResponse.json();
-			activeModels = resData.models || { main: '', imslp: '', complete: '' };
+			activeModels = resData.models || { main: '', imslp: '', complete: '', imslp_complete: '' };
 		}
 
 		return { users, stats, progress, activeModels };
@@ -60,7 +60,7 @@ export const load: PageServerLoad = async ({ cookies, fetch }) => {
 		console.error('Failed to fetch admin data:', error);
 	}
 
-	return { users: [], stats: { total_works: 0, total_composers: 0 }, progress: { status: 'idle', page: 0, total: 0 }, activeModels: { main: '', imslp: '', complete: '' } };
+	return { users: [], stats: { total_works: 0, total_composers: 0 }, progress: { status: 'idle', page: 0, total: 0 }, activeModels: { main: '', imslp: '', complete: '', imslp_complete: '' } };
 };
 
 export const actions = {
@@ -115,7 +115,8 @@ export const actions = {
 		const models = {
 			main: data.get('model_main')?.toString() || '',
 			imslp: data.get('model_imslp')?.toString() || '',
-			complete: data.get('model_complete')?.toString() || ''
+			complete: data.get('model_complete')?.toString() || '',
+			imslp_complete: data.get('model_imslp_complete')?.toString() || ''
 		};
 		await fetch(`${BACKEND_URL}/admin/model`, {
 			method: 'POST',
