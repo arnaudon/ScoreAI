@@ -148,8 +148,8 @@ provider "aws" {
 }
 
 # Create the Bucket
-resource "aws_s3_bucket" "scoreai" {
-  bucket = "scoreai"
+resource "aws_s3_bucket" "scoreguide" {
+  bucket = "scoreguide"
 }
 
 # Optional: Set Bucket to Private
