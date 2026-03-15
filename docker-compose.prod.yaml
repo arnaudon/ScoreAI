@@ -4,6 +4,17 @@ services:
     ports:
       - "5432:5432"
 
+  db-backup:
+    image: schickling/postgres-backup-s3
+    restart: always
+    environment:
+      - SCHEDULE=@daily
+      - POSTGRES_HOST=db
+      - S3_PREFIX=database-backups
+    env_file: .env
+    depends_on:
+      - db
+
   backend:
     restart: always
     ports:
