@@ -91,7 +91,7 @@ async def get_page(start):
 async def fix_entry(entry, session):
     """Fix missing values in the entry using an agent."""
 
-    setting = session.get(Setting, "model_imslp_complete")
+    setting = await asyncio.to_thread(session.get, Setting, "model_imslp_complete")
     model = setting.value if setting else os.getenv("MODEL", "test")
 
     try:
