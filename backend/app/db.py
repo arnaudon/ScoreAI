@@ -8,7 +8,11 @@ from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///database/app.db")
-ASYNC_DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://").replace("postgres://", "postgresql+asyncpg://").replace("sqlite://", "sqlite+aiosqlite://")
+ASYNC_DATABASE_URL = (
+    DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
+    .replace("postgres://", "postgresql+asyncpg://")
+    .replace("sqlite://", "sqlite+aiosqlite://")
+)
 
 
 def init_db():  # pragma: no cover

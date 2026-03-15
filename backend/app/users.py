@@ -98,7 +98,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 @router.post("/token")
 @limiter.limit("10/minute")
 def login_for_access_token(
-    request: Request,
+    request: Request,  # pylint: disable=unused-argument
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: Session = Depends(get_session),
 ) -> Token:
@@ -155,7 +155,11 @@ def get_admin_user(user: User = Depends(get_current_user)):
 
 @router.post("/users")
 @limiter.limit("5/minute")
-def add_user(request: Request, user: User, session: Session = Depends(get_session)):
+def add_user(
+    request: Request,  # pylint: disable=unused-argument
+    user: User,
+    session: Session = Depends(get_session),
+):
     """Add a user to the db."""
     hashed_password = get_password_hash(user.password)
     user.password = hashed_password
@@ -166,9 +170,7 @@ def add_user(request: Request, user: User, session: Session = Depends(get_sessio
 
 
 @router.get("/users")
-def get_users(
-    _: Annotated[User, Depends(get_admin_user)], session: Session = Depends(get_session)
-):
+def get_users(_: Annotated[User, Depends(get_admin_user)], session: Session = Depends(get_session)):
     """Get all users from the db."""
     return session.exec(select(User)).all()
 
