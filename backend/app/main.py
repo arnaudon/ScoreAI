@@ -7,17 +7,21 @@ from contextlib import asynccontextmanager
 from logging import getLogger
 from typing import Annotated, AsyncGenerator
 
-from fastapi import Body, Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi import Body, Depends, FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from sqlmodel import Session, select
 
 from app import imslp, users
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from sqlmodel.ext.asyncio.session import AsyncSession
+
 from app.agent import Deps, run_agent, run_complete_agent, run_imslp_agent
 from app.db import get_async_session, get_session, init_db
 from app.file_helper import file_helper
+from app.rate_limit import limiter
 from app.users import get_admin_user, get_current_user, get_current_user_from_token
-from sqlmodel.ext.asyncio.session import AsyncSession
 from shared.scores import Score, Scores
 from shared.settings import Setting
 from shared.user import User
@@ -46,6 +50,9 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:  # pragma: no cove
 
 
 app = FastAPI(lifespan=lifespan)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
@@ -73,7 +80,9 @@ def add_score(
 
 
 @app.post("/complete_score")
+@limiter.limit("5/minute")
 async def complete_score(
+    request: Request,
     score: Score,
     current_user: Annotated[User, Depends(get_current_user)],
     session: AsyncSession = Depends(get_async_session),
@@ -176,7 +185,9 @@ def get_scores(
 
 
 @app.post("/imslp_agent")
+@limiter.limit("5/minute")
 async def run_imslp_agent_api(
+    request: Request,
     current_user: Annotated[User, Depends(get_current_user)],
     prompt: str = Body(...),
     message_history: list | None = Body(None),
@@ -215,7 +226,9 @@ async def run_imslp_agent_api(
 
 
 @app.post("/agent")
+@limiter.limit("5/minute")
 async def run_main_agent(
+    request: Request,
     current_user: Annotated[User, Depends(get_current_user)],
     prompt: str = Body(...),
     deps: str = Body(...),

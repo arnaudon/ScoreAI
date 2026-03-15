@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
 import jwt
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jwt.exceptions import InvalidTokenError
 from pwdlib import PasswordHash
@@ -14,6 +14,7 @@ from pydantic import BaseModel
 from sqlmodel import Session, select
 
 from app.db import get_session
+from app.rate_limit import limiter
 from shared.user import User
 
 logger = logging.getLogger(__name__)
@@ -95,7 +96,9 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
 
 @router.post("/token")
+@limiter.limit("10/minute")
 def login_for_access_token(
+    request: Request,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: Session = Depends(get_session),
 ) -> Token:
@@ -151,7 +154,8 @@ def get_admin_user(user: User = Depends(get_current_user)):
 
 
 @router.post("/users")
-def add_user(user: User, session: Session = Depends(get_session)):
+@limiter.limit("5/minute")
+def add_user(request: Request, user: User, session: Session = Depends(get_session)):
     """Add a user to the db."""
     hashed_password = get_password_hash(user.password)
     user.password = hashed_password
