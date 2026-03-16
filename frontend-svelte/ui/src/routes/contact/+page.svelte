@@ -6,8 +6,8 @@
 	<h1>{m.contact()}</h1>
 	<p>{m.contact_page_desc()}</p>
 	<p>
-		<a href="mailto:alexis.arnaudon@gmail.com" class="text-primary hover:underline font-medium">
-			alexis.arnaudon@gmail.com
+		<a href="mailto:alexis.arnaudon@scoreguide.ch" class="text-primary hover:underline font-medium">
+			alexis.arnaudon@scoreguide.ch
 		</a>
 	</p>
 </div>

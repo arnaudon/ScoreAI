@@ -1,10 +1,4 @@
-# To enable HTTPS, replace the ports below with your actual domain names.
-# Example:
-# yourdomain.com {
-#     reverse_proxy frontend:3000
-# }
-
-:80 {
+scoreguide.ch {
 	reverse_proxy frontend:3000
 }
 

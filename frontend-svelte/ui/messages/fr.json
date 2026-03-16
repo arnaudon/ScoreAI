@@ -155,5 +155,12 @@
 	"privacy_p5": "Votre utilisation continue de notre site web sera considérée comme une acceptation de nos pratiques en matière de confidentialité et d'informations personnelles. Si vous avez des questions sur la manière dont nous traitons les données des utilisateurs et les informations personnelles, n'hésitez pas à nous contacter.",
 	"empty_db_p1": "Votre base de données de partitions est vide.",
 	"empty_db_link": "Cliquez ici pour ajouter des partitions",
-	"empty_db_p2": "avant de demander à l'agent !"
+	"empty_db_p2": "avant de demander à l'agent !",
+	"beta_warning": "Cette application est en version bêta. Vos retours sont les bienvenus à",
+	"terms_of_service": "Conditions d'utilisation",
+	"cookie_consent_msg": "Nous utilisons des cookies essentiels pour vous garantir la meilleure expérience sur notre site.",
+	"cookie_consent_accept": "Compris !",
+	"terms_p1": "Bienvenue sur ScoreGuide. En utilisant notre site, vous acceptez ces conditions.",
+	"terms_p2": "Vous êtes responsable des fichiers que vous téléchargez. Ne téléchargez pas de matériel protégé par le droit d'auteur sans autorisation.",
+	"terms_p3": "Nous nous réservons le droit de supprimer tout contenu ou de résilier les comptes qui violent ces conditions."
 }
