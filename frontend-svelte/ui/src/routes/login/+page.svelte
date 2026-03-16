@@ -10,7 +10,7 @@
 	let isRegister = $state(false);
 </script>
 
-<div class="flex h-full items-center justify-center py-4">
+<div class="flex h-full items-center justify-center pt-10 pb-4">
 	<div class="bg-card text-card-foreground w-full max-w-md rounded-lg border p-6 shadow-card">
 		<div class="mb-4 text-center">
 			<img src="/logo.png" alt="ScoreGuide Logo" class="mx-auto mb-2 h-16 w-auto" />
