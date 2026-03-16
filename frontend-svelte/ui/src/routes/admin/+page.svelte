@@ -16,7 +16,7 @@
 
 	function openEditDialog(user: any) {
 		selectedUser = user;
-		max_credits = user.max_credits ?? 50;
+		max_credits = user.max_credits ?? 20;
 		editDialogOpen = true;
 	}
 
