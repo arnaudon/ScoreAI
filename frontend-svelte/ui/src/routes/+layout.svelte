@@ -32,13 +32,16 @@
 				<Sidebar.Trigger class="mb-4" />
 				{@render children()}
 			</main>
-			<footer class="p-4 text-center text-sm text-muted-foreground">
-				<div class="flex flex-wrap justify-center items-center gap-x-4 gap-y-2">
-					<span class="text-xs">{m.beta_warning()} <a href="mailto:alexis.arnaudon@scoreguide.ch" class="text-primary hover:underline">alexis.arnaudon@scoreguide.ch</a>.</span>
+			<footer class="p-4 text-sm text-muted-foreground flex flex-col md:flex-row items-center justify-between gap-4">
+				<div class="text-xs text-center md:text-left w-full md:w-1/3">
+					{m.beta_warning()} <a href="mailto:alexis.arnaudon@scoreguide.ch" class="text-primary hover:underline">alexis.arnaudon@scoreguide.ch</a>.
+				</div>
+				<div class="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 w-full md:w-1/3">
 					<a href="/privacy" class="hover:underline">{m.privacy_policy()}</a>
 					<a href="/contact" class="hover:underline">{m.contact()}</a>
 					<span>© 2026 Alexis Arnaudon</span>
 				</div>
+				<div class="hidden md:block w-full md:w-1/3"></div>
 			</footer>
 		</Sidebar.Inset>
 	</Sidebar.Provider>
@@ -59,11 +62,16 @@
 					</button>
 				</div>
 			</div>
-			<div class="flex flex-wrap justify-center items-center gap-x-4 gap-y-2">
-				<span class="text-xs">{m.beta_warning()} <a href="mailto:alexis.arnaudon@scoreguide.ch" class="text-primary hover:underline">alexis.arnaudon@scoreguide.ch</a>.</span>
-				<a href="/privacy" class="hover:underline">{m.privacy_policy()}</a>
-				<a href="/contact" class="hover:underline">{m.contact()}</a>
-				<span>© 2026 Alexis Arnaudon</span>
+			<div class="flex flex-col md:flex-row items-center justify-between gap-4">
+				<div class="text-xs text-center md:text-left w-full md:w-1/3">
+					{m.beta_warning()} <a href="mailto:alexis.arnaudon@scoreguide.ch" class="text-primary hover:underline">alexis.arnaudon@scoreguide.ch</a>.
+				</div>
+				<div class="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 w-full md:w-1/3">
+					<a href="/privacy" class="hover:underline">{m.privacy_policy()}</a>
+					<a href="/contact" class="hover:underline">{m.contact()}</a>
+					<span>© 2026 Alexis Arnaudon</span>
+				</div>
+				<div class="hidden md:block w-full md:w-1/3"></div>
 			</div>
 		</footer>
 	</div>
