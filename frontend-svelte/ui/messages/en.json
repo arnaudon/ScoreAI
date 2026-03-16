@@ -156,5 +156,11 @@
 	"empty_db_p1": "Your score database is empty.",
 	"empty_db_link": "Click here to add some scores",
 	"empty_db_p2": "before asking the agent!",
-	"beta_warning": "This app is a beta version. Feedback is welcome at"
+	"beta_warning": "This app is a beta version. Feedback is welcome at",
+	"terms_of_service": "Terms of Service",
+	"cookie_consent_msg": "We use essential cookies to ensure you get the best experience on our website.",
+	"cookie_consent_accept": "Got it!",
+	"terms_p1": "Welcome to ScoreGuide. By using our website, you agree to these terms.",
+	"terms_p2": "You are responsible for the files you upload. Do not upload copyrighted material without permission.",
+	"terms_p3": "We reserve the right to remove any content or terminate accounts that violate these terms."
 }
