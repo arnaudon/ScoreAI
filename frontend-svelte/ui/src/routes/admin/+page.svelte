@@ -137,6 +137,7 @@
 				<Table.Head>{m.role()}</Table.Head>
 				<Table.Head>{m.credits()}</Table.Head>
 				<Table.Head>Scores</Table.Head>
+				<Table.Head>Last Login</Table.Head>
 				<Table.Head class="text-right">{m.actions()}</Table.Head>
 			</Table.Row>
 		</Table.Header>
@@ -148,6 +149,7 @@
 					<Table.Cell class="capitalize">{user.role || (user.is_admin ? 'Admin' : 'User')}</Table.Cell>
 					<Table.Cell>{user.credits ?? '-'}/{user.max_credits ?? '-'}</Table.Cell>
 					<Table.Cell>{user.score_count ?? 0}</Table.Cell>
+					<Table.Cell>{user.last_login ? new Date(user.last_login).toLocaleString() : '-'}</Table.Cell>
 					<Table.Cell class="text-right">
 						<div class="flex items-center justify-end gap-2">
 							<Button variant="outline" size="sm" onclick={() => openEditDialog(user)}>{m.edit()}</Button>
@@ -156,7 +158,7 @@
 				</Table.Row>
 			{:else}
 				<Table.Row>
-					<Table.Cell colspan={6} class="text-center text-muted-foreground py-4">
+					<Table.Cell colspan={7} class="text-center text-muted-foreground py-4">
 						{m.no_users_found()}
 					</Table.Cell>
 				</Table.Row>
