@@ -182,9 +182,8 @@ def get_users(_: Annotated[User, Depends(get_admin_user)], session: Session = De
     users = session.exec(select(User)).all()
     result = []
     for user in users:
-        count = session.exec(
-            select(func.count(Score.id)).where(Score.user_id == user.id)
-        ).one()  # pylint: disable=not-callable
+        # pylint: disable=not-callable
+        count = session.exec(select(func.count(Score.id)).where(Score.user_id == user.id)).one()
         user_dict = user.model_dump()
         user_dict["score_count"] = count
         result.append(user_dict)
