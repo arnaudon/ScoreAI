@@ -40,6 +40,7 @@
 		{ accessorKey: 'id', header: ({ column }) => renderComponent(DataTableSortButton, { title: m.id(), onclick: column.getToggleSortingHandler() }) },
 		{ accessorKey: 'username', header: ({ column }) => renderComponent(DataTableSortButton, { title: m.username(), onclick: column.getToggleSortingHandler() }) },
 		{ accessorKey: 'email', header: ({ column }) => renderComponent(DataTableSortButton, { title: m.email(), onclick: column.getToggleSortingHandler() }), cell: ({ row }) => row.original.email || '-' },
+		{ accessorKey: 'instrument', header: ({ column }) => renderComponent(DataTableSortButton, { title: m.preferred_instrument(), onclick: column.getToggleSortingHandler() }), cell: ({ row }) => row.original.instrument || '-' },
 		{ accessorKey: 'role', header: ({ column }) => renderComponent(DataTableSortButton, { title: m.role(), onclick: column.getToggleSortingHandler() }), cell: ({ row }) => (row.original.role || (row.original.is_admin ? 'Admin' : 'User')).charAt(0).toUpperCase() + (row.original.role || (row.original.is_admin ? 'Admin' : 'User')).slice(1) },
 		{ accessorKey: 'credits', header: ({ column }) => renderComponent(DataTableSortButton, { title: m.credits(), onclick: column.getToggleSortingHandler() }), cell: ({ row }) => `${row.original.credits ?? '-'}/${row.original.max_credits ?? '-'}` },
 		{ accessorKey: 'score_count', header: ({ column }) => renderComponent(DataTableSortButton, { title: 'Scores', onclick: column.getToggleSortingHandler() }), cell: ({ row }) => row.original.score_count ?? 0 },
