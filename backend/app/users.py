@@ -11,10 +11,11 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jwt.exceptions import InvalidTokenError
 from pwdlib import PasswordHash
 from pydantic import BaseModel
-from sqlmodel import Session, select
+from sqlmodel import Session, func, select
 
 from app.db import get_session
 from app.rate_limit import limiter
+from shared.scores import Score
 from shared.user import User
 
 logger = logging.getLogger(__name__)
@@ -110,6 +111,12 @@ def login_for_access_token(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+    user.last_login = datetime.now(timezone.utc)
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.username, "role": user.role},
@@ -172,7 +179,15 @@ def add_user(
 @router.get("/users")
 def get_users(_: Annotated[User, Depends(get_admin_user)], session: Session = Depends(get_session)):
     """Get all users from the db."""
-    return session.exec(select(User)).all()
+    users = session.exec(select(User)).all()
+    result = []
+    for user in users:
+        # pylint: disable=not-callable
+        count = session.exec(select(func.count(Score.id)).where(Score.user_id == user.id)).one()
+        user_dict = user.model_dump()
+        user_dict["score_count"] = count
+        result.append(user_dict)
+    return result
 
 
 @router.get("/user")

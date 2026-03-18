@@ -6,6 +6,18 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Sheet from '$lib/components/ui/sheet/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import {
+		type ColumnDef,
+		type PaginationState,
+		type SortingState,
+		type ColumnFiltersState,
+		getCoreRowModel,
+		getPaginationRowModel,
+		getSortedRowModel,
+		getFilteredRowModel
+	} from '@tanstack/table-core';
+	import { FlexRender, createSvelteTable, renderComponent } from '$lib/components/ui/data-table/index.js';
+	import DataTableSortButton from '../db-viewer/data-table-sort-button.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
 	let { data }: PageProps = $props();
@@ -19,6 +31,47 @@
 		max_credits = user.max_credits ?? 20;
 		editDialogOpen = true;
 	}
+
+	let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: 10 });
+	let sorting = $state<SortingState>([]);
+	let columnFilters = $state<ColumnFiltersState>([]);
+
+	const columns: ColumnDef<any>[] = [
+		{ accessorKey: 'id', header: ({ column }) => renderComponent(DataTableSortButton, { title: m.id(), onclick: column.getToggleSortingHandler() }) },
+		{ accessorKey: 'username', header: ({ column }) => renderComponent(DataTableSortButton, { title: m.username(), onclick: column.getToggleSortingHandler() }) },
+		{ accessorKey: 'email', header: ({ column }) => renderComponent(DataTableSortButton, { title: m.email(), onclick: column.getToggleSortingHandler() }), cell: ({ row }) => row.original.email || '-' },
+		{ accessorKey: 'instrument', header: ({ column }) => renderComponent(DataTableSortButton, { title: m.preferred_instrument(), onclick: column.getToggleSortingHandler() }), cell: ({ row }) => row.original.instrument || '-' },
+		{ accessorKey: 'role', header: ({ column }) => renderComponent(DataTableSortButton, { title: m.role(), onclick: column.getToggleSortingHandler() }), cell: ({ row }) => (row.original.role || (row.original.is_admin ? 'Admin' : 'User')).charAt(0).toUpperCase() + (row.original.role || (row.original.is_admin ? 'Admin' : 'User')).slice(1) },
+		{ accessorKey: 'credits', header: ({ column }) => renderComponent(DataTableSortButton, { title: m.credits(), onclick: column.getToggleSortingHandler() }), cell: ({ row }) => `${row.original.credits ?? '-'}/${row.original.max_credits ?? '-'}` },
+		{ accessorKey: 'score_count', header: ({ column }) => renderComponent(DataTableSortButton, { title: 'Scores', onclick: column.getToggleSortingHandler() }), cell: ({ row }) => row.original.score_count ?? 0 },
+		{ accessorKey: 'last_login', header: ({ column }) => renderComponent(DataTableSortButton, { title: 'Last Login', onclick: column.getToggleSortingHandler() }), cell: ({ row }) => row.original.last_login ? new Date(row.original.last_login).toLocaleString() : '-' }
+	];
+
+	const table = createSvelteTable({
+		get data() { return data.users; },
+		columns,
+		state: {
+			get pagination() { return pagination; },
+			get sorting() { return sorting; },
+			get columnFilters() { return columnFilters; }
+		},
+		onPaginationChange: (updater) => {
+			if (typeof updater === 'function') pagination = updater(pagination);
+			else pagination = updater;
+		},
+		onSortingChange: (updater) => {
+			if (typeof updater === 'function') sorting = updater(sorting);
+			else sorting = updater;
+		},
+		onColumnFiltersChange: (updater) => {
+			if (typeof updater === 'function') columnFilters = updater(columnFilters);
+			else columnFilters = updater;
+		},
+		getCoreRowModel: getCoreRowModel(),
+		getPaginationRowModel: getPaginationRowModel(),
+		getSortedRowModel: getSortedRowModel(),
+		getFilteredRowModel: getFilteredRowModel()
+	});
 
 	$effect(() => {
 		if (data.progress?.status === 'processing' || data.progress?.status === 'cancelling') {
@@ -131,36 +184,70 @@
 <div class="rounded-md border bg-card text-card-foreground shadow-card">
 	<Table.Root>
 		<Table.Header>
-			<Table.Row>
-				<Table.Head>{m.id()}</Table.Head>
-				<Table.Head>{m.username()}</Table.Head>
-				<Table.Head>{m.role()}</Table.Head>
-				<Table.Head>{m.credits()}</Table.Head>
-				<Table.Head class="text-right">{m.actions()}</Table.Head>
-			</Table.Row>
+			{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
+				<Table.Row>
+					{#each headerGroup.headers as header (header.id)}
+						<Table.Head>
+							{#if !header.isPlaceholder}
+								<FlexRender
+									content={header.column.columnDef.header}
+									context={header.getContext()}
+								/>
+							{/if}
+						</Table.Head>
+					{/each}
+					<Table.Head class="text-right">{m.actions()}</Table.Head>
+				</Table.Row>
+			{/each}
 		</Table.Header>
 		<Table.Body>
-			{#each data.users as user}
-				<Table.Row>
-					<Table.Cell>{user.id || '-'}</Table.Cell>
-					<Table.Cell>{user.username}</Table.Cell>
-					<Table.Cell class="capitalize">{user.role || (user.is_admin ? 'Admin' : 'User')}</Table.Cell>
-					<Table.Cell>{user.credits ?? '-'}/{user.max_credits ?? '-'}</Table.Cell>
+			{#each table.getRowModel().rows as row (row.id)}
+				<Table.Row class="transition-colors hover:bg-muted/50">
+					{#each row.getVisibleCells() as cell (cell.id)}
+						<Table.Cell>
+							<FlexRender
+								content={cell.column.columnDef.cell}
+								context={cell.getContext()}
+							/>
+						</Table.Cell>
+					{/each}
 					<Table.Cell class="text-right">
 						<div class="flex items-center justify-end gap-2">
-							<Button variant="outline" size="sm" onclick={() => openEditDialog(user)}>{m.edit()}</Button>
+							<Button variant="outline" size="sm" onclick={() => openEditDialog(row.original)}>{m.edit()}</Button>
 						</div>
 					</Table.Cell>
 				</Table.Row>
 			{:else}
 				<Table.Row>
-					<Table.Cell colspan={5} class="text-center text-muted-foreground py-4">
+					<Table.Cell colspan={columns.length + 1} class="text-center text-muted-foreground py-4">
 						{m.no_users_found()}
 					</Table.Cell>
 				</Table.Row>
 			{/each}
 		</Table.Body>
 	</Table.Root>
+</div>
+
+<div class="flex items-center justify-end space-x-2 py-4">
+	<div class="flex-1 text-sm text-muted-foreground">
+		{m.page_of({ page: table.getState().pagination.pageIndex + 1, total: Math.max(1, table.getPageCount()) })}
+	</div>
+	<Button
+		variant="outline"
+		size="sm"
+		onclick={() => table.previousPage()}
+		disabled={!table.getCanPreviousPage()}
+	>
+		{m.previous()}
+	</Button>
+	<Button
+		variant="outline"
+		size="sm"
+		onclick={() => table.nextPage()}
+		disabled={!table.getCanNextPage()}
+	>
+		{m.next()}
+	</Button>
 </div>
 
 <Sheet.Root bind:open={editDialogOpen}>
