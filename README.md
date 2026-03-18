@@ -2,6 +2,8 @@
 
 **ScoreGuide** is your personal, AI‑powered music score library and practice companion. 
 
+🌐 **Live App**: [scoreguide.ch](https://scoreguide.ch)
+
 Build a digital database of your PDF scores, track your practice sessions, and chat with a smart AI assistant that helps you choose what to play, auto-completes missing score info, and even searches the massive IMSLP database for you!
 
 ---
