@@ -111,7 +111,7 @@ def login_for_access_token(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     user.last_login = datetime.now(timezone.utc)
     session.add(user)
     session.commit()
