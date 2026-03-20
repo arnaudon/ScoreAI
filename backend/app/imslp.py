@@ -4,6 +4,7 @@ import asyncio
 import json
 import logging
 import os
+import time
 
 import httpx
 import requests
@@ -142,7 +143,7 @@ async def get_works():
         for i in range(0, progress_tracker["total"]):
             progress_tracker["page"] = i
             start = int(i * 1000)
-
+            time.sleep(10)  # don't fetch too fast to reduce LLM cost
             data = await get_page(start)
 
             # last page, we stop
