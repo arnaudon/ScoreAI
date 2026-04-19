@@ -1,7 +1,5 @@
 import type { RequestHandler } from './$types';
-import { env } from '$env/dynamic/private';
-
-const BACKEND_URL = env.BACKEND_URL || 'http://localhost:8000';
+import { BACKEND_URL } from '$lib/server/api.js';
 
 export const GET: RequestHandler = async ({ params, url, fetch }) => {
 	const pathWithQuery = params.filepath;
