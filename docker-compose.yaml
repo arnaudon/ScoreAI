@@ -8,6 +8,9 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      # Initializes the `mcp_readonly` role on first start (empty data volume).
+      # For already-initialized prod volumes, run infrastructure/mcp-readonly.sql manually.
+      - ./postgres-init:/docker-entrypoint-initdb.d:ro
     env_file: .env
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
@@ -20,13 +23,15 @@ services:
     image: crystaldba/postgres-mcp
     ports:
       - "8001:8001"
-    command: 
+    command:
       - "--transport=sse"
-      - "--sse-host=0.0.0.0" 
-      - "--sse-port=8001"   
+      - "--sse-host=0.0.0.0"
+      - "--sse-port=8001"
       - "--access-mode=restricted"
-      # - "postgresql://music_agent_user:123@db:5432/${POSTGRES_DB}"
-      - "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
+      # Defense-in-depth: connects as a SELECT-only role, so even a prompt
+      # that escapes restricted mode can't write. Bootstrapped by
+      # postgres-init/01_mcp_readonly.sql.
+      - "postgresql://mcp_readonly:readonly@db:5432/${POSTGRES_DB}"
     restart: always
 
   backend:
@@ -40,12 +45,19 @@ services:
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     env_file: .env
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health', timeout=2).status == 200 else 1)\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   frontend:
     container_name: frontend
     build:
       context: .
       dockerfile: Dockerfile.frontend-svelte
+      target: prod
     ports:
       - "3000:3000"
     environment:

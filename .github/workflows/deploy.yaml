@@ -24,8 +24,9 @@ jobs:
             docker network inspect web >/dev/null 2>&1 || docker network create web
             cd /home/debian/ScoreGuide
             git pull origin main
-            echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
-            echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" > .env
+            # Start fresh — all subsequent lines append.
+            echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" > .env
+            echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env
             echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
             echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env
             echo "MODEL=google-gla:gemini-2.5-flash-lite" >> .env
@@ -34,6 +35,14 @@ jobs:
             echo "S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }}" >> .env
             echo "S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }}" >> .env
             echo "S3_BUCKET=${{ secrets.S3_BUCKET }}" >> .env
-            docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml up --build -d
+            echo "SENTRY_DSN=${{ secrets.SENTRY_DSN }}" >> .env
+            echo "PUBLIC_SENTRY_DSN=${{ secrets.PUBLIC_SENTRY_DSN }}" >> .env
+            echo "SENTRY_ENVIRONMENT=production" >> .env
+            echo "PUBLIC_SENTRY_ENVIRONMENT=production" >> .env
+            docker compose -f docker-compose.yaml -f docker-compose.prod.yaml up --build -d --wait
+            # Ensure the mcp_readonly role exists on the existing data volume.
+            # Idempotent DO + IF NOT EXISTS block — safe to re-run every deploy.
+            docker compose exec -T db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"' \
+              < infrastructure/mcp-readonly.sql
             # run alembic migration
-            docker exec --workdir /app/backend backend alembic upgrade head
+            docker compose exec -T --workdir /app/backend backend alembic upgrade head

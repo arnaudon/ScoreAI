@@ -1,18 +1,22 @@
 """Tests for IMSLP parsing logic in imslp.py."""
 
 import requests
+
 from app import imslp
 
 
 def test_get_metadata_returns_dict():
     """Test that metadata is extracted correctly from HTML."""
 
-    class DummyResponse:  # pylint: disable=too-few-public-methods
+    class DummyResponse:
         """Mock response object."""
 
         text = """
         <span id='General_Information'></span>
-        <table><tr><th>Work Title</th><td>Symphony No. 5</td></tr><tr><th>Composer</th><td>Beethoven</td></tr></table>
+        <table>
+            <tr><th>Work Title</th><td>Symphony No. 5</td></tr>
+            <tr><th>Composer</th><td>Beethoven</td></tr>
+        </table>
         """
 
     meta = imslp.get_metadata(DummyResponse())
@@ -23,7 +27,7 @@ def test_get_metadata_returns_dict():
 def test_get_metadata_returns_empty_when_none_found():
     """Test that empty metadata is returned when no info is found."""
 
-    class DummyResponse:  # pylint: disable=too-few-public-methods
+    class DummyResponse:
         """Mock response object."""
 
         text = "<html></html>"
@@ -34,7 +38,7 @@ def test_get_metadata_returns_empty_when_none_found():
 def test_get_pdfs_extracts_pdf_urls(monkeypatch):
     """Test that PDF URLs are extracted correctly."""
 
-    class DummyResponse:  # pylint: disable=too-few-public-methods
+    class DummyResponse:
         """Mock response object."""
 
         text = '<a href="Special:ImagefromIndex/123">Download</a>'
@@ -45,7 +49,7 @@ def test_get_pdfs_extracts_pdf_urls(monkeypatch):
         class MockSession:
             """Mock requests session."""
 
-            def get(self, url, **kwargs):  # pylint: disable=unused-argument
+            def get(self, url, **kwargs):
                 """Mock get request."""
                 return type(
                     "Resp",
@@ -53,7 +57,7 @@ def test_get_pdfs_extracts_pdf_urls(monkeypatch):
                     {"text": '<span id="sm_dl_wait" data-id="url.pdf"></span>'},
                 )()
 
-            def head(self, url, **kwargs):  # pylint: disable=unused-argument
+            def head(self, url, **kwargs):
                 """Mock head request."""
                 return type("Resp", (), {"url": "url.pdf"})()
 
@@ -65,7 +69,7 @@ def test_get_pdfs_extracts_pdf_urls(monkeypatch):
 def test_get_pdfs_handles_non_pdf_redirect(monkeypatch):
     """Test handling of redirects that do not result in a PDF."""
 
-    class DummyResponse:  # pylint: disable=too-few-public-methods
+    class DummyResponse:
         """Mock response object."""
 
         text = '<a href="Special:ImagefromIndex/456">Download</a>'
@@ -75,20 +79,20 @@ def test_get_pdfs_handles_non_pdf_redirect(monkeypatch):
         class MockSession:
             """Mock requests session."""
 
-            def get(self, url, **kwargs):  # pylint: disable=unused-argument
+            def get(self, url, **kwargs):
                 """Mock get request."""
                 # No 'sm_dl_wait', so it goes to else block
                 return type("Resp", (), {"text": "<html></html>"})()
 
-            def head(self, url, **kwargs):  # pylint: disable=unused-argument
+            def head(self, url, **kwargs):
                 """Mock head request."""
                 # Redirects to non-pdf
                 return type("Resp", (), {"url": "http://example.com/not_a_pdf.html"})()
 
         m.setattr(requests, "Session", MockSession)
         # Capture print output
-        import io  # pylint: disable=import-outside-toplevel
-        import sys  # pylint: disable=import-outside-toplevel
+        import io
+        import sys
 
         captured_output = io.StringIO()
         sys.stdout = captured_output

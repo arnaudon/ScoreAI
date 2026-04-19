@@ -4,7 +4,6 @@ import asyncio
 import json
 import logging
 import os
-import time
 
 import httpx
 import requests
@@ -20,6 +19,12 @@ from shared.scores import IMSLP
 from shared.settings import Setting
 
 logger = logging.getLogger(__name__)
+
+# Module-level state shared by the /imslp/start, /imslp/progress, and
+# /imslp/cancel endpoints. This only works correctly when the backend runs
+# with a single uvicorn worker (see Dockerfile.backend) — each worker would
+# otherwise see its own copy. If we ever need to scale out, move this to a
+# DB row (e.g. on the Setting table) or Redis.
 progress_tracker = {"status": "idle", "page": 0, "cancel_requested": False}
 router = APIRouter(prefix="/imslp", tags=["imslp"])
 
@@ -52,7 +57,7 @@ def get_pdfs(response):
     """return a list of pdf urls"""
     soup = BeautifulSoup(response.text, "html.parser")
     links = soup.find_all("a", href=True)
-    pdf_landing_pages = [l["href"] for l in links if "Special:ImagefromIndex" in l["href"]]
+    pdf_landing_pages = [link["href"] for link in links if "Special:ImagefromIndex" in link["href"]]
 
     session = requests.Session()
     cookies = {"imslpdisclaimeraccepted": "yes"}
@@ -63,7 +68,7 @@ def get_pdfs(response):
         soup = BeautifulSoup(response.text, "html.parser")
         links = soup.find_all("span", id="sm_dl_wait")
         if links:
-            pdf_urls += [l["data-id"] for l in links]
+            pdf_urls += [link["data-id"] for link in links]
         # try redirect
         else:
             response = session.head(str(pdf_landing_page), cookies=cookies, allow_redirects=True)
@@ -99,7 +104,7 @@ async def fix_entry(entry, session):
         output = await run_imslp_complete_agent(entry.model_dump_json(), model)
         for key, value in output.model_dump().items():
             setattr(entry, key, value)
-    except Exception as e:  # pylint: disable=broad-exception-caught
+    except Exception as e:
         logger.error("Failed to fix entry: %s", e)
 
 
@@ -143,7 +148,7 @@ async def get_works():
         for i in range(0, progress_tracker["total"]):
             progress_tracker["page"] = i
             start = int(i * 1000)
-            time.sleep(10)  # don't fetch too fast to reduce LLM cost
+            await asyncio.sleep(10)  # don't fetch too fast to reduce LLM cost
             data = await get_page(start)
 
             # last page, we stop
@@ -190,7 +195,7 @@ def cancel():
 @router.get("/stats", dependencies=[Depends(get_admin_user)])
 def get_imslp_stats(session: Session = Depends(get_session)):
     """Get IMSLP stats"""
-    # pylint: disable=not-callable
+
     return {
         "total_works": session.exec(select(func.count()).select_from(IMSLP)).one(),
         "total_composers": session.exec(select(func.count(func.distinct(IMSLP.composer)))).one(),
@@ -210,5 +215,5 @@ def empty(session: Session = Depends(get_session)):
 @router.get("/scores_by_ids")
 def get_by_ids(score_ids: str, session: Session = Depends(get_session)):
     """Get scores by ids."""
-    # pylint: disable=no-member
+
     return session.exec(select(IMSLP).where(IMSLP.id.in_(json.loads(score_ids)))).all()

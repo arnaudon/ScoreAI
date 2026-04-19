@@ -1,21 +1,23 @@
 import type { LayoutServerLoad } from './$types';
+import { BACKEND_URL } from '$lib/server/api.js';
 
-export const load: LayoutServerLoad = async ({ cookies }) => {
+export const load: LayoutServerLoad = async ({ cookies, fetch }) => {
 	const token = cookies.get('access_token');
-	let isAdmin = false;
-
-	if (token) {
-		try {
-			const payloadBase64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-			const payload = JSON.parse(atob(payloadBase64));
-			isAdmin = payload.role === 'admin' || payload.is_admin === true;
-		} catch (e) {
-			console.error('Failed to parse token payload:', e);
-		}
+	if (!token) {
+		return { loggedIn: false, isAdmin: false };
 	}
-	
-	return {
-		loggedIn: !!token,
-		isAdmin
-	};
+
+	try {
+		const res = await fetch(`${BACKEND_URL}/is_admin`, {
+			headers: { Authorization: `Bearer ${token}` }
+		});
+		if (!res.ok) {
+			return { loggedIn: false, isAdmin: false };
+		}
+		const isAdmin = await res.json();
+		return { loggedIn: true, isAdmin: Boolean(isAdmin) };
+	} catch (e) {
+		console.error('Failed to check admin status:', e);
+		return { loggedIn: true, isAdmin: false };
+	}
 };

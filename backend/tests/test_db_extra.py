@@ -2,6 +2,7 @@
 
 import pytest
 from sqlmodel import Session, SQLModel, create_engine
+
 from app import db
 
 
@@ -14,7 +15,7 @@ def temp_engine_fixture(tmp_path):
     return engine
 
 
-def test_get_session_context_manager(temp_engine_fixture):  # pylint: disable=redefined-outer-name
+def test_get_session_context_manager(temp_engine_fixture):
     """Test get_session context manager."""
     # Patch db.engine for this test
     orig = db.engine

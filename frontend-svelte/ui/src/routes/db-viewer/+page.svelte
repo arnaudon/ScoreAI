@@ -18,6 +18,7 @@
 		getFilteredRowModel
 	} from '@tanstack/table-core';
 	import { FlexRender, createSvelteTable, renderComponent } from '$lib/components/ui/data-table/index.js';
+	import type { Score, IMSLPScore } from '$lib/types.js';
 	import AgentChat from '$lib/components/AgentChat.svelte';
 	import DataTableSortButton from './data-table-sort-button.svelte';
 	import { imslpAgentHistoryStore } from '$lib/stores/chat.svelte';
@@ -26,20 +27,20 @@
 
 	let { data, form }: PageProps = $props();
 	let selectedScoreId = $state<number | null>(null);
-	let agentSelectedScore = $state<any>(null);
+	let agentSelectedScore = $state<Score | null>(null);
 	let imslpSheetOpen = $state(false);
 	let uploading = $state(false);
 	let recompleting = $state(false);
 	let sheetOpen = $state(false);
 	let manualFiles = $state<any>();
 	let imslpFiles = $state<any>();
-	let selectedScore = $derived(data.scores.find((s: any) => s.id === selectedScoreId));
+	let selectedScore = $derived(data.scores.find((s: Score) => s.id === selectedScoreId));
 
 	let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: 10 });
 	let sorting = $state<SortingState>([]);
 	let columnFilters = $state<ColumnFiltersState>([]);
 
-	const columns: ColumnDef<any>[] = [
+	const columns: ColumnDef<Score>[] = [
 		{ 
 			accessorKey: 'title', 
 			header: ({ column }) => renderComponent(DataTableSortButton, { title: m.label_title(), onclick: column.getToggleSortingHandler() }) 
@@ -115,7 +116,7 @@
 	let imslpSorting = $state<SortingState>([]);
 	let imslpColumnFilters = $state<ColumnFiltersState>([]);
 
-	const imslpColumns: ColumnDef<any>[] = [
+	const imslpColumns: ColumnDef<IMSLPScore>[] = [
 		{ 
 			accessorKey: 'composer', 
 			header: ({ column }) => renderComponent(DataTableSortButton, { title: m.label_composer(), onclick: column.getToggleSortingHandler() }) 

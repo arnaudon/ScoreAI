@@ -42,6 +42,7 @@
 		"@internationalized/date": "^3.12.0",
 		"@lucide/svelte": "^0.561.0",
 		"@playwright/test": "^1.58.2",
+		"@sentry/sveltekit": "^10.49.0",
 		"@sveltejs/adapter-node": "^5.5.4",
 		"@sveltejs/kit": "^2.50.2",
 		"@sveltejs/package": "^2.5.7",

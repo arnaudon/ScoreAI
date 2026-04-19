@@ -1,65 +1,32 @@
-# Svelte library
+# Svelte frontend
 
-Everything you need to build a Svelte library, powered by [`sv`](https://npmjs.com/package/sv).
+SvelteKit 5 app using Tailwind 4, shadcn-svelte, and Paraglide i18n (en/fr). Adapter: `@sveltejs/adapter-node`. This is the production UI served at [scoreguide.ch](https://scoreguide.ch).
 
-Read more about creating a library [in the docs](https://svelte.dev/docs/kit/packaging).
+## Layout
 
-## Creating a project
+- `src/routes/` — pages and `+page.server.ts` loaders that proxy to the FastAPI backend.
+- `src/lib/server/api.ts` — shared `BACKEND_URL`; import this instead of redeclaring the env var.
+- `src/lib/components/` — shadcn primitives plus app-specific components (`AgentChat`, `Sidebar`).
+- `messages/en.json`, `messages/fr.json` — Paraglide catalogs. The generated `src/lib/paraglide/` is produced by `vite build` / `vite dev` via the paraglide plugin.
+- `e2e/` — reserved for future Playwright suites (not in CI yet).
 
-If you're seeing this, you've probably already done this step. Congrats!
+## Auth / backend wiring
 
-```sh
-# create a new project in the current directory
-npx sv create
+Cookies hold the JWT (`access_token`, httpOnly + secure + sameSite=lax). The root `+layout.server.ts` asks the backend `/is_admin` on each SSR instead of decoding the JWT client-side — the backend re-verifies on every call, so this is the single source of truth.
 
-# create a new project in my-app
-npx sv create my-app
+Server-side fetches use `BACKEND_URL`; browser fetches use `PUBLIC_BACKEND_URL` (only `reader/[id]` currently exposes the latter).
+
+## Commands
+
+```bash
+npm ci
+npm run dev              # vite dev on :3000
+npm run build            # production SSR bundle + paraglide codegen
+node build               # run the production bundle locally
+npm run check            # svelte-check (pre-existing paraglide/any-typed noise)
+npm run lint             # prettier + eslint (pre-existing formatting noise)
+npm run test:unit        # vitest (node + chromium projects)
+npm run test:e2e         # playwright
 ```
 
-To recreate this project with the same configuration:
-
-```sh
-# recreate this project
-npx sv@0.12.5 create --template library --types ts --add prettier eslint vitest="usages:component,unit" playwright tailwindcss="plugins:typography,forms" sveltekit-adapter="adapter:auto" paraglide="languageTags:en, fr+demo:yes" --install npm ui
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-Everything inside `src/lib` is part of your library, everything inside `src/routes` can be used as a showcase or preview app.
-
-## Building
-
-To build your library:
-
-```sh
-npm pack
-```
-
-To create a production version of your showcase app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
-
-## Publishing
-
-Go into the `package.json` and give your package the desired name through the `"name"` option. Also consider adding a `"license"` field and point it to a `LICENSE` file which you can create from a template (one popular option is the [MIT license](https://opensource.org/license/mit/)).
-
-To publish your library to [npm](https://www.npmjs.com):
-
-```sh
-npm publish
-```
+CI (`.github/workflows/frontend.yml`) gates on `npm run build` + `vitest --project server`. `check` and `lint` run with `continue-on-error` until the pre-existing backlog is cleaned up.

@@ -1,0 +1,13 @@
+[run]
+# Starlette's TestClient bridges sync->async via anyio in a worker thread, so
+# coverage needs both `thread` (the worker) and `greenlet` (anyio's trampoline)
+# to trace async route bodies. Without these the entries of the three agent
+# endpoints come out as "not covered" even though the tests run them.
+concurrency = thread,greenlet
+source = app,tests
+
+[report]
+exclude_lines =
+    pragma: no cover
+    if TYPE_CHECKING:
+    raise NotImplementedError

@@ -1,50 +1,91 @@
 """Backend main entry point."""
 
 import json
+import logging
 import os
 import uuid
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from logging import getLogger
-from typing import Annotated, AsyncGenerator
+from typing import Annotated
 
-from fastapi import Body, Depends, FastAPI, File, HTTPException, Request, UploadFile
+import sentry_sdk
+from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
+from sqlalchemy import text
 from sqlmodel import Session, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app import imslp, users
+from app import config, imslp, users
 from app.agent import Deps, run_agent, run_complete_agent, run_imslp_agent
-from app.db import get_async_session, get_session, init_db
+from app.credits import consume_credit
+from app.db import get_async_session, get_session
 from app.file_helper import file_helper
 from app.rate_limit import limiter
 from app.users import get_admin_user, get_current_user, get_current_user_from_token
-from shared.scores import Score, Scores
+from shared.scores import Score, ScoreCreate, Scores, ScoreUpdate
 from shared.settings import Setting
 from shared.user import User
 
 logger = getLogger(__name__)
 
 
-def validate_prompt_security(prompt: str):
-    """Validate the prompt against common injection attacks."""
-    suspicious_keywords = [
-        "ignore previous",
-        "system prompt",
-        "drop table",
-        "bypass",
-        "forget all instructions",
-    ]
-    if any(keyword in prompt.lower() for keyword in suspicious_keywords):
-        raise HTTPException(status_code=400, detail="Invalid input detected.")
+def _init_sentry() -> None:
+    """Opt-in Sentry init. No-op when SENTRY_DSN isn't set (dev / test / CI)."""
+    if config.SENTRY_DSN:  # pragma: no cover
+        sentry_sdk.init(
+            dsn=config.SENTRY_DSN,
+            environment=config.SENTRY_ENVIRONMENT,
+            traces_sample_rate=config.SENTRY_TRACES_SAMPLE_RATE,
+        )
+
+
+_init_sentry()
+
+
+class ChatRequest(BaseModel):
+    """Shared body for agent chat endpoints."""
+
+    prompt: str
+    message_history: list | None = None
+
+
+class MainAgentRequest(ChatRequest):
+    """Body for /agent — adds a JSON-encoded ``Scores`` blob."""
+
+    deps: str
+
+
+class ModelsUpdate(BaseModel):
+    """Body for POST /admin/model."""
+
+    models: dict[str, str]
+
+
+def configure_logging() -> None:
+    """Configure root logger level/format from env. Idempotent."""
+    level = os.getenv("LOG_LEVEL", "INFO").upper()
+    logging.basicConfig(
+        level=level,
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+        force=True,
+    )
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:  # pragma: no cover
-    """Placeholder for startup/shutdown events."""
-    init_db()
+    """Startup / shutdown events.
+
+    Schema is owned by alembic (deploy.yaml and test_docker.yaml both run
+    ``alembic upgrade head`` against the container), so the lifespan no
+    longer calls ``init_db`` — doing so would race with the ALTER-based
+    migrations on a fresh volume.
+    """
+    configure_logging()
     yield
 
 
@@ -54,7 +95,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # ty
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=config.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -64,62 +105,53 @@ app.include_router(users.router, tags=["users"])
 app.include_router(imslp.router, tags=["imslp"])
 
 
+@app.get("/health")
+def health(session: Session = Depends(get_session)):
+    """Liveness probe: returns 200 when the DB is reachable, 503 otherwise."""
+    try:
+        session.execute(text("SELECT 1"))
+    except Exception as e:
+        raise HTTPException(status_code=503, detail="database unreachable") from e
+    return {"status": "ok"}
+
+
 @app.post("/scores")
 def add_score(
-    score: Score,
+    score: ScoreCreate,
     current_user: Annotated[User, Depends(get_current_user)],
     session: Session = Depends(get_session),
 ):
     """Add a score to the db."""
-    score.user_id = current_user.id
-    session.add(score)
+    db_score = Score(**score.model_dump(), user_id=current_user.id)
+    session.add(db_score)
     session.commit()
-    session.refresh(score)
-    return score
+    session.refresh(db_score)
+    return db_score
 
 
 @app.post("/complete_score")
-@limiter.limit("5/minute")
+@limiter.limit(config.AGENT_RATE_LIMIT)
 async def complete_score(
-    request: Request,  # pylint: disable=unused-argument
+    request: Request,
     score: Score,
     current_user: Annotated[User, Depends(get_current_user)],
     session: AsyncSession = Depends(get_async_session),
-):  # pragma: no cover
+):
     """Complete a score."""
-    if current_user.credits <= 0:
-        raise HTTPException(
-            status_code=403,
-            detail="You have run out of agent credits."
-            "Please contact alexis.arnaudon@gmail.com to get more credits.",
-        )
-
-    async_user = await session.get(User, current_user.id)
-    if async_user:
-        async_user.credits -= 1
-        session.add(async_user)
-        await session.commit()
-
     setting = await session.get(Setting, "model_complete")
     model = setting.value if setting else os.getenv("MODEL", "test")
 
-    try:
-        result = await run_complete_agent(score, model)
-    except Exception as e:
-        async_user = await session.get(User, current_user.id)
-        if async_user:
-            async_user.credits += 1
-            session.add(async_user)
-            await session.commit()
-        raise HTTPException(status_code=500, detail=str(e)) from e
-
-    return result
+    async with consume_credit(current_user.id, session):
+        try:
+            return await run_complete_agent(score, model)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @app.put("/scores/{score_id}")
 def update_score(
     score_id: int,
-    score_update: Score,
+    score_update: ScoreUpdate,
     current_user: Annotated[User, Depends(get_current_user)],
     session: Session = Depends(get_session),
 ):
@@ -131,10 +163,8 @@ def update_score(
     if not db_score:
         raise HTTPException(status_code=404, detail="Score not found")
 
-    score_data = score_update.model_dump(exclude_unset=True)
-    for key, value in score_data.items():
-        if key not in ("id", "user_id"):
-            setattr(db_score, key, value)
+    for key, value in score_update.model_dump(exclude_unset=True).items():
+        setattr(db_score, key, value)
 
     session.add(db_score)
     session.commit()
@@ -184,91 +214,48 @@ def get_scores(
 
 
 @app.post("/imslp_agent")
-@limiter.limit("5/minute")
+@limiter.limit(config.AGENT_RATE_LIMIT)
 async def run_imslp_agent_api(
-    request: Request,  # pylint: disable=unused-argument
+    request: Request,
+    body: ChatRequest,
     current_user: Annotated[User, Depends(get_current_user)],
-    prompt: str = Body(...),
-    message_history: list | None = Body(None),
     session: AsyncSession = Depends(get_async_session),
-):  # pragma: no cover
+):
     """Run the imslp agent."""
-    validate_prompt_security(prompt)
-
-    if current_user.credits <= 0:
-        raise HTTPException(
-            status_code=403,
-            detail="You have run out of agent credits."
-            "Please contact alexis.arnaudon@gmail.com to get more credits.",
-        )
-
-    async_user = await session.get(User, current_user.id)
-    if async_user:
-        async_user.credits -= 1
-        session.add(async_user)
-        await session.commit()
-
     setting = await session.get(Setting, "model_imslp")
     model = setting.value if setting else os.getenv("MODEL", "test")
 
-    try:
-        result = await run_imslp_agent(prompt, message_history=message_history, model=model)
-    except Exception as e:
-        async_user = await session.get(User, current_user.id)
-        if async_user:
-            async_user.credits += 1
-            session.add(async_user)
-            await session.commit()
-        raise HTTPException(status_code=500, detail=str(e)) from e
-
-    return result
+    async with consume_credit(current_user.id, session):
+        try:
+            return await run_imslp_agent(
+                body.prompt, message_history=body.message_history, model=model
+            )
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @app.post("/agent")
-@limiter.limit("5/minute")
-async def run_main_agent(  # pylint: disable=too-many-positional-arguments
-    request: Request,  # pylint: disable=unused-argument
+@limiter.limit(config.AGENT_RATE_LIMIT)
+async def run_main_agent(
+    request: Request,
+    body: MainAgentRequest,
     current_user: Annotated[User, Depends(get_current_user)],
-    prompt: str = Body(...),
-    deps: str = Body(...),
-    message_history: list | None = Body(None),
     session: AsyncSession = Depends(get_async_session),
-):  # pragma: no cover
+):
     """Run the agent."""
-    validate_prompt_security(prompt)
-
-    if current_user.credits <= 0:
-        raise HTTPException(
-            status_code=403,
-            detail="You have run out of agent credits."
-            "Please contact alexis.arnaudon@gmail.com to get more credits.",
-        )
-
-    async_user = await session.get(User, current_user.id)
-    if async_user:
-        async_user.credits -= 1
-        session.add(async_user)
-        await session.commit()
-
     setting = await session.get(Setting, "model_main")
     model = setting.value if setting else os.getenv("MODEL", "test")
 
-    try:
-        result = await run_agent(
-            prompt,
-            message_history=message_history,
-            deps=Deps(user=current_user, scores=Scores(**json.loads(deps))),
-            model=model,
-        )
-    except Exception as e:
-        async_user = await session.get(User, current_user.id)
-        if async_user:
-            async_user.credits += 1
-            session.add(async_user)
-            await session.commit()
-        raise HTTPException(status_code=500, detail=str(e)) from e
-
-    return result
+    async with consume_credit(current_user.id, session):
+        try:
+            return await run_agent(
+                body.prompt,
+                message_history=body.message_history,
+                deps=Deps(user=current_user, scores=Scores(**json.loads(body.deps))),
+                model=model,
+            )
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @app.get("/admin/model", dependencies=[Depends(get_admin_user)])
@@ -291,9 +278,9 @@ def get_active_model(session: Session = Depends(get_session)):
 
 
 @app.post("/admin/model", dependencies=[Depends(get_admin_user)])
-def set_active_model(models: dict = Body(..., embed=True), session: Session = Depends(get_session)):
+def set_active_model(body: ModelsUpdate, session: Session = Depends(get_session)):
     """Set the currently active agent models."""
-    for key, val in models.items():
+    for key, val in body.models.items():
         setting_key = f"model_{key}"
         setting = session.get(Setting, setting_key)
         if setting:
@@ -302,7 +289,7 @@ def set_active_model(models: dict = Body(..., embed=True), session: Session = De
             setting = Setting(key=setting_key, value=val)
         session.add(setting)
     session.commit()
-    return {"message": "Models updated", "models": models}
+    return {"message": "Models updated", "models": body.models}
 
 
 def get_pdf_user(token: str = "", session: Session = Depends(get_session)):  # pragma: no cover

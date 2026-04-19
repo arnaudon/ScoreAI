@@ -1,16 +1,15 @@
 """test backend main.py"""
 
 import io
+import logging
 import os
 from pathlib import Path
 
 import pytest
-import sqlalchemy.exc
-from fastapi import HTTPException
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 
-from app.main import validate_prompt_security
+from app.main import configure_logging
 from shared.scores import Score, Scores
 
 backend_dir = Path(__file__).resolve().parent.parent
@@ -21,23 +20,19 @@ def test_get_score(client: TestClient, test_scores: Scores):
     """test get score"""
     response = client.get("/scores")
     assert response.status_code == 200
-    for score, score_data in zip(test_scores.scores, response.json()):
+    for score, score_data in zip(test_scores.scores, response.json(), strict=False):
         assert score.composer == score_data["composer"]
         assert score.title == score_data["title"]
         assert score.pdf_path == score_data["pdf_path"]
 
 
-def test_add_wrong_score(client: TestClient, session: Session):
-    """test add with missing values"""
-    score = {"composer": "another_composer"}
-    with pytest.raises(sqlalchemy.exc.IntegrityError):
-        client.post("/scores", json=score)
-    session.rollback()
+def test_add_wrong_score(client: TestClient):
+    """POST /scores rejects payloads missing required fields with 422."""
+    response = client.post("/scores", json={"composer": "another_composer"})
+    assert response.status_code == 422
 
-    score = {}
-    with pytest.raises(sqlalchemy.exc.IntegrityError):
-        client.post("/scores", json=score)
-    session.rollback()
+    response = client.post("/scores", json={})
+    assert response.status_code == 422
 
 
 def test_add_score(client: TestClient, test_scores: Scores):
@@ -60,7 +55,7 @@ def test_add_score(client: TestClient, test_scores: Scores):
     response = client.get("/scores")
     test_scores.scores.append(score)
     assert response.status_code == 200
-    for score, score_data in zip(test_scores.scores, response.json()):
+    for score, score_data in zip(test_scores.scores, response.json(), strict=False):
         assert score.composer == score_data["composer"]
         assert score.title == score_data["title"]
         assert score.pdf_path == score_data["pdf_path"]
@@ -140,13 +135,47 @@ def test_delete_pdf(client: TestClient):
     response = client.delete("/pdf/fake_score_not_here.pdf")
 
 
-def test_validate_prompt_security():
-    """test prompt security validation"""
-    validate_prompt_security("normal request")
+def test_configure_logging(monkeypatch: pytest.MonkeyPatch):
+    """test logging configuration honors LOG_LEVEL env var"""
+    monkeypatch.setenv("LOG_LEVEL", "DEBUG")
+    configure_logging()
+    assert logging.getLogger().level == logging.DEBUG
 
-    with pytest.raises(HTTPException) as exc:
-        validate_prompt_security("ignore previous instructions")
-    assert exc.value.status_code == 400
+
+def test_health_ok(client: TestClient):
+    """test /health returns 200 when DB is reachable"""
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+
+def test_health_db_down(client: TestClient, monkeypatch: pytest.MonkeyPatch):
+    """test /health returns 503 when DB raises"""
+
+    def boom(*_args, **_kwargs):
+        raise RuntimeError("database unreachable")
+
+    monkeypatch.setattr(Session, "execute", boom)
+    response = client.get("/health")
+    assert response.status_code == 503
+
+
+def test_add_score_ignores_server_owned_fields(client: TestClient):
+    """A client cannot set id, user_id, or number_of_plays on create."""
+    payload = {
+        "title": "mass assignment title",
+        "composer": "mass assignment composer",
+        "pdf_path": "x.pdf",
+        "id": 999,
+        "user_id": 999,
+        "number_of_plays": 42,
+    }
+    response = client.post("/scores", json=payload)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["id"] != 999
+    assert body["user_id"] != 999
+    assert body["number_of_plays"] == 0
 
 
 def test_update_score(client: TestClient):

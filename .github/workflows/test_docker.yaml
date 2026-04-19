@@ -22,17 +22,18 @@ jobs:
         run: |
           touch .env
       - name: Build and Start Containers
-        run: |
-          # We use the -d flag to run in the background
-          docker compose up -d --build
+        run: docker compose up -d --build --wait
 
-      - name: Wait for services to be ready
-        # Databases often take a few seconds to initialize
-        run: sleep 10 
+      - name: Run Alembic migrations
+        # Catches migration regressions before deploy: the initial revision
+        # creates user/score/imslp/setting and the two incrementals apply on
+        # top of a fresh volume.
+        run: docker compose exec -T --workdir /app/backend backend alembic upgrade head
 
       - name: Run Backend Tests
-        # Run your pytest suite inside the running container
-        run: docker compose exec -T backend pytest backend
+        # Run from /app/backend so --cov=. and .coveragerc's source = app,tests
+        # match the same tree they do when we run `pytest` locally from backend/.
+        run: docker compose exec -T --workdir /app/backend backend pytest
 
       - name: Check Container Logs (If failed)
         if: failure()

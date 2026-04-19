@@ -1,9 +1,8 @@
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { env } from '$env/dynamic/private';
 import { dev } from '$app/environment';
-
-const BACKEND_URL = env.BACKEND_URL || 'http://localhost:8000';
+import { BACKEND_URL } from '$lib/server/api.js';
+import type { Score, User } from '$lib/types.js';
 
 export const load: PageServerLoad = async ({ cookies, fetch }) => {
 	const token = cookies.get('access_token');
@@ -20,7 +19,7 @@ export const load: PageServerLoad = async ({ cookies, fetch }) => {
 		redirect(303, '/login');
 	}
 
-	const user = await res.json();
+	const user = (await res.json()) as User;
 
 	let hasScores = false;
 	try {
@@ -28,7 +27,7 @@ export const load: PageServerLoad = async ({ cookies, fetch }) => {
 			headers: { Authorization: `Bearer ${token}` }
 		});
 		if (scoresRes.ok) {
-			const scores = await scoresRes.json();
+			const scores = (await scoresRes.json()) as Score[];
 			hasScores = Array.isArray(scores) && scores.length > 0;
 		}
 	} catch (e) {
@@ -64,7 +63,7 @@ export const actions: Actions = {
 					Authorization: `Bearer ${token}`
 				}
 			});
-			const scores = scoresRes.ok ? await scoresRes.json() : [];
+			const scores: Score[] = scoresRes.ok ? await scoresRes.json() : [];
 			const deps = JSON.stringify({ scores });
 
 			const response = await fetch(`${BACKEND_URL}/agent`, {
@@ -82,17 +81,19 @@ export const actions: Actions = {
 
 			if (response.ok) {
 				const result = await response.json();
-				let scoreDetails = null;
-				let returnScores = [];
-				
+				let scoreDetails: Score | null = null;
+				let returnScores: Score[] = [];
+
 				const scoreId = result?.score_id || result?.response?.score_id;
 				if (scoreId) {
-					scoreDetails = scores.find((s: any) => s.id === scoreId) || null;
+					scoreDetails = scores.find((s: Score) => s.id === scoreId) || null;
 				}
 
-				const scoreIds = result?.score_ids || result?.response?.score_ids || [];
+				const scoreIds: number[] = result?.score_ids || result?.response?.score_ids || [];
 				if (Array.isArray(scoreIds) && scoreIds.length > 0) {
-					returnScores = scoreIds.map((id: any) => scores.find((s: any) => s.id === id)).filter(Boolean);
+					returnScores = scoreIds
+						.map((id) => scores.find((s: Score) => s.id === id))
+						.filter((s): s is Score => Boolean(s));
 				} else if (scoreDetails) {
 					returnScores = [scoreDetails];
 				}

@@ -1,9 +1,8 @@
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { env } from '$env/dynamic/private';
 import { dev } from '$app/environment';
-
-const BACKEND_URL = env.BACKEND_URL || 'http://localhost:8000';
+import { BACKEND_URL } from '$lib/server/api.js';
+import type { Score, User } from '$lib/types.js';
 
 export const load: PageServerLoad = async ({ cookies, fetch }) => {
 	const token = cookies.get('access_token');
@@ -11,7 +10,7 @@ export const load: PageServerLoad = async ({ cookies, fetch }) => {
 		redirect(303, '/login');
 	}
 
-	async function fetchUser() {
+	async function fetchUser(): Promise<User> {
 		const res = await fetch(`${BACKEND_URL}/user`, {
 			headers: { Authorization: `Bearer ${token}` }
 		});
@@ -19,16 +18,16 @@ export const load: PageServerLoad = async ({ cookies, fetch }) => {
 			cookies.delete('access_token', { path: '/', httpOnly: true, secure: !dev, sameSite: 'lax' });
 			redirect(303, '/login');
 		}
-		return res.json();
+		return (await res.json()) as User;
 	}
 
-	async function fetchScores() {
+	async function fetchScores(): Promise<Score[]> {
 		const res = await fetch(`${BACKEND_URL}/scores`, {
 			headers: {
 				Authorization: `Bearer ${token}`
 			}
 		});
-		return res.ok ? await res.json() : [];
+		return res.ok ? ((await res.json()) as Score[]) : [];
 	}
 
 	try {

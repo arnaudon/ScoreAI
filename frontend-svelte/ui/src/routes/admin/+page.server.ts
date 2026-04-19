@@ -1,20 +1,19 @@
 import { fail, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { env } from '$env/dynamic/private';
-
-const BACKEND_URL = env.BACKEND_URL || 'http://localhost:8000';
+import { BACKEND_URL } from '$lib/server/api.js';
 
 export const load: PageServerLoad = async ({ cookies, fetch }) => {
 	const token = cookies.get('access_token');
-	
+
 	if (!token) {
 		redirect(303, '/login');
 	}
 
 	try {
-		const payloadBase64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-		const payload = JSON.parse(atob(payloadBase64));
-		if (payload.role !== 'admin' && payload.is_admin !== true) {
+		const adminCheck = await fetch(`${BACKEND_URL}/is_admin`, {
+			headers: { Authorization: `Bearer ${token}` }
+		});
+		if (!adminCheck.ok || !(await adminCheck.json())) {
 			redirect(303, '/');
 		}
 

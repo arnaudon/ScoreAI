@@ -112,7 +112,7 @@ def test_get_metadata():
     assert not get_metadata(mock_response)
 
 
-def test_get_pdfs(mock_requests_session):  # pylint: disable=redefined-outer-name
+def test_get_pdfs(mock_requests_session):
     """Test get_pdfs extraction."""
     html_landing = """
     <html>
@@ -157,7 +157,7 @@ def test_get_pdfs(mock_requests_session):  # pylint: disable=redefined-outer-nam
 
 
 @pytest.mark.asyncio
-async def test_get_page(mock_httpx_get):  # pylint: disable=redefined-outer-name
+async def test_get_page(mock_httpx_get):
     """Test get_page API call."""
     mock_response = MagicMock()
     mock_response.json.return_value = {
@@ -172,7 +172,7 @@ async def test_get_page(mock_httpx_get):  # pylint: disable=redefined-outer-name
 
 
 @pytest.mark.asyncio
-async def test_fix_entry(mock_agent, session):  # pylint: disable=redefined-outer-name
+async def test_fix_entry(mock_agent, session):
     """Test fixing entry with agent."""
     mock_agent.return_value = ScoreBase(title="Fixed Title", composer="Fixed Composer")
 
@@ -196,9 +196,7 @@ async def test_fix_entry_exception(mock_agent, session):
 
 
 @pytest.mark.asyncio
-async def test_add_entry(
-    session, mock_httpx_get, mock_agent
-):  # pylint: disable=redefined-outer-name
+async def test_add_entry(session, mock_httpx_get, mock_agent):
     """Test adding entry."""
     # Mock fix_entry dependencies
     mock_agent.return_value = ScoreBase(title="Fixed Title", composer="Fixed Composer")
@@ -230,7 +228,7 @@ async def test_add_entry(
 
 
 @pytest.mark.asyncio
-async def test_add_entry_exists(session, mock_httpx_get):  # pylint: disable=redefined-outer-name
+async def test_add_entry_exists(session, mock_httpx_get):
     """Test add_entry when entry already exists."""
     # Add an entry to the DB first
     existing_entry = IMSLP(
@@ -252,9 +250,7 @@ async def test_add_entry_exists(session, mock_httpx_get):  # pylint: disable=red
 
 
 @pytest.mark.asyncio
-async def test_get_works(
-    session, mock_httpx_get, mock_agent
-):  # pylint: disable=redefined-outer-name
+async def test_get_works(session, mock_httpx_get, mock_agent):
     """Test getting works."""
     # Mock fix_entry dependencies
     mock_agent.return_value = ScoreBase(title="Fixed Title", composer="Fixed Composer")
@@ -274,7 +270,7 @@ async def test_get_works(
     # 1. get_page -> API call
     # 2. add_entry -> permlink call
 
-    def side_effect(url, **kwargs):  # pylint: disable=unused-argument
+    def side_effect(url, **kwargs):
         if "API.ISCR.php" in url:
             if "start=0" in url:
                 return mock_response_page1
@@ -297,7 +293,7 @@ async def test_get_works(
 
 
 @pytest.mark.asyncio
-async def test_get_works_cancel(session, mock_httpx_get):  # pylint: disable=redefined-outer-name
+async def test_get_works_cancel(session, mock_httpx_get):
     """Test cancelling get_works."""
     progress_tracker["total"] = 10
     progress_tracker["cancel_requested"] = True
@@ -321,7 +317,7 @@ async def test_get_works_cancel(session, mock_httpx_get):  # pylint: disable=red
 # --- Tests for Endpoints ---
 
 
-def test_start_endpoint(mock_httpx_get):  # pylint: disable=redefined-outer-name,unused-argument
+def test_start_endpoint(mock_httpx_get):
     """Test start endpoint."""
     mock_response = MagicMock()
     mock_response.json.return_value = {"metadata": {}}  # To stop the loop
