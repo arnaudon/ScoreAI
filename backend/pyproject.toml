@@ -26,19 +26,6 @@ dependencies = [
     "httpx>=0.28.1",
     "slowapi>=0.1.9",
 ]
-[dependency-groups]
-dev = [
-    "pytest-cov>=7.0.0",
-    "pytest>=7.4.4",
-    "pyyaml>=6.0.2",
-    "black>=25.9.0",
-    "pylint>=4.0.2",
-    "mypy>=1.18.2",
-    "pytest-mock>=3.15.1",
-    "pytest-asyncio>=1.2.0",
-    "anyio>=4.11.0",
-]
-
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

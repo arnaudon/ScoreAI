@@ -85,11 +85,16 @@ def client_fixture(session: Session, test_scores: Scores, test_user: User):
     app.dependency_overrides[get_current_user] = get_current_user_override
     app.dependency_overrides[get_pdf_user] = get_current_user_override
 
-    client = TestClient(app)
-
-    # add scores to empty db for the authenticated user
+    # Seed scores directly via the session instead of POSTing them through the
+    # HTTP API — avoids a per-test startup tax of N HTTP requests.
     for test_score in test_scores.scores:
-        client.post("/scores", json=test_score.model_dump())
+        test_score.user_id = test_user.id
+        session.add(test_score)
+    session.commit()
+    for test_score in test_scores.scores:
+        session.refresh(test_score)
+
+    client = TestClient(app)
 
     yield client
 

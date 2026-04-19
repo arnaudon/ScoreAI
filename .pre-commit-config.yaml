@@ -1,0 +1,68 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+
+  - repo: https://github.com/psf/black
+    rev: 25.9.0
+    hooks:
+      - id: black
+        language_version: python3.12
+        files: ^(backend|shared)/.*\.py$
+
+  - repo: local
+    hooks:
+      - id: pylint-backend
+        name: pylint (backend)
+        language: system
+        types: [python]
+        files: ^backend/.*\.py$
+        entry: uv run --frozen --project backend --directory backend pylint
+        pass_filenames: false
+        args: ["app", "tests"]
+
+      - id: mypy-backend
+        name: mypy (backend)
+        language: system
+        types: [python]
+        files: ^backend/.*\.py$
+        entry: uv run --frozen --project backend --directory backend mypy
+        pass_filenames: false
+        args: ["."]
+
+      - id: pylint-shared
+        name: pylint (shared)
+        language: system
+        types: [python]
+        files: ^shared/.*\.py$
+        entry: uv run --frozen --project shared --directory shared pylint
+        pass_filenames: false
+        args: ["."]
+
+      - id: mypy-shared
+        name: mypy (shared)
+        language: system
+        types: [python]
+        files: ^shared/.*\.py$
+        entry: uv run --frozen --project shared --directory shared mypy
+        pass_filenames: false
+        args: ["."]
+
+      - id: svelte-check
+        name: svelte-check
+        language: system
+        files: ^frontend-svelte/ui/.*\.(ts|svelte|js)$
+        entry: bash -c 'cd frontend-svelte/ui && npm run check'
+        pass_filenames: false
+
+      - id: svelte-lint
+        name: svelte-lint
+        language: system
+        files: ^frontend-svelte/ui/.*\.(ts|svelte|js)$
+        entry: bash -c 'cd frontend-svelte/ui && npm run lint'
+        pass_filenames: false

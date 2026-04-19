@@ -13,7 +13,6 @@ class User(SQLModel, table=True):
     """User model."""
 
     __tablename__ = "user"  # type: ignore[reportAssignmentType]
-    __table_args__ = {"extend_existing": True}
 
     id: int | None = Field(default=None, primary_key=True)
     username: str

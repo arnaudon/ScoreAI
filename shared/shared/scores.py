@@ -50,7 +50,6 @@ class Score(ScoreBase, table=True):
     """Score table"""
 
     __tablename__ = "score"  # type: ignore[reportAssignmentType]
-    __table_args__ = {"extend_existing": True}
 
     id: int | None = Field(default=None, primary_key=True)
     pdf_path: str = Field(default="")

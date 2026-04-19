@@ -250,19 +250,6 @@ dependencies = [
     { name = "uvicorn" },
 ]
 
-[package.dev-dependencies]
-dev = [
-    { name = "anyio" },
-    { name = "black" },
-    { name = "mypy" },
-    { name = "pylint" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-cov" },
-    { name = "pytest-mock" },
-    { name = "pyyaml" },
-]
-
 [package.metadata]
 requires-dist = [
     { name = "aiosqlite", specifier = ">=0.21.0" },
@@ -284,19 +271,6 @@ requires-dist = [
     { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0.44" },
     { name = "sqlmodel", specifier = ">=0.0.27" },
     { name = "uvicorn", specifier = ">=0.37.0" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "anyio", specifier = ">=4.11.0" },
-    { name = "black", specifier = ">=25.9.0" },
-    { name = "mypy", specifier = ">=1.18.2" },
-    { name = "pylint", specifier = ">=4.0.2" },
-    { name = "pytest", specifier = ">=7.4.4" },
-    { name = "pytest-asyncio", specifier = ">=1.2.0" },
-    { name = "pytest-cov", specifier = ">=7.0.0" },
-    { name = "pytest-mock", specifier = ">=3.15.1" },
-    { name = "pyyaml", specifier = ">=6.0.2" },
 ]
 
 [[package]]
@@ -3713,6 +3687,34 @@ name = "scoreguide"
 version = "0.1.0"
 source = { virtual = "." }
 
+[package.dev-dependencies]
+dev = [
+    { name = "anyio" },
+    { name = "black" },
+    { name = "mypy" },
+    { name = "pylint" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
+    { name = "pytest-mock" },
+    { name = "pyyaml" },
+]
+
+[package.metadata]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "anyio", specifier = ">=4.11.0" },
+    { name = "black", specifier = ">=25.9.0" },
+    { name = "mypy", specifier = ">=1.18.2" },
+    { name = "pylint", specifier = ">=4.0.2" },
+    { name = "pytest", specifier = ">=7.4.4" },
+    { name = "pytest-asyncio", specifier = ">=1.2.0" },
+    { name = "pytest-cov", specifier = ">=7.0.0" },
+    { name = "pytest-mock", specifier = ">=3.15.1" },
+    { name = "pyyaml", specifier = ">=6.0.2" },
+]
+
 [[package]]
 name = "secretstorage"
 version = "3.5.0"
@@ -3749,37 +3751,11 @@ dependencies = [
     { name = "sqlmodel" },
 ]
 
-[package.dev-dependencies]
-dev = [
-    { name = "anyio" },
-    { name = "black" },
-    { name = "mypy" },
-    { name = "pylint" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-cov" },
-    { name = "pytest-mock" },
-    { name = "pyyaml" },
-]
-
 [package.metadata]
 requires-dist = [
     { name = "pydantic", specifier = ">=2.12.3" },
     { name = "pydantic-ai", specifier = ">=1.2.1" },
     { name = "sqlmodel", specifier = ">=0.0.27" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "anyio", specifier = ">=4.11.0" },
-    { name = "black", specifier = ">=25.9.0" },
-    { name = "mypy", specifier = ">=1.18.2" },
-    { name = "pylint", specifier = ">=4.0.2" },
-    { name = "pytest", specifier = ">=7.4.4" },
-    { name = "pytest-asyncio", specifier = ">=1.2.0" },
-    { name = "pytest-cov", specifier = ">=7.0.0" },
-    { name = "pytest-mock", specifier = ">=3.15.1" },
-    { name = "pyyaml", specifier = ">=6.0.2" },
 ]
 
 [[package]]
