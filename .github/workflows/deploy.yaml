@@ -19,8 +19,9 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           # apt upgrade + rebuilding both docker images on the VPS can take
-          # well over the 10-minute default when dependencies get bumped.
-          command_timeout: 40m
+          # well over the 10-minute default. 3h covers even a cold-cache
+          # rebuild after a full base-image bump on a small shared VPS.
+          command_timeout: 180m
           script: |
             sudo apt-get update
             sudo apt-get -y upgrade
