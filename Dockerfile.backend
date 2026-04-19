@@ -29,7 +29,6 @@ WORKDIR /app
 
 COPY pyproject.toml uv.lock ./
 COPY backend/pyproject.toml ./backend/
-COPY frontend/pyproject.toml ./frontend/
 COPY shared/pyproject.toml shared/README.md ./shared/
 COPY shared/shared ./shared/shared
 
