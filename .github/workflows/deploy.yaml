@@ -39,6 +39,10 @@ jobs:
             echo "PUBLIC_SENTRY_DSN=${{ secrets.PUBLIC_SENTRY_DSN }}" >> .env
             echo "SENTRY_ENVIRONMENT=production" >> .env
             echo "PUBLIC_SENTRY_ENVIRONMENT=production" >> .env
-            docker compose -f docker-compose.yaml -f docker-compose.prod.yaml up --build -d
+            docker compose -f docker-compose.yaml -f docker-compose.prod.yaml up --build -d --wait
+            # Ensure the mcp_readonly role exists on the existing data volume.
+            # Idempotent DO + IF NOT EXISTS block — safe to re-run every deploy.
+            docker compose exec -T db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"' \
+              < infrastructure/mcp-readonly.sql
             # run alembic migration
             docker compose exec -T --workdir /app/backend backend alembic upgrade head
