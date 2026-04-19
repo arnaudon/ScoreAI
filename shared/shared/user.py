@@ -1,7 +1,7 @@
 """User models."""
 
 from datetime import datetime
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -25,4 +25,4 @@ class User(SQLModel, table=True):
     credits: int = Field(default=50)
     max_credits: int = Field(default=50)
     last_login: datetime | None = None
-    scores: List["Score"] = Relationship(back_populates="user")
+    scores: list["Score"] = Relationship(back_populates="user")

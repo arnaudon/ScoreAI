@@ -4,9 +4,10 @@ import json
 import logging
 import os
 import uuid
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from logging import getLogger
-from typing import Annotated, AsyncGenerator
+from typing import Annotated
 
 from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -90,7 +91,7 @@ def health(session: Session = Depends(get_session)):
     """Liveness probe: returns 200 when the DB is reachable, 503 otherwise."""
     try:
         session.execute(text("SELECT 1"))
-    except Exception as e:  # pylint: disable=broad-exception-caught
+    except Exception as e:
         raise HTTPException(status_code=503, detail="database unreachable") from e
     return {"status": "ok"}
 
@@ -112,7 +113,7 @@ def add_score(
 @app.post("/complete_score")
 @limiter.limit(config.AGENT_RATE_LIMIT)
 async def complete_score(
-    request: Request,  # pylint: disable=unused-argument
+    request: Request,
     score: Score,
     current_user: Annotated[User, Depends(get_current_user)],
     session: AsyncSession = Depends(get_async_session),
@@ -196,7 +197,7 @@ def get_scores(
 @app.post("/imslp_agent")
 @limiter.limit(config.AGENT_RATE_LIMIT)
 async def run_imslp_agent_api(
-    request: Request,  # pylint: disable=unused-argument
+    request: Request,
     body: ChatRequest,
     current_user: Annotated[User, Depends(get_current_user)],
     session: AsyncSession = Depends(get_async_session),
@@ -217,7 +218,7 @@ async def run_imslp_agent_api(
 @app.post("/agent")
 @limiter.limit(config.AGENT_RATE_LIMIT)
 async def run_main_agent(
-    request: Request,  # pylint: disable=unused-argument
+    request: Request,
     body: MainAgentRequest,
     current_user: Annotated[User, Depends(get_current_user)],
     session: AsyncSession = Depends(get_async_session),

@@ -1,5 +1,6 @@
 """conftest"""
 
+import contextlib
 import glob
 import os
 
@@ -26,10 +27,8 @@ def cleanup_test_pdfs():
     yield
     for file in glob.glob("tests/data/*.pdf"):
         if os.path.basename(file) != "real_score.pdf":
-            try:
+            with contextlib.suppress(OSError):
                 os.remove(file)
-            except OSError:
-                pass
 
 
 @pytest.fixture(name="session")

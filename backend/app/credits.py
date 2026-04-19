@@ -47,6 +47,6 @@ async def consume_credit(user_id: int, session: AsyncSession):
                 update(User).where(User.id == user_id).values(credits=User.credits + 1)
             )
             await session.commit()
-        except Exception:  # pylint: disable=broad-exception-caught
+        except Exception:
             logger.exception("failed to refund credit for user %s", user_id)
         raise

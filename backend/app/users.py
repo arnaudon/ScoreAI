@@ -2,7 +2,7 @@
 
 import logging
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Annotated
 
 import jwt
@@ -88,9 +88,9 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     """Create access token."""
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
+        expire = datetime.now(UTC) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+        expire = datetime.now(UTC) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
@@ -99,7 +99,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 @router.post("/token")
 @limiter.limit("10/minute")
 def login_for_access_token(
-    request: Request,  # pylint: disable=unused-argument
+    request: Request,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: Session = Depends(get_session),
 ) -> Token:
@@ -112,7 +112,7 @@ def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    user.last_login = datetime.now(timezone.utc)
+    user.last_login = datetime.now(UTC)
     session.add(user)
     session.commit()
     session.refresh(user)
@@ -163,7 +163,7 @@ def get_admin_user(user: User = Depends(get_current_user)):
 @router.post("/users")
 @limiter.limit("5/minute")
 def add_user(
-    request: Request,  # pylint: disable=unused-argument
+    request: Request,
     user: User,
     session: Session = Depends(get_session),
 ):
@@ -182,7 +182,6 @@ def get_users(_: Annotated[User, Depends(get_admin_user)], session: Session = De
     users = session.exec(select(User)).all()
     result = []
     for user in users:
-        # pylint: disable=not-callable
         count = session.exec(select(func.count(Score.id)).where(Score.user_id == user.id)).one()
         user_dict = user.model_dump()
         user_dict["score_count"] = count
@@ -225,9 +224,7 @@ def update_user(
 @router.get("/is_admin")
 def is_admin(current_user: Annotated[User | None, Depends(get_admin_user)]):
     """Check if user is admin."""
-    if current_user is not None:
-        return True
-    return False
+    return current_user is not None
 
 
 @router.put("/user/password")

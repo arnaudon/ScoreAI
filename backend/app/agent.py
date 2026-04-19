@@ -86,7 +86,9 @@ async def get_easiest_score_by_composer(ctx: RunContext[Deps], filter_params: Fi
             scores.append(score)
     if scores:
         difficulties = [_difficulty_map[score.difficulty] for score in scores]
-        easy_scores = [s for d, s in zip(difficulties, scores) if d == min(difficulties)]
+        easy_scores = [
+            s for d, s in zip(difficulties, scores, strict=False) if d == min(difficulties)
+        ]
         return random.choice(easy_scores).model_dump_json()
     return "Not found"
 
@@ -103,7 +105,7 @@ def _parse_history(message_history):
     try:
         adapter = TypeAdapter(list[ModelMessage])
         return adapter.validate_python(message_history)
-    except Exception:  # pylint: disable=broad-exception-caught  # pragma: no cover
+    except Exception:  # pragma: no cover
         logger.exception("failed to parse agent message history")
         return None
 
@@ -204,7 +206,7 @@ async def run_imslp_agent(prompt: str, message_history=None, model: str | None =
         return ImslpFullResponse(response=res.output, message_history=res.all_messages())
     except ModelHTTPError as e:
         response = _response_for_http_error(e, make_response)
-    except Exception:  # pylint: disable=broad-exception-caught
+    except Exception:
         logger.exception("imslp agent run failed")
         response = make_response("An unexpected error occurred")
 
@@ -237,7 +239,7 @@ async def run_agent(prompt: str, deps: Deps, message_history=None, model: str | 
         return FullResponse(response=res.output, message_history=res.all_messages())
     except ModelHTTPError as e:
         response = _response_for_http_error(e, make_response)
-    except Exception:  # pylint: disable=broad-exception-caught
+    except Exception:
         logger.exception("main agent run failed")
         response = make_response("An unexpected error occurred")
 
@@ -279,7 +281,7 @@ async def run_complete_agent(score: Score, model: str | None = None):
     except ModelHTTPError:
         logger.exception("complete agent HTTP error; returning input score unchanged")
         return score
-    except Exception:  # pylint: disable=broad-exception-caught
+    except Exception:
         logger.exception("complete agent failed; returning input score unchanged")
         return score
 
@@ -302,9 +304,9 @@ async def run_imslp_complete_agent(entry_json: str, model: str | None = None) ->
         try:
             res = await agent.run(prompt)
             return res.output
-        except Exception as e:  # pylint: disable=broad-exception-caught
+        except Exception as e:
             # Do not retry client errors (4xx)
-            if isinstance(e, ModelHTTPError) and e.status_code < 500:  # pylint: disable=no-member
+            if isinstance(e, ModelHTTPError) and e.status_code < 500:
                 raise e
 
             if attempt < max_retries - 1:

@@ -8,39 +8,23 @@ repos:
       - id: check-added-large-files
       - id: check-merge-conflict
 
-  - repo: https://github.com/psf/black
-    rev: 25.9.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.11
     hooks:
-      - id: black
-        language_version: python3.12
+      - id: ruff-check
+        args: [--fix]
+        files: ^(backend|shared)/.*\.py$
+      - id: ruff-format
         files: ^(backend|shared)/.*\.py$
 
   - repo: local
     hooks:
-      - id: pylint-backend
-        name: pylint (backend)
-        language: system
-        types: [python]
-        files: ^backend/.*\.py$
-        entry: uv run --frozen --project backend --directory backend pylint
-        pass_filenames: false
-        args: ["app", "tests"]
-
       - id: mypy-backend
         name: mypy (backend)
         language: system
         types: [python]
         files: ^backend/.*\.py$
         entry: uv run --frozen --project backend --directory backend mypy
-        pass_filenames: false
-        args: ["."]
-
-      - id: pylint-shared
-        name: pylint (shared)
-        language: system
-        types: [python]
-        files: ^shared/.*\.py$
-        entry: uv run --frozen --project shared --directory shared pylint
         pass_filenames: false
         args: ["."]
 

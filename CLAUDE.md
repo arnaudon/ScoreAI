@@ -22,8 +22,8 @@ uv sync --frozen
 
 # Per-package test / format / lint / type-check (mirrors .github/workflows/test.yml)
 uv run --frozen --project backend --directory backend pytest
-uv run --frozen --project backend --directory backend black --check .
-uv run --frozen --project backend --directory backend pylint .
+uv run --frozen ruff format --check backend
+uv run --frozen ruff check backend
 uv run --frozen --project backend --directory backend mypy .
 
 # Single test / single file

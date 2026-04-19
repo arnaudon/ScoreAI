@@ -1,7 +1,7 @@
 """Score models."""
 
 from enum import Enum
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Optional
 
 from pydantic import BaseModel
 from sqlmodel import Field, Relationship, SQLModel
@@ -71,7 +71,7 @@ class Score(ScoreBase, table=True):
 class Scores(BaseModel):
     """Scores table"""
 
-    scores: List[Score]
+    scores: list[Score]
 
     def __len__(self):
         return len(self.scores)
@@ -133,7 +133,7 @@ class IMSLP(ScoreBase, table=True):
 class IMSLPScores(BaseModel):
     """IMLSP scores table"""
 
-    scores: List[IMSLP]
+    scores: list[IMSLP]
 
     def __len__(self):
         return len(self.scores)  # pragma: no cover

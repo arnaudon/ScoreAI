@@ -15,9 +15,6 @@ class DummyExc(Exception):
     """Dummy exception for testing."""
 
 
-# pylint: disable=non-parent-init-called,super-init-not-called
-
-
 @pytest.mark.anyio
 async def test_run_agent_model_http_error(monkeypatch, test_scores, test_user):
     """
@@ -33,10 +30,10 @@ async def test_run_agent_model_http_error(monkeypatch, test_scores, test_user):
             Exception.__init__(self, msg)
             self.status_code = status_code
 
-    async def raise_429(*a, **kw):  # pylint: disable=unused-argument
+    async def raise_429(*a, **kw):
         raise MockModelHTTPError("Rate limit", status_code=429)
 
-    async def raise_500(*a, **kw):  # pylint: disable=unused-argument
+    async def raise_500(*a, **kw):
         raise MockModelHTTPError("HTTP error", status_code=500)
 
     dummy_agent = mock.Mock()
@@ -58,8 +55,8 @@ async def test_run_agent_exception(monkeypatch, test_scores, test_user):
     Test generic exception handler in run_agent.
     """
 
-    async def fail(*a, **kw):  # pylint: disable=unused-argument
-        raise Exception("oops")  # pylint: disable=broad-exception-raised
+    async def fail(*a, **kw):
+        raise Exception("oops")
 
     dummy_agent = mock.Mock()
     dummy_agent.run = fail
@@ -70,7 +67,7 @@ async def test_run_agent_exception(monkeypatch, test_scores, test_user):
 
 
 @pytest.mark.anyio
-async def test_run_complete_agent_model_http_error(monkeypatch):  # pylint: disable=unused-argument
+async def test_run_complete_agent_model_http_error(monkeypatch):
     """
     Test error handling in run_complete_agent.
     """
@@ -83,7 +80,7 @@ async def test_run_complete_agent_model_http_error(monkeypatch):  # pylint: disa
             Exception.__init__(self, "Rate limit")
             self.status_code = 429
 
-    async def fail(*a, **kw):  # pylint: disable=unused-argument
+    async def fail(*a, **kw):
         raise DummyModelHTTPError()
 
     monkeypatch.setattr(agent.Agent, "run", fail)

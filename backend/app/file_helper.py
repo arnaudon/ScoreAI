@@ -1,5 +1,6 @@
 """File helper to handle both local and S3 bucket."""
 
+import contextlib
 import os
 import shutil
 from pathlib import Path
@@ -53,10 +54,8 @@ class FileHelper:
         if self.s3_client:  # pragma: no cover
             self.s3_client.delete_object(Bucket=self.bucket, Key=filename)
         else:
-            try:
+            with contextlib.suppress(FileNotFoundError):
                 os.remove(Path(str(os.getenv("DATA_PATH"))) / filename)
-            except FileNotFoundError:
-                pass
 
     def download_pdf(self, filename):
         """Download a pdf file from S3."""

@@ -9,8 +9,7 @@ dev = [
     "pytest-cov>=7.0.0",
     "pytest>=7.4.4",
     "pyyaml>=6.0.2",
-    "black>=25.9.0",
-    "pylint>=4.0.2",
+    "ruff>=0.14.0",
     "mypy>=1.18.2",
     "pytest-mock>=3.15.1",
     "pytest-asyncio>=1.2.0",
@@ -28,3 +27,35 @@ explicit_package_bases = true
 pythonpath = ["backend", "shared"]
 testpaths = ["backend/tests", "shared/tests"]
 asyncio_mode = "strict"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["migrations", ".venv"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+    "C4",  # flake8-comprehensions
+    "SIM", # flake8-simplify
+]
+ignore = [
+    "B008",   # function call in default argument (FastAPI Depends pattern)
+    "B904",   # raise ... from err (not always required)
+    "SIM108", # ternary-if suggestions can hurt readability
+    "SIM117", # nested with statements are sometimes clearer
+    "UP042",  # str+Enum vs StrEnum — changing would affect JSON serialization
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["B011", "B017"]  # allow assert False / raises(Exception) in tests
+"backend/app/agent.py" = ["E501", "W291", "W293"]  # trailing/long lines in LLM system prompts
+
+[tool.ruff.lint.isort]
+known-first-party = ["shared", "app"]
+

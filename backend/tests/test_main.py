@@ -20,7 +20,7 @@ def test_get_score(client: TestClient, test_scores: Scores):
     """test get score"""
     response = client.get("/scores")
     assert response.status_code == 200
-    for score, score_data in zip(test_scores.scores, response.json()):
+    for score, score_data in zip(test_scores.scores, response.json(), strict=False):
         assert score.composer == score_data["composer"]
         assert score.title == score_data["title"]
         assert score.pdf_path == score_data["pdf_path"]
@@ -55,7 +55,7 @@ def test_add_score(client: TestClient, test_scores: Scores):
     response = client.get("/scores")
     test_scores.scores.append(score)
     assert response.status_code == 200
-    for score, score_data in zip(test_scores.scores, response.json()):
+    for score, score_data in zip(test_scores.scores, response.json(), strict=False):
         assert score.composer == score_data["composer"]
         assert score.title == score_data["title"]
         assert score.pdf_path == score_data["pdf_path"]
