@@ -2,9 +2,7 @@
 name = "ScoreGuide"
 version = "0.1.0"
 description = "scoreguide monorepo"
-dependencies = [
-    "streamlit>=1.54.0",
-]
+dependencies = []
 
 [tool.uv.workspace]
 members = ["backend", "frontend", "shared"]

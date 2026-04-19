@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
+from sqlalchemy import text
 from sqlmodel import Session, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -62,6 +63,16 @@ app.add_middleware(
 
 app.include_router(users.router, tags=["users"])
 app.include_router(imslp.router, tags=["imslp"])
+
+
+@app.get("/health")
+def health(session: Session = Depends(get_session)):
+    """Liveness probe: returns 200 when the DB is reachable, 503 otherwise."""
+    try:
+        session.exec(text("SELECT 1"))
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        raise HTTPException(status_code=503, detail="database unreachable") from e
+    return {"status": "ok"}
 
 
 @app.post("/scores")

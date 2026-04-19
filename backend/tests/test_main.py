@@ -140,6 +140,24 @@ def test_delete_pdf(client: TestClient):
     response = client.delete("/pdf/fake_score_not_here.pdf")
 
 
+def test_health_ok(client: TestClient):
+    """test /health returns 200 when DB is reachable"""
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+
+def test_health_db_down(client: TestClient, monkeypatch: pytest.MonkeyPatch):
+    """test /health returns 503 when DB raises"""
+
+    def boom(*_args, **_kwargs):
+        raise RuntimeError("database unreachable")
+
+    monkeypatch.setattr(Session, "exec", boom)
+    response = client.get("/health")
+    assert response.status_code == 503
+
+
 def test_validate_prompt_security():
     """test prompt security validation"""
     validate_prompt_security("normal request")
