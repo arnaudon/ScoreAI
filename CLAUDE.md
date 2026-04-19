@@ -4,18 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repo layout
 
-`uv` workspace monorepo (`pyproject.toml` at root lists `backend`, `frontend`, `shared` as members). The Svelte app lives outside the uv workspace in `frontend-svelte/ui`.
+`uv` workspace monorepo (`pyproject.toml` at root lists `backend`, `shared` as members). The Svelte app lives outside the uv workspace in `frontend-svelte/ui`.
 
 - `backend/` — FastAPI + SQLModel + pydantic-ai service (package name: `app`). Contains Alembic migrations in `backend/migrations`.
-- `frontend/` — **Legacy** Streamlit UI (package name: `ui`). Still in the uv workspace and has tests; the deployed UI is the Svelte one.
 - `frontend-svelte/ui/` — Active SvelteKit 5 app (Tailwind v4, shadcn-svelte, Paraglide i18n en/fr). This is what `Dockerfile.frontend-svelte` builds and what docker-compose mounts as `frontend`.
-- `shared/` — SQLModel tables (`User`, `Score`, `IMSLP`, `Setting`) and pydantic response models shared between backend and legacy frontend. `shared.shared` is the importable package.
+- `shared/` — SQLModel tables (`User`, `Score`, `IMSLP`, `Setting`) and pydantic response models shared between backend and Svelte. `shared.shared` is the importable package.
 - `script/` — One-off scrapers/experiments (`imslp_scrapping`, `pdf_read`); not part of the app.
 - `infrastructure/` — Terraform + setup script for Infomaniak VPS.
 
 ## Common commands
 
-Each uv workspace member has its own `pyproject.toml` and `pytest.ini`. Always run tooling scoped to the member you're touching — CI matrixes on `backend` and `shared`, not `frontend`.
+Each uv workspace member has its own `pyproject.toml` and `pytest.ini`. Always run tooling scoped to the member you're touching — CI matrixes on `backend` and `shared`.
 
 ```bash
 # Install everything (one-off, uses the top-level uv.lock for the whole workspace)
@@ -37,7 +36,6 @@ Run the full stack locally:
 
 ```bash
 docker compose up --build           # dev (override mounts ./backend, ./shared, ./frontend-svelte/ui)
-./script/run.sh                     # alt: FastAPI + Streamlit against a local SQLite DB (no docker)
 ./backend/scripts/run.sh            # backend only, uvicorn --reload on :8000
 ```
 

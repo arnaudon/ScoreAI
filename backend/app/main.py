@@ -8,16 +8,17 @@ from contextlib import asynccontextmanager
 from logging import getLogger
 from typing import Annotated, AsyncGenerator
 
-from fastapi import Body, Depends, FastAPI, File, HTTPException, Request, UploadFile
+from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
 from sqlmodel import Session, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app import imslp, users
+from app import config, imslp, users
 from app.agent import Deps, run_agent, run_complete_agent, run_imslp_agent
 from app.credits import consume_credit
 from app.db import get_async_session, get_session, init_db
@@ -29,6 +30,25 @@ from shared.settings import Setting
 from shared.user import User
 
 logger = getLogger(__name__)
+
+
+class ChatRequest(BaseModel):
+    """Shared body for agent chat endpoints."""
+
+    prompt: str
+    message_history: list | None = None
+
+
+class MainAgentRequest(ChatRequest):
+    """Body for /agent — adds a JSON-encoded ``Scores`` blob."""
+
+    deps: str
+
+
+class ModelsUpdate(BaseModel):
+    """Body for POST /admin/model."""
+
+    models: dict[str, str]
 
 
 def validate_prompt_security(prompt: str):
@@ -68,7 +88,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # ty
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=config.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -103,7 +123,7 @@ def add_score(
 
 
 @app.post("/complete_score")
-@limiter.limit("5/minute")
+@limiter.limit(config.AGENT_RATE_LIMIT)
 async def complete_score(
     request: Request,  # pylint: disable=unused-argument
     score: Score,
@@ -187,39 +207,38 @@ def get_scores(
 
 
 @app.post("/imslp_agent")
-@limiter.limit("5/minute")
+@limiter.limit(config.AGENT_RATE_LIMIT)
 async def run_imslp_agent_api(
     request: Request,  # pylint: disable=unused-argument
+    body: ChatRequest,
     current_user: Annotated[User, Depends(get_current_user)],
-    prompt: str = Body(...),
-    message_history: list | None = Body(None),
     session: AsyncSession = Depends(get_async_session),
 ):  # pragma: no cover
     """Run the imslp agent."""
-    validate_prompt_security(prompt)
+    validate_prompt_security(body.prompt)
 
     setting = await session.get(Setting, "model_imslp")
     model = setting.value if setting else os.getenv("MODEL", "test")
 
     async with consume_credit(current_user.id, session):
         try:
-            return await run_imslp_agent(prompt, message_history=message_history, model=model)
+            return await run_imslp_agent(
+                body.prompt, message_history=body.message_history, model=model
+            )
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @app.post("/agent")
-@limiter.limit("5/minute")
-async def run_main_agent(  # pylint: disable=too-many-positional-arguments
+@limiter.limit(config.AGENT_RATE_LIMIT)
+async def run_main_agent(
     request: Request,  # pylint: disable=unused-argument
+    body: MainAgentRequest,
     current_user: Annotated[User, Depends(get_current_user)],
-    prompt: str = Body(...),
-    deps: str = Body(...),
-    message_history: list | None = Body(None),
     session: AsyncSession = Depends(get_async_session),
 ):  # pragma: no cover
     """Run the agent."""
-    validate_prompt_security(prompt)
+    validate_prompt_security(body.prompt)
 
     setting = await session.get(Setting, "model_main")
     model = setting.value if setting else os.getenv("MODEL", "test")
@@ -227,9 +246,9 @@ async def run_main_agent(  # pylint: disable=too-many-positional-arguments
     async with consume_credit(current_user.id, session):
         try:
             return await run_agent(
-                prompt,
-                message_history=message_history,
-                deps=Deps(user=current_user, scores=Scores(**json.loads(deps))),
+                body.prompt,
+                message_history=body.message_history,
+                deps=Deps(user=current_user, scores=Scores(**json.loads(body.deps))),
                 model=model,
             )
         except Exception as e:
@@ -256,9 +275,9 @@ def get_active_model(session: Session = Depends(get_session)):
 
 
 @app.post("/admin/model", dependencies=[Depends(get_admin_user)])
-def set_active_model(models: dict = Body(..., embed=True), session: Session = Depends(get_session)):
+def set_active_model(body: ModelsUpdate, session: Session = Depends(get_session)):
     """Set the currently active agent models."""
-    for key, val in models.items():
+    for key, val in body.models.items():
         setting_key = f"model_{key}"
         setting = session.get(Setting, setting_key)
         if setting:
@@ -267,7 +286,7 @@ def set_active_model(models: dict = Body(..., embed=True), session: Session = De
             setting = Setting(key=setting_key, value=val)
         session.add(setting)
     session.commit()
-    return {"message": "Models updated", "models": models}
+    return {"message": "Models updated", "models": body.models}
 
 
 def get_pdf_user(token: str = "", session: Session = Depends(get_session)):  # pragma: no cover

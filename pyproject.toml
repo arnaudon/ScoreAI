@@ -5,13 +5,13 @@ description = "scoreguide monorepo"
 dependencies = []
 
 [tool.uv.workspace]
-members = ["backend", "frontend", "shared"]
+members = ["backend", "shared"]
 
 [tool.mypy]
-mypy_path = "shared:backend:frontend"
+mypy_path = "shared:backend"
 explicit_package_bases = true
 
 [tool.pytest.ini_options]
-pythonpath = ["backend", "frontend", "shared"]
-testpaths = ["backend/tests", "frontend/tests", "shared/tests"]
+pythonpath = ["backend", "shared"]
+testpaths = ["backend/tests", "shared/tests"]
 asyncio_mode = "strict"

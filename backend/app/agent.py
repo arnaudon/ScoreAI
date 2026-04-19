@@ -13,6 +13,7 @@ from pydantic_ai.exceptions import ModelHTTPError
 from pydantic_ai.mcp import MCPServerSSE
 from pydantic_ai.messages import ModelMessage
 
+from app import config
 from shared.responses import FullResponse, ImslpFullResponse, ImslpResponse, Response
 from shared.scores import Difficulty, Score, ScoreBase, Scores
 from shared.user import User
@@ -27,7 +28,7 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-postgres_server = MCPServerSSE("http://mcp-postgres:8001/sse")
+postgres_server = MCPServerSSE(config.MCP_URL)
 
 
 _difficulty_map = {

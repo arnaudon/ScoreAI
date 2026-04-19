@@ -19,6 +19,12 @@ from shared.scores import IMSLP
 from shared.settings import Setting
 
 logger = logging.getLogger(__name__)
+
+# Module-level state shared by the /imslp/start, /imslp/progress, and
+# /imslp/cancel endpoints. This only works correctly when the backend runs
+# with a single uvicorn worker (see Dockerfile.backend) — each worker would
+# otherwise see its own copy. If we ever need to scale out, move this to a
+# DB row (e.g. on the Setting table) or Redis.
 progress_tracker = {"status": "idle", "page": 0, "cancel_requested": False}
 router = APIRouter(prefix="/imslp", tags=["imslp"])
 

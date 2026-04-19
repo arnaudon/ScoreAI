@@ -7,14 +7,17 @@ from fastapi import HTTPException
 from sqlalchemy import update
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from app import config
 from shared.user import User
 
 logger = getLogger(__name__)
 
-OUT_OF_CREDITS_DETAIL = (
-    "You have run out of agent credits."
-    "Please contact alexis.arnaudon@gmail.com to get more credits."
-)
+
+def _out_of_credits_detail() -> str:
+    return (
+        "You have run out of agent credits."
+        f"Please contact {config.SUPPORT_EMAIL} to get more credits."
+    )
 
 
 @asynccontextmanager
@@ -33,7 +36,7 @@ async def consume_credit(user_id: int, session: AsyncSession):
         .values(credits=User.credits - 1)
     )
     if debit.rowcount == 0:  # type: ignore[attr-defined]
-        raise HTTPException(status_code=403, detail=OUT_OF_CREDITS_DETAIL)
+        raise HTTPException(status_code=403, detail=_out_of_credits_detail())
     await session.commit()
 
     try:
