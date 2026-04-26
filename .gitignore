@@ -9,6 +9,7 @@ database/
 
 *.tfstate*
 .terraform*
+*.tfvars
 
 .venv
 .env

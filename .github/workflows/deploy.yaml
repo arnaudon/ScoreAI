@@ -18,17 +18,9 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          # apt upgrade + rebuilding both docker images on the VPS can take
-          # well over the 10-minute default. 3h covers even a cold-cache
-          # rebuild after a full base-image bump on a small shared VPS.
-          command_timeout: 180m
+          command_timeout: 30m
           script: |
             set -euxo pipefail
-            # Non-interactive apt so modified-config-file prompts don't hang
-            # the SSH session forever (--force-confold = keep existing configs).
-            export DEBIAN_FRONTEND=noninteractive
-            sudo -E apt-get update
-            sudo -E apt-get -y -o Dpkg::Options::="--force-confold" upgrade
             docker network inspect web >/dev/null 2>&1 || docker network create web
             cd /home/debian/ScoreGuide
             git pull origin main
@@ -47,11 +39,7 @@ jobs:
             echo "PUBLIC_SENTRY_DSN=${{ secrets.PUBLIC_SENTRY_DSN }}" >> .env
             echo "SENTRY_ENVIRONMENT=production" >> .env
             echo "PUBLIC_SENTRY_ENVIRONMENT=production" >> .env
-            # One-shot: rebuild frontend from scratch to pick up the runtime
-            # @sentry/sveltekit install that the cached deps layer kept stale.
-            # Safe to leave in; no-ops if layers are already fresh.
-            docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml build --no-cache frontend
-            docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml up --build --force-recreate -d
+            docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml up --build -d
             # Show what's actually running so deploy logs are diagnosable.
             docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Image}}'
             echo "--- frontend logs (tail 40) ---"
